@@ -4,7 +4,7 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Output;
 
-public class PrintToScreen implements Output, Runnable {
+public class PrintToScreen implements Output {
 
 	Store<Localization> s;
 	

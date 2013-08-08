@@ -8,7 +8,7 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Output;
 
-public class PrintToFile implements Output, Runnable {
+public class PrintToFile implements Output {
 	Store<Localization> s;
 	
 	@Override

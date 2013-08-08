@@ -4,7 +4,7 @@ import org.lemming.data.Frame;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Input;
 
-public class DummyFrameProducer implements Input, Runnable {
+public class DummyFrameProducer implements Input {
 
 	Store<Frame> output;
 	

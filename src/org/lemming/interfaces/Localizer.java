@@ -4,7 +4,7 @@ import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
 
-public interface Localizer {
+public interface Localizer extends Runnable {
 	
 	public void setInput(Store<Frame> s);
 	

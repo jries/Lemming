@@ -5,7 +5,7 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Localizer;
 
-public class DummyLocalizer implements Localizer, Runnable {
+public class DummyLocalizer implements Localizer {
 
 	Store<Frame> in;
 	Store<Localization> out;
