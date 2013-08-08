@@ -1,9 +1,7 @@
-package org.lemming.dummy;
+package org.lemming.data;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.lemming.data.Store;
 
 public class QueueStore<DataType> implements Store<DataType> {
 

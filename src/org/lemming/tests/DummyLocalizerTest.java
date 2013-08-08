@@ -6,10 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
+import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
-import org.lemming.dummy.QueueStore;
 import org.lemming.interfaces.Input;
 
 public class DummyLocalizerTest {
