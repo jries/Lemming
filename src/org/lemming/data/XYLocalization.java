@@ -5,8 +5,14 @@ public class XYLocalization implements Localization {
 	double X,Y;
 	long ID;
 	
+	static long curID = 0;
+	
 	public XYLocalization(double x, double y, long id) {
 		X=x; Y=y; ID=id;
+	}
+	
+	public XYLocalization(double x, double y) {
+		X=x; Y=y; ID=curID++;
 	}
 	
 	@Override

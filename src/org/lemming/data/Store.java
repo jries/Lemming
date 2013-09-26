@@ -6,4 +6,5 @@ public interface Store<DataType> {
 	
 	public DataType get();
 	
+	boolean isEmpty();
 }

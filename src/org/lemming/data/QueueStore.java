@@ -26,4 +26,9 @@ public class QueueStore<DataType> implements Store<DataType> {
 		return q.size();
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return q.isEmpty();
+	}
+
 }
