@@ -109,7 +109,7 @@ public class GaussRenderOutput implements Output {
 			if(X==null) return;
 			double[] Params = {background, x, y, area, theta, sigmaX, aspectRatio};
 			double[] fcn = Functions.gaussian2D(X, Params);
-			double val, maxval=-9.e99; // maxval is used for setting the ImagePlus display range
+			double val, maxval=-Double.MAX_VALUE; // maxval is used for setting the ImagePlus display range
 			for (int i=0, j=X.length, idx; i<j; i++){
 				idx = X[i][0] + X[i][1]*width;
 				pixels[idx] += fcn[i];

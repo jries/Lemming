@@ -23,6 +23,11 @@ public class DummyFrameProducer implements Input {
 		public long getFrameNumber() {
 			return ID;
 		}
+
+		@Override
+		public Object getPixels() {
+			return null;
+		}
 	}
 	
 	@Override
