@@ -1,12 +1,11 @@
 package org.lemming.outputs;
 
-import org.lemming.data.Frame;
 import org.lemming.data.Store;
-import org.lemming.interfaces.Input;
+import org.lemming.interfaces.Source;
 
-public abstract class SO implements Input, Runnable {
+public abstract class SO<T> implements Source<T>, Runnable {
 
-	Store<Frame> output;
+	Store<T> output;
 
 	@Override
 	public void run() {
@@ -14,16 +13,15 @@ public abstract class SO implements Input, Runnable {
 		if (output==null)
 			throw new NullStoreWarning(this.getClass().getName()); 
 		
-		while (hasMoreFrames()) {
-			output.put(newFrame());
+		while (hasMoreOutputs()) {
+			output.put(newOutput());
 		}
 	}
 	
-	public abstract boolean hasMoreFrames();
-	public abstract Frame newFrame();
+	public abstract T newOutput();
 	
 	@Override
-	public void setOutput(Store<Frame> s) {
+	public void setOutput(Store<T> s) {
 		output = s;
 	}
 

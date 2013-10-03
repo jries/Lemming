@@ -1,15 +1,19 @@
 package org.lemming.outputs;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 
 import org.lemming.data.Localization;
+import org.lemming.data.Rendering;
 import org.lemming.data.Store;
-import org.lemming.interfaces.Output;
+import org.lemming.input.SI;
 import org.lemming.utils.Functions;
 import org.lemming.utils.Miscellaneous;
 
-public class GaussRenderOutput implements Output {
+public class GaussRenderOutput extends SI<Localization> implements Rendering {
 
 	Store<Localization> localizations;
 	double[] pixels;
@@ -91,41 +95,53 @@ public class GaussRenderOutput implements Output {
 		this.title = title;
 	}
 
-	@Override
-	public void run() {
-		
-		if (localizations==null) {new NullStoreWarning(this.getClass().getName()); return;}
-		
-		pixels = new double[width*height];
-		FloatProcessor fp = new FloatProcessor(width, height, pixels);
-		ImagePlus ip = new ImagePlus(title, fp);
-		ip.show();
-		
-		Localization loc;
-		while ((loc=localizations.get())!=null){
-			double x = loc.getX();
-			double y = loc.getY();
-			int[][] X = Miscellaneous.getWindowPixels((int)x, (int)y, width, height, sigmaX, aspectRatio);
-			if(X==null) return;
-			double[] Params = {background, x, y, area, theta, sigmaX, aspectRatio};
-			double[] fcn = Functions.gaussian2D(X, Params);
-			double val, maxval=-Double.MAX_VALUE; // maxval is used for setting the ImagePlus display range
-			for (int i=0, j=X.length, idx; i<j; i++){
-				idx = X[i][0] + X[i][1]*width;
-				pixels[idx] += fcn[i];
-				val = pixels[idx];
-				if (val > maxval)
-					maxval = val; 
-				fp.setf(idx, (float)val);				
-			}
-			ip.updateAndDraw();
-			ip.setDisplayRange(0, maxval);
-		}
-	}
+	ImagePlus ip; FloatProcessor fp;
+	Timer t = new Timer();
 
 	@Override
-	public void setInput(Store<Localization> s) {
-		localizations = s;
+	public void run() {
+		pixels = new double[width*height];
+		fp = new FloatProcessor(width, height, pixels);
+		ip = new ImagePlus(title, fp);
+		ip.show();
+		
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				update();
+			}
+		}, 100, 100);		
+				
+		super.run();
 	}
+
+	double maxVal=-Float.MAX_VALUE; // keeps track of the maximum value in the histogram
+
+	@Override
+	public void process(Localization loc) {
+		double x = loc.getX();
+		double y = loc.getY();
+		int[][] X = Miscellaneous.getWindowPixels((int)x, (int)y, width, height, sigmaX, aspectRatio);
+		if(X==null) return;
+		double[] Params = {background, x, y, area, theta, sigmaX, aspectRatio};
+		double[] fcn = Functions.gaussian2D(X, Params);
+		for (int i=0, j=X.length, idx; i<j; i++){
+			idx = X[i][0] + X[i][1]*width;
+			pixels[idx] += fcn[i];
+			if (pixels[idx] > maxVal)
+				maxVal = pixels[idx]; 
+			fp.setf(idx, (float)pixels[idx]);				
+		}
+		
+	}
+	
+	void update() {
+        if (ip==null)
+        	return;
+        
+        ip.updateAndDraw();
+		ip.setDisplayRange(0, maxVal);	
+	}
+
 
 }

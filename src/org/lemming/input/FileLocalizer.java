@@ -10,10 +10,11 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
 import org.lemming.interfaces.Localizer;
-import org.lemming.outputs.NullStoreWarning;
+import org.lemming.outputs.SO;
 import org.lemming.outputs.ShowMessage;
+import org.lemming.utils.LemMING;
 
-public class FileLocalizer implements Localizer {
+public class FileLocalizer extends SO<Localization> implements Localizer {
 	
 	Store<Localization> localizations;
 	String filename;
@@ -51,23 +52,46 @@ public class FileLocalizer implements Localizer {
 	}
 
 	@Override
-	public void run() {
-		
-		if (localizations==null) {new NullStoreWarning(this.getClass().getName()); return;}
-		
-		String sCurrentLine;
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(filename));
-			long ID=0;
-			while ((sCurrentLine = br.readLine()) != null) {
-				String[] s = sCurrentLine.split(delimiter);
-				if (s.length > 1) {
-					localizations.put(new XYLocalization(Double.parseDouble(s[0]), Double.parseDouble(s[1]), ID++));					
-				} else {
-					new ShowMessage("The delimiter used, '" + delimiter + "', for the localization file " + filename + " can't be correct");
-					break;
-				}
+	public boolean hasMoreOutputs() {
+		return sCurrentLine != null;
+	}
+	
+	@Override
+	public Localization newOutput() {
+		String[] s = sCurrentLine.split(delimiter);
+		if (s.length > 1) {
+			try {
+				sCurrentLine = br.readLine();
+			}  catch (IOException e) {
+				LemMING.error(e.getMessage());
 			}
+
+			return new XYLocalization(Double.parseDouble(s[0]), Double.parseDouble(s[1]), ID++);					
+		} else {
+			String err = "The delimiter used, '" + delimiter + "', for the localization file " + filename + " can't be correct";
+			
+			LemMING.error(err);
+			
+			return null; // unreachable..
+		}
+		
+	}
+
+	BufferedReader br;
+	String sCurrentLine;
+	long ID;
+	
+	@Override
+	public void run() {
+		ID=0;
+		try {
+			br = new BufferedReader(new FileReader(filename));
+
+			// Reads first line (needed by hasMoreOutputs)
+			sCurrentLine = br.readLine();
+			
+			super.run();
+		
 			br.close();
 		} catch (FileNotFoundException e) {
 			new ShowMessage(e.getMessage());
@@ -77,10 +101,6 @@ public class FileLocalizer implements Localizer {
 	}
 
 	@Override
-	public void setInput(Store<Frame> s) {}
-
-	@Override
-	public void setOutput(Store<Localization> s) {
-		localizations = s;
+	public void setInput(Store<Frame> s) {
 	}
 }

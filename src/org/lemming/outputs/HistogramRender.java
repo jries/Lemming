@@ -1,12 +1,16 @@
 package org.lemming.outputs;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 
 import org.lemming.data.Localization;
+import org.lemming.data.Rendering;
 import org.lemming.input.SI;
 
-public class HistogramRender extends SI {
+public class HistogramRender extends SI<Localization> implements Rendering {
 	
 	int xBins=256; // the number of bins to use to segment the x-axis
 	int yBins=256; // the number of bins to use to segment the y-axis
@@ -19,12 +23,16 @@ public class HistogramRender extends SI {
 	double ymin=0.0; // the minimum y-localization value to include in the histogram image
 	double ymax=(double)(yBins); //the maximum y-localization value to include in the histogram image
 
+	Timer t = new Timer();
+	
 	String title = "LemMING!"; // title of the image
 	
 	FloatProcessor fp; // from ImageJ
 	ImagePlus ip; // from ImageJ
 	
-	public HistogramRender() {initialize();}
+	public HistogramRender() {
+		this(256,256,0,256,0,256);
+	}
 
 	public HistogramRender(int xBins, int yBins, double xmin, double xmax, double ymin, double ymax) {
 		this.xBins = xBins;
@@ -33,7 +41,7 @@ public class HistogramRender extends SI {
 		this.xmax = xmax;
 		this.ymin = ymin;
 		this.ymax = ymax;
-		initialize();
+		initialize();		
 	}
 
 	public void setRange(double xmin, double xmax, double ymin, double ymax){
@@ -56,13 +64,21 @@ public class HistogramRender extends SI {
 	
 	private void initialize(){
 		values = new float[xBins*yBins];
-		fp = new FloatProcessor(xBins, yBins);
+		fp = new FloatProcessor(xBins, yBins,values);
 		ip = new ImagePlus(title, fp);
+		ip.show();
 	}
 
-	/** Shows the histogram image on the screen*/
-	public void show(){
-		ip.show();
+	@Override
+	public void run() {
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				update();
+			}
+		}, 100, 100);		
+				
+		super.run();
 	}
 
 	@Override
@@ -77,10 +93,16 @@ public class HistogramRender extends SI {
         	float val = values[xindex+yindex*xBins]++;
         	if (val > maxVal)
         		maxVal = val;
-			fp.setf(xindex, yindex, val);	
+			//fp.setf(xindex, yindex, val);	
         }
+	}
+	
+	void update() {
+        if (ip==null)
+        	return;
+        
         ip.updateAndDraw();
-		ip.setDisplayRange(0, maxVal);		
+		ip.setDisplayRange(0, maxVal);	
 	}
 
 }

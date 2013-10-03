@@ -2,14 +2,13 @@ package org.lemming.input;
 
 import java.util.Random;
 
-import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
-import org.lemming.interfaces.Localizer;
+import org.lemming.interfaces.Source;
 import org.lemming.outputs.NullStoreWarning;
 
-public class RandomLocalizer implements Localizer {
+public class RandomLocalizer implements Source<Localization> {
 
 	Store<Localization> localizations;	
 	int N, width, height;
@@ -25,6 +24,8 @@ public class RandomLocalizer implements Localizer {
 		this.width = width;
 		this.height = height;
 	}
+	
+	boolean hasMore = true;
 
 	@Override
 	public void run() {
@@ -39,14 +40,17 @@ public class RandomLocalizer implements Localizer {
 	    	y = (double)rand.nextInt(height-1) + rand.nextDouble();
 	    	localizations.put(new XYLocalization(x, y, ID++));
 	    }
+	    
+	    hasMore = false;
 	}
-
-	@Override
-	public void setInput(Store<Frame> s) {}
 
 	@Override
 	public void setOutput(Store<Localization> s) {
 		localizations = s;
 	}
-
+	
+	@Override
+	public boolean hasMoreOutputs() {
+		return hasMore;
+	}
 }

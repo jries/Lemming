@@ -30,6 +30,15 @@ public class FileLocalizerTest {
 	@Test
 	public void test() {
 		new Thread(fl).start();
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		assertEquals(10, localizations.getLength());
+
 		new Thread(ps).start();
 		
 		try {

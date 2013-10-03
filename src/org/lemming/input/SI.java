@@ -1,13 +1,12 @@
 package org.lemming.input;
 
-import org.lemming.data.Localization;
 import org.lemming.data.Store;
-import org.lemming.interfaces.Output;
+import org.lemming.interfaces.Well;
 import org.lemming.outputs.NullStoreWarning;
 
-public abstract class SI implements Output, Runnable {
+public abstract class SI<T> implements Well<T>, Runnable {
 
-	Store<Localization> input;
+	Store<T> input;
 
 	@Override
 	public void run() {
@@ -15,20 +14,20 @@ public abstract class SI implements Output, Runnable {
 		if (input==null)
 			throw new NullStoreWarning(this.getClass().getName()); 
 		
-		Localization loc;
+		T loc;
 		while ((loc=nextInput())!=null) {
 			process(loc);
 		}
 	}
 	
-	public abstract void process(Localization element);
+	public abstract void process(T element);
 	
-	Localization nextInput() {
+	T nextInput() {
 		return input.get();
 	}
 
 	@Override
-	public void setInput(Store<Localization> s) {
+	public void setInput(Store<T> s) {
 		input = s;
 	}
 

@@ -2,9 +2,9 @@ package org.lemming.dummy;
 
 import org.lemming.data.Frame;
 import org.lemming.data.Store;
-import org.lemming.interfaces.Input;
+import org.lemming.interfaces.Source;
 
-public class DummyFrameProducer implements Input {
+public class DummyFrameProducer implements Source<Frame> {
 
 	Store<Frame> output;
 	
@@ -34,6 +34,15 @@ public class DummyFrameProducer implements Input {
 	public void run() {
 		for(int i=0; i<100; i++)
 			output.put(new DummyFrame(i));
+		
+		hasMore = false;
+	}
+
+	boolean hasMore = true;
+			
+	@Override
+	public boolean hasMoreOutputs() {
+		return hasMore;
 	}
 
 }

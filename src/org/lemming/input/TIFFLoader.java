@@ -1,24 +1,27 @@
 package org.lemming.input;
 
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.io.Opener;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.io.ImgIOException;
+import net.imglib2.io.ImgOpener;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
+
 import org.lemming.data.Frame;
-import org.lemming.data.FrameProducer;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Store;
 import org.lemming.outputs.SO;
 import org.lemming.utils.LArrays;
 import org.lemming.utils.LFile;
 
-public class TIFFLoader extends SO {
+public class TIFFLoader extends SO<Frame> {
 
 	Store<Frame> s; 
 	LFile file; 
-	ImagePlus imp;
 	
     public TIFFLoader(String filename) {
     	
@@ -36,33 +39,39 @@ public class TIFFLoader extends SO {
     		throw new RuntimeException("A '" + filename + "' file does not exist");    
     }
 
+    Img< FloatType > imageFloat;
+    long curSlice;
+    
     @Override
 	public void run() {
-    	imp = new Opener().openImage(file.getAbsolutePath());
-    	ImageStack stack =imp.getStack();
-        for (int i=1, n=stack.getSize(); i<=n; i++){
-        	s.put(new FrameProducer(stack.getPixels(i)));        	
-        }        
+        try {
+			imageFloat = new ImgOpener().openImg( file.getAbsolutePath(),
+			        new ArrayImgFactory< FloatType >(), new FloatType() );
+
+			curSlice = 0;
+
+			super.run();
+			
+		} catch (ImgIOException e) {
+			e.printStackTrace();
+		}
  	}
 
 	@Override
-	public void setOutput(Store<Frame> store) {
-		s = store;
+	public boolean hasMoreOutputs() {
+		return curSlice < imageFloat.dimension(2);
 	}
 
 	@Override
-	public boolean hasMoreFrames() {
-		return !s.isEmpty();
-	}
-
-	@Override
-	public Frame newFrame() {
-		return null;
+	public Frame newOutput() {
+		Frame out = new ImgLib2Frame(curSlice, Views.hyperSlice(imageFloat, 2, curSlice)); 
+		curSlice++;
+		return out;
 	}
 	
 	/** Display the TIFF file */
 	public void show() {
-		imp.show();		
+		ImageJFunctions.show( imageFloat );		
 	}
 
 }

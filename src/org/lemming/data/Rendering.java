@@ -1,4 +1,6 @@
 package org.lemming.data;
 
-public interface Rendering {
+import org.lemming.interfaces.Well;
+
+public interface Rendering extends Well<Localization> {
 }

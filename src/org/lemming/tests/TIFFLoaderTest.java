@@ -29,10 +29,10 @@ public class TIFFLoaderTest {
 		assertEquals(600, frames.getLength());
 		
 		int cnt = 0;
-		short[] pixels;
-		while (tif.hasMoreFrames()){
+		float[] pixels;
+		while (!frames.isEmpty()){
 			f = frames.get();
-			pixels = (short[])f.getPixels();
+			pixels = (float[])f.getPixels();
 			assertEquals(6400, pixels.length);
 			System.out.println("Frame: "+ ++cnt + ", Pixel(0,0): " + pixels[0]);
 		}

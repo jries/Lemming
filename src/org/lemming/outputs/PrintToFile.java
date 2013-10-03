@@ -5,13 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.lemming.data.Localization;
-import org.lemming.data.Store;
-import org.lemming.interfaces.Output;
+import org.lemming.input.SI;
+import org.lemming.utils.LemMING;
 
-public class PrintToFile implements Output {
+public class PrintToFile extends SI<Localization> {
 	
-	Store<Localization> s;
-
 	File f;
 	FileWriter w;
 
@@ -20,32 +18,25 @@ public class PrintToFile implements Output {
 	}
 
 	@Override
-	public void setInput(Store<Localization> s) {
-		this.s = s;
-	}
-	
-	@Override
 	public void run() {
-		
-		if (s==null) {new NullStoreWarning(this.getClass().getName()); return;}
-		
 		try {
-			w = new FileWriter(f);			
-			while(true) {
-				Localization l = s.get();				
-				if (l != null)
-					w.write(String.format("%d, %f, %f\n",l.getID(),l.getX(),l.getY()));				
-				w.flush();
-			}			
+			w = new FileWriter(f);
+			
+			super.run();
+			
+			w.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+			LemMING.error(e.getMessage());
+		}			
 	}
 	
 	@Override
-	protected void finalize() throws Throwable {
-		if (w!=null) {
-			w.close();
-		}
+	public void process(Localization l) {
+		try {
+			w.write(String.format("%d, %f, %f\n",l.getID(),l.getX(),l.getY()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 }

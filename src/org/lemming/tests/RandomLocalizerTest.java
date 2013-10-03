@@ -4,30 +4,79 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
+import org.lemming.data.Rendering;
+import org.lemming.data.Store;
 import org.lemming.input.RandomLocalizer;
 import org.lemming.outputs.GaussRenderOutput;
+import org.lemming.outputs.HistogramRender;
 
 public class RandomLocalizerTest {
 
 	RandomLocalizer rl;
-	GaussRenderOutput gro;
-	QueueStore<Localization> localizations;
+	Rendering gro;
+	Store<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {
-		
-		rl = new RandomLocalizer(5000, 256, 256);
 		localizations = new QueueStore<Localization>();
-		gro = new GaussRenderOutput(256, 256);
 		
+		rl = new RandomLocalizer(50000, 256, 256);
 		rl.setOutput(localizations);
-		gro.setInput(localizations);
 	}
 
 	@Test
-	public void test() {
+	public void test1() {
+		gro = new GaussRenderOutput(256, 256);
+		gro.setInput(localizations);
+		
 		new Thread(rl).start();
 		new Thread(gro).start();
-		while (true) {}		
+
+		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}		
+		
+	}
+
+	@Test
+	public void test2() {
+		gro = new HistogramRender(1024,1024,0,255,0,255);
+		gro.setInput(localizations);
+		
+		new Thread(rl).start();
+		new Thread(gro).start();
+
+		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				return;
+			}
+		}		
+	}
+
+	@Test
+	public void test3() {
+		gro = new HistogramRender(1024,1024,0,255,0,255);
+		gro.setInput(localizations);
+		
+		Rendering bro = new HistogramRender(1024,1024,0,255,0,255);
+		bro.setInput(localizations);
+		
+		new Thread(rl).start();
+		new Thread(gro).start();
+		new Thread(bro).start();
+		
+		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				return;
+			}
+		}		
 	}
 }
