@@ -28,12 +28,13 @@ public class TIFFLoaderTest {
 		
 		assertEquals(600, frames.getLength());
 		
+		
 		int cnt = 0;
 		float[] pixels;
 		while (!frames.isEmpty()){
 			f = frames.get();
 			pixels = (float[])f.getPixels();
-			assertEquals(6400, pixels.length);
+			assertEquals(f.getWidth()*f.getHeight(), pixels.length);
 			System.out.println("Frame: "+ ++cnt + ", Pixel(0,0): " + pixels[0]);
 		}
 		

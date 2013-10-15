@@ -4,7 +4,7 @@ import ij.gui.Roi;
 
 import org.lemming.data.Localization;
 
-public class ROISelectProcessor extends SISO {	
+public class ROISelectProcessor extends SISO<Localization,Localization> {	
 	
 	Roi roi;
 	

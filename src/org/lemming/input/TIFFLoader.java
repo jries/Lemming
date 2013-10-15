@@ -64,7 +64,7 @@ public class TIFFLoader extends SO<Frame> {
 
 	@Override
 	public Frame newOutput() {
-		Frame out = new ImgLib2Frame(curSlice, Views.hyperSlice(imageFloat, 2, curSlice)); 
+		Frame out = new ImgLib2Frame(curSlice, (int)imageFloat.dimension(0), (int)imageFloat.dimension(1), Views.hyperSlice(imageFloat, 2, curSlice)); 
 		curSlice++;
 		return out;
 	}

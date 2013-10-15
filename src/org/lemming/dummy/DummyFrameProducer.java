@@ -28,6 +28,16 @@ public class DummyFrameProducer implements Source<Frame> {
 		public Object getPixels() {
 			return null;
 		}
+
+		@Override
+		public int getWidth() {
+			return 0;
+		}
+
+		@Override
+		public int getHeight() {
+			return 0;
+		}
 	}
 	
 	@Override

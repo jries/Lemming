@@ -1,14 +1,13 @@
 package org.lemming.processor;
 
-import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Processor;
 import org.lemming.outputs.NullStoreWarning;
 
-public abstract class SISO implements Runnable, Processor {
+public abstract class SISO<T1,T2> implements Runnable, Processor<T1, T2> {
 
-	Store<Localization> input;
-	Store<Localization> output;
+	protected Store<T1> input;
+	protected Store<T2> output;
 
 	@Override
 	public void run() {
@@ -16,25 +15,25 @@ public abstract class SISO implements Runnable, Processor {
 		if (input==null || output==null)
 			throw new NullStoreWarning(this.getClass().getName()); 
 		
-		Localization loc;
+		T1 loc;
 		while ((loc=nextInput())!=null) {
 			process(loc);
 		}
 	}
 	
-	public abstract void process(Localization element);
+	public abstract void process(T1 element);
 	
-	Localization nextInput() {
+	T1 nextInput() {
 		return input.get();
 	}
 
 	@Override
-	public void setInput(Store<Localization> s) {
+	public void setInput(Store<T1> s) {
 		input = s;
 	}
 
 	@Override
-	public void setOutput(Store<Localization> s) {
+	public void setOutput(Store<T2> s) {
 		output = s;
 	}
 
