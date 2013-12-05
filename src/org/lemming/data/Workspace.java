@@ -85,6 +85,13 @@ public interface Workspace extends Iterable<GenericLocalization> {
 	public void setFrameName(String name);
 	public void setIDname(String name);
 	
+	public String getXname();
+	public String getYname();
+	public String getZname();
+	public String getChannelName();
+	public String getFrameName();
+	public String getIDname();
+	
 	public GenericLocalization newRow();
 
 	/**

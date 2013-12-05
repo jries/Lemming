@@ -341,4 +341,53 @@ public class HashWorkspace implements Workspace {
 		return true;
 	}
 	
+	@Override
+	public String toString() {
+		String out = "";
+		
+		// Write header
+		for (String col : table.keySet())
+			out += col + "\t";
+		out += "\n";
+		
+		// Write rows
+		for (int i=0; i<nRows; i++) {
+			for (String col : table.keySet())
+				out += table.get(col).get(i) + "\t";
+			out += "\n";
+		}
+		
+		return out;
+	}
+
+	@Override
+	public String getXname() {
+		return xVarName;
+	}
+
+	@Override
+	public String getYname() {
+		return yVarName;
+	}
+
+	@Override
+	public String getZname() {
+		return zVarName;
+	}
+
+	@Override
+	public String getChannelName() {
+		return chanVarName;
+	}
+
+	@Override
+	public String getFrameName() {
+		return frameVarName;
+	}
+
+	@Override
+	public String getIDname() {
+		return IDVarName;		
+	}
+	
 }

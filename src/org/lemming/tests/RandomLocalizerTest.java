@@ -3,12 +3,14 @@ package org.lemming.tests;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
+import org.lemming.data.NonblockingQueueStore;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Rendering;
 import org.lemming.data.Store;
 import org.lemming.input.RandomLocalizer;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.HistogramRender;
+import org.lemming.outputs.Jzy3dScatterplot;
 
 public class RandomLocalizerTest {
 
@@ -18,7 +20,7 @@ public class RandomLocalizerTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		localizations = new QueueStore<Localization>();
+		localizations = new NonblockingQueueStore<Localization>();
 		
 		rl = new RandomLocalizer(50000, 256, 256);
 		rl.setOutput(localizations);
@@ -79,4 +81,22 @@ public class RandomLocalizerTest {
 			}
 		}		
 	}
+	
+	@Test
+	public void test4() {
+		gro = new Jzy3dScatterplot();
+		gro.setInput(localizations);
+		
+		new Thread(rl).start();
+		
+		gro.run();
+		
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			return;
+		}
+
+	}
+
 }

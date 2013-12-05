@@ -10,6 +10,7 @@ public abstract class SI<T> implements Well<T>, Runnable {
 
 	@Override
 	public void run() {
+		beforeRun();
 		
 		if (input==null)
 			throw new NullStoreWarning(this.getClass().getName()); 
@@ -18,6 +19,8 @@ public abstract class SI<T> implements Well<T>, Runnable {
 		while ((loc=nextInput())!=null) {
 			process(loc);
 		}
+		
+		afterRun();
 	}
 	
 	public abstract void process(T element);
@@ -31,5 +34,8 @@ public abstract class SI<T> implements Well<T>, Runnable {
 		input = s;
 	}
 
+	public void beforeRun() {};
+	public void afterRun() {};
+	
 
 }

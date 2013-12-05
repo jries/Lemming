@@ -13,10 +13,16 @@ import org.lemming.data.GenericLocalization;
 import org.lemming.data.HashWorkspace;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
+import org.lemming.data.Workspace;
 import org.lemming.input.RandomLocalizer;
+import org.lemming.interfaces.GenericWorkspacePlugin;
+import org.lemming.interfaces.IncompatibleWorkspaceException;
+import org.lemming.interfaces.WorkspacePlugin;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.PrintToFile;
 import org.lemming.outputs.PrintToScreen;
+
+import static org.lemming.interfaces.GenericWorkspacePlugin.*;
 
 public class HashWorkspaceTest extends HashWorkspace {
 
@@ -265,6 +271,67 @@ public class HashWorkspaceTest extends HashWorkspace {
 		gro.setInput(s);
 		
 		gro.run();
+	}
+	
+	@Test
+	public void testToString() {
+		HashWorkspace h = new HashWorkspace();
+		h.setXname("x");
+		h.setYname("y");
+		
+		Store<Localization> s = h.getFIFO();
+		
+		RandomLocalizer rl = new RandomLocalizer(1000, 256, 256);
+		rl.setOutput(s);
+		
+		rl.run();
+		
+		System.out.println(h.toString());
+		
+	}
+	
+	@Test
+	public void testIncompatibleWs() {
+		HashWorkspace h = new HashWorkspace();
+		h.setXname("x");
+		h.setYname("y");
+		
+		Store<Localization> s = h.getFIFO();
+		
+		RandomLocalizer rl = new RandomLocalizer(1000, 256, 256);
+		rl.setOutput(s);
+		
+		rl.run();
+		
+		WorkspacePlugin p = new GenericWorkspacePlugin();
+		p.setRequiredMembers(NEEDS_X | NEEDS_Y | NEEDS_Z);
+		try {
+			p.setInput(h);
+		} catch (IncompatibleWorkspaceException e) {
+			// OK :)
+		}		
+	}
+	
+	@Test
+	public void testCompatibleWs() {
+		HashWorkspace h = new HashWorkspace();
+		h.setXname("x");
+		h.setYname("y");
+		
+		Store<Localization> s = h.getFIFO();
+		
+		RandomLocalizer rl = new RandomLocalizer(1000, 256, 256);
+		rl.setOutput(s);
+		
+		rl.run();
+		
+		WorkspacePlugin p = new GenericWorkspacePlugin();
+		p.setRequiredMembers(NEEDS_X | NEEDS_Y);
+		try {
+			p.setInput(h);
+		} catch (IncompatibleWorkspaceException e) {
+			fail();
+		}		
 	}
 	
 }

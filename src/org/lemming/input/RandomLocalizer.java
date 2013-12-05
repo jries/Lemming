@@ -5,10 +5,9 @@ import java.util.Random;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
-import org.lemming.interfaces.Source;
-import org.lemming.outputs.NullStoreWarning;
+import org.lemming.outputs.SO;
 
-public class RandomLocalizer implements Source<Localization> {
+public class RandomLocalizer extends SO<Localization> {
 
 	Store<Localization> localizations;	
 	int N, width, height;
@@ -25,32 +24,17 @@ public class RandomLocalizer implements Source<Localization> {
 		this.height = height;
 	}
 	
-	boolean hasMore = true;
-
-	@Override
-	public void run() {
-		
-		if (localizations==null) {new NullStoreWarning(this.getClass().getName()); return;}
-		
-		long ID = 0L;
-		double x, y;
-		Random rand = new Random();
-	    for (int i = 0; i < N; i++){
-	    	x = (double)rand.nextInt(width-1) + rand.nextDouble();
-	    	y = (double)rand.nextInt(height-1) + rand.nextDouble();
-	    	localizations.put(new XYLocalization(x, y, ID++));
-	    }
-	    
-	    hasMore = false;
-	}
-
-	@Override
-	public void setOutput(Store<Localization> s) {
-		localizations = s;
-	}
-	
 	@Override
 	public boolean hasMoreOutputs() {
-		return hasMore;
+		return N>0;
+	}
+
+	@Override
+	public Localization newOutput() {
+		Random rand = new Random();
+    	double x = (double)rand.nextInt(width) + rand.nextDouble();
+    	double y = (double)rand.nextInt(height) + rand.nextDouble();
+    	N--;
+    	return new XYLocalization(x, y);
 	}
 }
