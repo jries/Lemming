@@ -2,15 +2,18 @@ package org.lemming.tests;
 
 import static org.junit.Assert.*;
 
+import java.io.FileReader;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.PeakFinder;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
 import org.lemming.input.TIFFLoader;
 import org.lemming.outputs.PrintToScreen;
+import org.lemming.processor.PeakFinder;
 
 public class PeakFinderTest {
 	
@@ -22,7 +25,10 @@ public class PeakFinderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		tif = new TIFFLoader("D:/microscopy_software/Localization Microscopy Challenge/Eye/eye.tif");
+		Properties p = new Properties();
+		p.load(new FileReader("test.properties"));
+		
+		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
 		peak = new PeakFinder(200);
 		frames = new QueueStore<Frame>();
 		localizations = new QueueStore<Localization>();
