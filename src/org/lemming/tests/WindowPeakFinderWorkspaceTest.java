@@ -15,8 +15,9 @@ import org.lemming.data.Store;
 import org.lemming.input.TIFFLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processor.PeakFinder;
+import org.lemming.processor.WindowPeakFinder;
 
-public class PeakFinderWorkspaceTest {
+public class WindowPeakFinderWorkspaceTest {
 	
 	TIFFLoader tif;
 	Store<Frame> frames;
@@ -31,7 +32,7 @@ public class PeakFinderWorkspaceTest {
 		p.load(new FileReader("test.properties"));
 		
 		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
-		peak = new PeakFinder(200);
+		peak = new WindowPeakFinder(200);
 		frames = new QueueStore<Frame>();
 		h = new HashWorkspace();
 		localizations = h.getFIFO();

@@ -8,21 +8,20 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
-import org.lemming.data.HashWorkspace;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
 import org.lemming.input.TIFFLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processor.PeakFinder;
+import org.lemming.processor.WindowPeakFinder;
 
-public class PeakFinderWorkspaceTest {
+public class WindowPeakFinderTest {
 	
 	TIFFLoader tif;
 	Store<Frame> frames;
 	Store<Localization> localizations;
-	HashWorkspace h;
-	PeakFinder peak;
+	WindowPeakFinder peak;
 	PrintToScreen print;
 
 	@Before
@@ -31,10 +30,9 @@ public class PeakFinderWorkspaceTest {
 		p.load(new FileReader("test.properties"));
 		
 		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
-		peak = new PeakFinder(200);
+		peak = new WindowPeakFinder(200);
 		frames = new QueueStore<Frame>();
-		h = new HashWorkspace();
-		localizations = h.getFIFO();
+		localizations = new QueueStore<Localization>();
 		print = new PrintToScreen();
 		
 		tif.setOutput(frames);
@@ -53,12 +51,6 @@ public class PeakFinderWorkspaceTest {
 			Thread.sleep(2000);
 			
 			equals(frames.isEmpty());
-			
-			assertEquals(h.getNumberOfRows(), 324);
-			
-			System.out.println(h.toString());
-			
-			assertTrue(h.hasMember(h.getFrameName()));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

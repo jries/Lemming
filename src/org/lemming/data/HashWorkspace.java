@@ -24,12 +24,12 @@ public class HashWorkspace implements Workspace {
 
 	HashMap<String, ArrayList> table = new HashMap<String, ArrayList>();
 	
-	String  xVarName = "X", 
-			yVarName = "Y",
-			zVarName = "Z",
-			IDVarName = "ID",
-			frameVarName = "Frame",
-			chanVarName = "Channel"; 
+	String  xVarName = "x", 
+			yVarName = "x",
+			zVarName = "z",
+			IDVarName = "id",
+			frameVarName = "frame",
+			chanVarName = "channel"; 
 	
 	int nRows = 0;
 	

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.XYLocalization;
+import org.lemming.data.XYFLocalization;
 import org.lemming.processor.SISO;
 
 public class PeakFinder extends SISO<Frame,Localization> {
@@ -23,7 +23,7 @@ public class PeakFinder extends SISO<Frame,Localization> {
 		float[] pixels = (float[]) frame.getPixels();
 		
 		//for now just print the results to the console
-		List<Integer> localMax = new ArrayList<Integer>();
+		//List<Integer> localMax = new ArrayList<Integer>();
 		
 		int width = frame.getWidth();
 		long frameNo = frame.getFrameNumber();
@@ -39,15 +39,15 @@ public class PeakFinder extends SISO<Frame,Localization> {
 									if (v >= pixels[i-1+width])
 										if (v >= pixels[i+width])
 											if (v >= pixels[i+1+width]){
-												output.put(new XYLocalization(i%width, i/width));
-												localMax.add(i);
+												output.put(new XYFLocalization(frameNo, i%width, i/width));
+												//localMax.add(i);
 											}
 			}
 		}
 		
 		// TODO we have to keep track of which localization is within which frame
 		
-		System.out.println(Long.toString(frameNo)+":"+localMax.toString());
+		//System.out.println(Long.toString(frameNo)+":"+localMax.toString());
 	}
 	
 }

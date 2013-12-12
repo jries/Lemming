@@ -34,8 +34,8 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void test() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
+		h.addNewMember("x");
+		h.addNewMember("y");
 		
 		GenericLocalization gi = h.newRow();
 		gi.setX(1);
@@ -48,16 +48,16 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void testCopy() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
+		h.addNewMember("x");
+		h.addNewMember("y");
 		
 		GenericLocalization gi = h.newRow();
 		gi.setX(1);
 		gi.setY(1);
 		
 		HashWorkspace h1 = new HashWorkspace();
-		h1.addNewMember("X");
-		h1.addNewMember("Y");
+		h1.addNewMember("x");
+		h1.addNewMember("y");
 		
 		h1.addRow(h.getRow(0));
 		
@@ -68,16 +68,16 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void testCopyAll() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
+		h.addNewMember("x");
+		h.addNewMember("y");
 		
 		GenericLocalization gi = h.newRow();
 		gi.setX(1);
 		gi.setY(1);
 		
 		HashWorkspace h1 = new HashWorkspace();
-		h1.addNewMember("X");
-		h1.addNewMember("Y");
+		h1.addNewMember("x");
+		h1.addNewMember("y");
 		
 		h1.addAll(h);
 		
@@ -88,8 +88,8 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void testCopyConstr() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
+		h.addNewMember("x");
+		h.addNewMember("y");
 		
 		GenericLocalization gi = h.newRow();
 		gi.setX(1);
@@ -109,11 +109,11 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void stressTest() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
-		h.addNewMember("Z");
-		h.addNewMember("Frame");
-		h.addNewMember("ROI");
+		h.addNewMember("x");
+		h.addNewMember("y");
+		h.addNewMember("z");
+		h.addNewMember("frame");
+		h.addNewMember("roi");
 		
 		int N = (int) 1e6;
 		long t0 = System.currentTimeMillis();
@@ -127,7 +127,7 @@ public class HashWorkspaceTest extends HashWorkspace {
 			gi.setX(i);
 			gi.setY(-i);
 			gi.setZ(i);
-			gi.set("ROI", new double[] {1,2,3,4} );
+			gi.set("roi", new double[] {1,2,3,4} );
 			
 			long ct = System.currentTimeMillis();
 			long dt = ct - t0;
@@ -159,8 +159,8 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void testRemove() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
+		h.addNewMember("x");
+		h.addNewMember("y");
 		
 		GenericLocalization gi = h.newRow();
 		gi.setX(1);
@@ -180,9 +180,9 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void testFIFO() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
-		h.addNewMember("ID");
+		h.addNewMember("x");
+		h.addNewMember("y");
+		h.addNewMember("id");
 		
 		GenericLocalization gi = h.newRow();
 		gi.setX(1);
@@ -204,12 +204,12 @@ public class HashWorkspaceTest extends HashWorkspace {
 	public void stressTestFIFO() {
 		HashWorkspace h = new HashWorkspace();
 		
-		h.addNewMember("X");
-		h.addNewMember("Y");
-		h.addNewMember("Z");
-		h.addNewMember("ID"); // !!
-		h.addNewMember("Frame");
-		h.addNewMember("ROI");
+		h.addNewMember("x");
+		h.addNewMember("y");
+		h.addNewMember("z");
+		h.addNewMember("id"); // !!
+		h.addNewMember("frame");
+		h.addNewMember("roi");
 		
 		int N = (int) 1e6;
 		long t0 = System.currentTimeMillis();
@@ -224,7 +224,7 @@ public class HashWorkspaceTest extends HashWorkspace {
 			gi.setX(i);
 			gi.setY(-i);
 			gi.setZ(i);
-			gi.set("ROI", new double[] {1,2,3,4} );
+			gi.set("roi", new double[] {1,2,3,4} );
 			
 			long ct = System.currentTimeMillis();
 			long dt = ct - t0;
