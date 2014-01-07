@@ -11,9 +11,9 @@ import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
-import org.lemming.input.TIFFLoader;
+import org.lemming.inputs.TIFFLoader;
 import org.lemming.outputs.PrintToScreen;
-import org.lemming.processor.PeakFinder;
+import org.lemming.processors.PeakFinder;
 
 public class PeakFinderTest {
 	

@@ -1,4 +1,4 @@
-package org.lemming.input;
+package org.lemming.inputs;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -10,7 +10,6 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
 import org.lemming.interfaces.Localizer;
-import org.lemming.outputs.SO;
 import org.lemming.outputs.ShowMessage;
 import org.lemming.utils.LemMING;
 

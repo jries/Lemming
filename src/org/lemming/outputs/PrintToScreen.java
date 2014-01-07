@@ -1,7 +1,6 @@
 package org.lemming.outputs;
 
 import org.lemming.data.Localization;
-import org.lemming.input.SI;
 
 public class PrintToScreen extends SI<Localization> {
 

@@ -1,4 +1,4 @@
-package org.lemming.input;
+package org.lemming.inputs;
 
 import org.lemming.data.GenericLocalization;
 import org.lemming.data.Localization;

@@ -1,11 +1,10 @@
-package org.lemming.input;
+package org.lemming.inputs;
 
 import java.util.Random;
 
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
-import org.lemming.outputs.SO;
 
 public class RandomLocalizer extends SO<Localization> {
 

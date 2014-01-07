@@ -1,4 +1,4 @@
-package org.lemming.input;
+package org.lemming.inputs;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,6 @@ import net.imglib2.view.Views;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Store;
-import org.lemming.outputs.SO;
 import org.lemming.utils.LArrays;
 import org.lemming.utils.LFile;
 

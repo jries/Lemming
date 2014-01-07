@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.QueueStore;
-import org.lemming.input.TIFFLoader;
+import org.lemming.inputs.TIFFLoader;
 
 public class TIFFLoaderTest {
 

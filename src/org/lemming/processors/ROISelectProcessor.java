@@ -1,4 +1,4 @@
-package org.lemming.processor;
+package org.lemming.processors;
 
 import ij.gui.Roi;
 

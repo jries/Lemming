@@ -1,8 +1,7 @@
-package org.lemming.input;
+package org.lemming.outputs;
 
 import org.lemming.data.Store;
 import org.lemming.interfaces.Well;
-import org.lemming.outputs.NullStoreWarning;
 
 public abstract class SI<T> implements Well<T>, Runnable {
 

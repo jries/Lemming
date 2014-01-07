@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.lemming.data.Localization;
-import org.lemming.input.SI;
 import org.lemming.utils.LemMING;
 
 public class PrintToFile extends SI<Localization> {

@@ -1,4 +1,4 @@
-package org.lemming.processor;
+package org.lemming.processors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.XYFLocalization;
-import org.lemming.processor.SISO;
+import org.lemming.processors.SISO;
 
 public class PeakFinder extends SISO<Frame,Localization> {
 

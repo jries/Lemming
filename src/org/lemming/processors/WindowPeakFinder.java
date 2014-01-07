@@ -1,4 +1,4 @@
-package org.lemming.processor;
+package org.lemming.processors;
 
 import org.lemming.data.Frame;
 import org.lemming.data.XYFLocalization;

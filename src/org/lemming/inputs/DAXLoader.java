@@ -1,4 +1,4 @@
-package org.lemming.input;
+package org.lemming.inputs;
 
 import ij.gui.GenericDialog;
 
@@ -20,7 +20,6 @@ import javax.swing.JButton;
 
 import org.lemming.data.Frame;
 import org.lemming.data.GenericFrame;
-import org.lemming.outputs.SO;
 import org.lemming.utils.LFile;
 import org.lemming.utils.LemMING;
 

@@ -13,11 +13,11 @@ import org.lemming.data.NonblockingQueueStore;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
-import org.lemming.input.FileLocalizer;
+import org.lemming.inputs.FileLocalizer;
 import org.lemming.outputs.GaussRenderOutput;
 //import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.PrintToScreen;
-import org.lemming.processor.ROISelectProcessor;
+import org.lemming.processors.ROISelectProcessor;
 
 public class ROISelectProcessorTest {
 	

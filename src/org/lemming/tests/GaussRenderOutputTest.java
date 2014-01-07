@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
-import org.lemming.input.FileLocalizer;
+import org.lemming.inputs.FileLocalizer;
 import org.lemming.interfaces.Localizer;
 import org.lemming.outputs.GaussRenderOutput;
 

@@ -17,7 +17,6 @@ import org.jzy3d.maths.Coord3d;
 import org.jzy3d.plot3d.primitives.MultiColorScatterList;
 import org.lemming.data.Localization;
 import org.lemming.data.Rendering;
-import org.lemming.input.SI;
 
 public class Jzy3dScatterplot extends SI<Localization> implements Rendering {
 

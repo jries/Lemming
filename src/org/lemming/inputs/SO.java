@@ -1,7 +1,8 @@
-package org.lemming.outputs;
+package org.lemming.inputs;
 
 import org.lemming.data.Store;
 import org.lemming.interfaces.Source;
+import org.lemming.outputs.NullStoreWarning;
 
 public abstract class SO<T> implements Source<T>, Runnable {
 

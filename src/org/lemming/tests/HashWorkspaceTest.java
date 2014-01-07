@@ -14,7 +14,7 @@ import org.lemming.data.HashWorkspace;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.Workspace;
-import org.lemming.input.RandomLocalizer;
+import org.lemming.inputs.RandomLocalizer;
 import org.lemming.interfaces.GenericWorkspacePlugin;
 import org.lemming.interfaces.IncompatibleWorkspaceException;
 import org.lemming.interfaces.WorkspacePlugin;

@@ -7,7 +7,7 @@ import org.lemming.data.NonblockingQueueStore;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Rendering;
 import org.lemming.data.Store;
-import org.lemming.input.RandomLocalizer;
+import org.lemming.inputs.RandomLocalizer;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.HistogramRender;
 import org.lemming.outputs.Jzy3dScatterplot;

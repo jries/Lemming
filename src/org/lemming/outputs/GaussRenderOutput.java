@@ -9,7 +9,6 @@ import ij.process.FloatProcessor;
 import org.lemming.data.Localization;
 import org.lemming.data.Rendering;
 import org.lemming.data.Store;
-import org.lemming.input.SI;
 import org.lemming.utils.Functions;
 import org.lemming.utils.Miscellaneous;
 

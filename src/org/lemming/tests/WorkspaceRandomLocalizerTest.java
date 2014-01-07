@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.HashWorkspace;
-import org.lemming.input.WorkspaceRandomLocalizer;
+import org.lemming.inputs.WorkspaceRandomLocalizer;
 
 public class WorkspaceRandomLocalizerTest {
 

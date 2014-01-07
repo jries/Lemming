@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
-import org.lemming.input.FileLocalizer;
+import org.lemming.inputs.FileLocalizer;
 import org.lemming.outputs.HistogramRender;
 
 public class HistogramRenderTest {
