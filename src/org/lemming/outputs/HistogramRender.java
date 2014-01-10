@@ -7,7 +7,7 @@ import ij.ImagePlus;
 import ij.process.FloatProcessor;
 
 import org.lemming.data.Localization;
-import org.lemming.data.Rendering;
+import org.lemming.interfaces.Rendering;
 
 public class HistogramRender extends SI<Localization> implements Rendering {
 	

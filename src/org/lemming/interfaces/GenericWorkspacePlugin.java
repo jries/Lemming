@@ -2,6 +2,12 @@ package org.lemming.interfaces;
 
 import org.lemming.data.Workspace;
 
+/**
+ * A default implementation of a workspace plugin. It has an input and an output and checks the input for compatibility based on the requirements.
+ * 
+ * @author Thomas Pengo, Joe Borbely
+ *
+ */
 public class GenericWorkspacePlugin implements WorkspacePlugin {
 	String[] requiredMembers = new String[] {};
 	

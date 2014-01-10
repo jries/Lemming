@@ -10,7 +10,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * This class is the main implementation of the Workspace abstraction. It uses a HashMap to associate a member name to an ArrayList. 
+ * 
+ * @author Thomas Pengo, Joe Borbely
+ *
+ */
 public class HashWorkspace implements Workspace {
+	
+	/**
+	 * Creates a HashWorkspace compatible (i.e. with the same members) to h. If copyRowsToo then all elements of h are also 
+	 * copied.
+	 * 
+	 * @param h the workspace to be copied from
+	 * @param copyRowsToo copies all elements too
+	 */
 	public HashWorkspace(HashWorkspace h, boolean copyRowsToo) {
 		for (String col : h.table.keySet())
 			addNewMember(col);
@@ -19,6 +33,10 @@ public class HashWorkspace implements Workspace {
 			addAll(h);
 	}
 	
+	/**
+	 * Creates an empty workspace. There are no members.
+	 * 
+	 */
 	public HashWorkspace() {
 	}
 
@@ -48,15 +66,18 @@ public class HashWorkspace implements Workspace {
 		return table.containsKey(members);
 	}
 
+	/**
+	 * Note: this operation is O(N) with the number of rows of the workspace. All 'member' of existing elements are set to null.
+	 */
 	@Override
-	public void addNewMember(String members) {
+	public void addNewMember(String member) {
 		int N = getNumberOfRows();
 		
 		ArrayList l = new ArrayList();
 		for (int i = 0; i<N; i++)
 			l.add(null);	// NULLPOINTEREXCEPTION??
 		
-		table.put(members, l);
+		table.put(member, l);
 	}
 	
 	@Override
@@ -276,6 +297,20 @@ public class HashWorkspace implements Workspace {
 		};
 	}
 	
+	/**
+	 * This method provides a bridge between the Workspace abstraction and the Store abstraction. 
+	 * 
+	 * It creates a mutable view on the workspace which allows a module working with Stores to have read/write access to the Workspace in a 
+	 * first-in-first-out order using the methods provided by the Store interface. 
+	 * 
+	 * The put method adds the Localization to the end of the table, the get keeps track of the last row read. 
+	 *  
+	 * Note. If the put method is called with a GenericLocalization, then all the fields of the GenericLocalization are kept. That is, if two
+	 * workspaces are connected with the FIFO interface, a put will copy the row for all members. It assumes the two workspaces are compatible, so 
+	 * expect an error if they are not.
+	 *  
+	 * @return a class implementing the Store<Localization> interface.
+	 */
 	public Store<Localization> getFIFO() {
 		return new Store<Localization> () {
 			int lastRow = 0; 
@@ -324,6 +359,13 @@ public class HashWorkspace implements Workspace {
 		};
 	}
 	
+	/**
+	 * Check if an object c is compatible with the workspace. It checks whether all fields from the class are members in the workspace.
+	 * 
+	 * @param c the object to be tested
+	 * 
+	 * @return true if the object is compatible with the Workspace
+	 */
 	public boolean isCompatible(Object c) {
 		try {
 			BeanInfo b = Introspector.getBeanInfo(c.getClass());

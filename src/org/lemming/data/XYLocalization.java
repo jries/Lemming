@@ -1,5 +1,11 @@
 package org.lemming.data;
 
+/**
+ * A simple implementation of the Localization with the X, Y and ID members.
+ * 
+ * @author Thomas Pengo, Joe Borbely
+ *
+ */
 public class XYLocalization implements Localization {
 
 	double X,Y;

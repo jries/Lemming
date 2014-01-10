@@ -1,8 +1,15 @@
 package org.lemming.data;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * The QueueStore implements a Store with a blocking queue. That is a Store that will block the reading thread if empty, until a new element is available.
+ * A non-blocking version is the NonblockingQueueStore class.
+ * 
+ * @author Thomas Pengo
+ *
+ * @param <DataType>
+ */
 public class QueueStore<DataType> implements Store<DataType>, Peekable<DataType> {
 
 	LinkedBlockingQueue<DataType> q = new LinkedBlockingQueue<DataType>();
@@ -12,6 +19,10 @@ public class QueueStore<DataType> implements Store<DataType>, Peekable<DataType>
 		q.add(el);
 	}
 
+	/**
+	 * Note: blocks the caller if empty.
+	 * 
+	 */
 	@Override
 	public DataType get()  {
 		try {
@@ -22,6 +33,11 @@ public class QueueStore<DataType> implements Store<DataType>, Peekable<DataType>
 		}
 	}
 	
+	/**
+	 * Returns the length of the queue.
+	 * 
+	 * @return
+	 */
 	public int getLength() {
 		return q.size();
 	}

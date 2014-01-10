@@ -1,5 +1,12 @@
 package org.lemming.data;
 
+/**
+ * A GenericFrame is an implementation of Frame which includes basic fields like width, height and frame number. It provides a template for a basic Frame.
+ * 
+ * @author Thomas Pengo, Joe Borbely
+ *
+ * @param <T>
+ */
 public class GenericFrame<T> implements Frame<T> {
 	
 	T pixels;

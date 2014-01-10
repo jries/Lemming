@@ -6,7 +6,7 @@ import org.lemming.data.Workspace;
  * The WorkspacePlugin interface provides a plugin interface for modules to be used in a pipeline using a Workspace as input and output. 
  * It also contains the constants needed to specify the required fields within the standard fields of the workspace (X,Y,Z,frame,channel and ID).
  * 
- * @author Thomas Pengo
+ * @author Thomas Pengo, Joe Borbely
  *
  */
 
@@ -41,8 +41,19 @@ public interface WorkspacePlugin {
 	 */
 	public abstract String[] getRequiredMembers();
 
+	/**
+	 * Sets the requirements on the standard members and any additional requirements.
+	 * 
+	 * @param flags
+	 * @param requiredMembers and array of Strings with the names of the additional required members.
+	 */
 	public abstract void setRequiredMembers(int flags, String[] requiredMembers);
 
+	/**
+	 * Sets the requirements on the standard members.
+	 * 
+	 * @param flags
+	 */
 	public abstract void setRequiredMembers(int flags);	
 }
 

@@ -3,7 +3,14 @@ package org.lemming.data;
 import java.util.List;
 
 /**
- * Represents a table of generic localizations. It can be accessed with an iterator.
+ * Represents a table of generic localizations. Each row is a localization and each column represents
+ * a different parameter of that localization. It can be accessed with an iterator.
+ * 
+ * Each column is called 'member'.
+ * 
+ * There are six 'special' members. X,Y,Z,channel,frame and ID. The name of each of these members can 
+ * be anything, and is remembered in the workspace, so that the getRow() will return a GenericLocalization
+ * with the data collected from the appropriate members.
  * 
  * @author Thomas Pengo, Joe Borbely
  *

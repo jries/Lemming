@@ -2,6 +2,12 @@ package org.lemming.data;
 
 import java.util.Arrays;
 
+/**
+ * A localization with X,Y, ID, frame and a window of pixels around it.
+ * 
+ * @author Joe Borbely
+ *
+ */
 public class XYFwLocalization extends XYFLocalization {
 
 	float[] window;
