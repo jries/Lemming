@@ -17,6 +17,12 @@ import org.lemming.data.Store;
 import org.lemming.utils.LArrays;
 import org.lemming.utils.LFile;
 
+/**
+ * Loads a TIFF file and generates objects of type ImgLib2Frame.
+ * 
+ * @author Joe Borbely
+ *
+ */
 public class TIFFLoader extends SO<Frame> {
 
 	Store<Frame> s; 
@@ -68,7 +74,7 @@ public class TIFFLoader extends SO<Frame> {
 		return out;
 	}
 	
-	/** Display the TIFF file */
+	/** Display the TIFF file using ImageJ */
 	public void show() {
 		ImageJFunctions.show( imageFloat );		
 	}

@@ -6,6 +6,12 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
 
+/**
+ * A generator of N random localizations between (0,0) and (width,height)
+ * 
+ * @author Joe Borbely
+ *
+ */
 public class RandomLocalizer extends SO<Localization> {
 
 	Store<Localization> localizations;	

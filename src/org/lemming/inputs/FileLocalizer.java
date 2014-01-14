@@ -13,6 +13,15 @@ import org.lemming.interfaces.Localizer;
 import org.lemming.outputs.ShowMessage;
 import org.lemming.utils.LemMING;
 
+/**
+ * Read localizations from a file and put the 
+ * values into a Store. The file must be in ASCII format, the
+ * localizations must be in the first two
+ * columns (x then y) and there must be no header in the file.
+ * 
+ * @author Joe Borbely
+ *
+ */
 public class FileLocalizer extends SO<Localization> implements Localizer {
 	
 	Store<Localization> localizations;

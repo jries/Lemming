@@ -30,7 +30,11 @@ import org.lemming.utils.LemMING;
  * file format. Each 'dax' file has an 'inf' file associated with it which provides 
  * details (like the number of frames, image width, image height, byte order) that
  * are necessary to be able to read bytes from the 'dax' file. The 'inf' file must
- * have the same name as the 'dax' file (e.g. path/filename.dax &harr; path/filename.inf). */
+ * have the same name as the 'dax' file (e.g. path/filename.dax &harr; path/filename.inf). 
+ * 
+ * @author Joe Borbely
+ * 
+ **/
 public class DAXLoader extends SO<Frame> {
 
 	public int width;

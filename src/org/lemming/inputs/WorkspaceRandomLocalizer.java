@@ -6,6 +6,12 @@ import org.lemming.data.Workspace;
 import org.lemming.interfaces.GenericWorkspacePlugin;
 import org.lemming.interfaces.IncompatibleWorkspaceException;
 
+/**
+ * A random localizer using the GenericWorkspacePlugin abstraction.
+ * 
+ * @author Thomas Pengo
+ *
+ */
 public class WorkspaceRandomLocalizer extends GenericWorkspacePlugin implements Runnable {
 
 	RandomLocalizer r;
