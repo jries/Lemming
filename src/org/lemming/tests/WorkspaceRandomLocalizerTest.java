@@ -34,6 +34,7 @@ public class WorkspaceRandomLocalizerTest {
 		assertTrue(h.hasMember("id"));
 		assertTrue(h.hasMember("x"));
 		assertTrue(h.hasMember("y"));
+		assertTrue(h.hasMember("y")); 
 		assertEquals(h.getNumberOfRows(), 100);
 	}
 
