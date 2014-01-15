@@ -6,7 +6,11 @@ package org.lemming.data;
  * 
  * @author Thomas Pengo, Joe Borbely
  * 
+<<<<<<< HEAD
  *  
+=======
+ *
+>>>>>>> refs/remotes/origin/master
  * @param <T>
  */
 public interface Frame<T> {
