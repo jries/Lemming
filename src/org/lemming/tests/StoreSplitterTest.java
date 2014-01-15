@@ -1,17 +1,23 @@
 package org.lemming.tests;
 
 import static org.junit.Assert.*;
-import ij.ImageJ;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.RandomLocalizer;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.PrintToScreen;
+import org.lemming.utils.LemMING;
 import org.lemming.utils.StoreSplitter;
 
+/**
+ * Test class for splitting a Store into multiple Stores.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class StoreSplitterTest {
 
 	RandomLocalizer rl;
@@ -24,12 +30,9 @@ public class StoreSplitterTest {
 
 	@Before
 	public void setUp() throws Exception {
-
-		String[] arg = {""};
-		ImageJ.main(arg);
-		
 		rl = new RandomLocalizer(20, 256, 256);
 		gro = new GaussRenderOutput(256, 256);
+		gro.setTitle("Store Splitter Test");
 		pts = new PrintToScreen();
 		splitter = new StoreSplitter<Localization>();
 		
@@ -52,15 +55,12 @@ public class StoreSplitterTest {
 		new Thread(gro).start();
 		new Thread(pts).start();
 		
-		try {
-			Thread.sleep(1000);			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(1000);
+
 		assertEquals(printLocalizations.getLength(), 0);
 		assertEquals(renderLocalizations.getLength(), 0);
 		
-		while (true){}		
+		LemMING.pause(2000);
 	}
 
 }

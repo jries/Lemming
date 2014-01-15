@@ -1,11 +1,14 @@
 package org.lemming.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.lemming.interfaces.WorkspacePlugin.NEEDS_X;
+import static org.lemming.interfaces.WorkspacePlugin.NEEDS_Y;
+import static org.lemming.interfaces.WorkspacePlugin.NEEDS_Z;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +16,6 @@ import org.lemming.data.GenericLocalization;
 import org.lemming.data.HashWorkspace;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
-import org.lemming.data.Workspace;
 import org.lemming.inputs.RandomLocalizer;
 import org.lemming.interfaces.GenericWorkspacePlugin;
 import org.lemming.interfaces.IncompatibleWorkspaceException;
@@ -22,8 +24,11 @@ import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.PrintToFile;
 import org.lemming.outputs.PrintToScreen;
 
-import static org.lemming.interfaces.GenericWorkspacePlugin.*;
-
+/**
+ * Test class for the HashWorkspace. 
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class HashWorkspaceTest extends HashWorkspace {
 
 	@Before
@@ -31,7 +36,7 @@ public class HashWorkspaceTest extends HashWorkspace {
 	}
 
 	@Test
-	public void test() {
+	public void testAddRow() {
 		HashWorkspace h = new HashWorkspace();
 		
 		h.addNewMember("x");

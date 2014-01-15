@@ -9,21 +9,29 @@ import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for inserting dummy frames into a Store and dummy 
+ * localizations into a Store.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class DummyLocalizerTest {
 
 	DummyLocalizer d;
+	QueueStore<Frame> frames;
+	QueueStore<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {
 		d = new DummyLocalizer();
+		frames = new QueueStore<>();
+		localizations = new QueueStore<Localization>();
 	}
 
 	@Test
 	public void test() {
-		QueueStore<Frame> frames = new QueueStore<>();
-		QueueStore<Localization> localizations = new QueueStore<Localization>();
-		
 		DummyFrameProducer i = new DummyFrameProducer();
 		
 		i.setOutput(frames);
@@ -33,15 +41,10 @@ public class DummyLocalizerTest {
 		new Thread(i).start();
 		new Thread(d).start();
 		
-		try {
-			Thread.sleep(1000);
-			
-			assertEquals(localizations.getLength(), 200);
-			assertEquals(frames.getLength(), 0);
-			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(1000);
+		
+		assertEquals(localizations.getLength(), 200);
+		assertEquals(frames.getLength(), 0);
 	}
 
 }

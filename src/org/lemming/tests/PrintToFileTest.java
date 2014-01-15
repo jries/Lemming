@@ -12,15 +12,22 @@ import org.lemming.data.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
 import org.lemming.outputs.PrintToFile;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for reading a Store of localizations and then writing the 
+ * localizations to a file.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class PrintToFileTest {
 
 	PrintToFile p1,p2;
 	
 	@Before
 	public void setUp() throws Exception {
-		p1 = new PrintToFile(new File("Test1.csv"));
-		p2 = new PrintToFile(new File("Test2.csv"));
+		p1 = new PrintToFile(new File("PrintToFileTest1.csv"));
+		p2 = new PrintToFile(new File("PrintToFileTest2.csv"));
 	}
 
 	@Test
@@ -42,13 +49,10 @@ public class PrintToFileTest {
 		new Thread(p1).start();
 		new Thread(p2).start();
 		
-		try {
-			Thread.sleep(1000);
-			
-			assertEquals(localizations.getLength(), 0);
-			assertEquals(frames.getLength(), 0);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(1000);
+
+		assertEquals(localizations.getLength(), 0);
+		assertEquals(frames.getLength(), 0);
 	}
+	
 }

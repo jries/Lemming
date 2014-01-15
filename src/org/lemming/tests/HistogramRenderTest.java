@@ -1,6 +1,7 @@
 package org.lemming.tests;
 
-import ij.ImageJ;
+import java.io.FileReader;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -9,7 +10,14 @@ import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
 import org.lemming.inputs.FileLocalizer;
 import org.lemming.outputs.HistogramRender;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for reading localizations from a file and rendering 
+ * each localization in a 2D histogram. 
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class HistogramRenderTest {
 
 	FileLocalizer f;
@@ -18,36 +26,50 @@ public class HistogramRenderTest {
 	
 	@Before
 	public void setUp() throws Exception {		
-		ImageJ.main(new String[]{});
+		Properties p = new Properties();
+		p.load(new FileReader("test.properties"));
 		
-		f = new FileLocalizer("HistoRender.csv");
-		histo = new HistogramRender();
+		f = new FileLocalizer(p.getProperty("samples.dir")+"HistoRender.csv");
 		
 		localizations = new QueueStore<Localization>();
 		
 		f.setOutput(localizations);
-		histo.setInput(localizations);		
 	}
 
 	@Test
-	public void test() {
-		
-		// set the x,y bin widths for the histogram
-		int xBins = 1024;
-		int yBins = 1024;
-		histo.setBins(xBins, yBins);
+	public void testShowAll() {		
 
-		// set the x,y range of localization values to show in the histogram
-		//double xmin = 0, ymin = 0, xmax = 256, ymax = 256; // show the all localizations
-		double xmin = 0, ymin = 0, xmax = 256, ymax = 256; // show the all localizations
-		//double xmin = 170, ymin = 115, xmax = 195, ymax = 135; // zoom in for a specific region
-		histo.setRange(xmin, xmax, ymin, ymax);
+		// set the number of bins in the x and y dimensions for the histogram to be 1024
+		// set the x and y range to be from 0 to 256 to display all localizations
+		histo = new HistogramRender(1024, 1024, 0, 256, 0, 256);
+		histo.setInput(localizations);
+		histo.setTitle("Histogram All");
 
 		// read localizations from the file and render the histogram
 		new Thread(f).start();
 		new Thread(histo).start();		
 		
-		while (true){}
+		while (!localizations.isEmpty()) LemMING.pause(100);
+		
+		LemMING.pause(2000);
+	}
+
+	@Test
+	public void testShowRegion() {		
+		
+		// set the number of bins in the x and y dimensions for the histogram to be 512
+		// only display the localizations in the x range from 170 to 195 pixels and in the y range from 115 to 135 pixels 
+		histo = new HistogramRender(512, 512, 170, 195, 115, 135);
+		histo.setInput(localizations);
+		histo.setTitle("Histogram Region");
+
+		// read localizations from the file and render the histogram
+		new Thread(f).start();
+		new Thread(histo).start();		
+		
+		while (!localizations.isEmpty()) LemMING.pause(100);
+		
+		LemMING.pause(2000);
 	}
 
 }

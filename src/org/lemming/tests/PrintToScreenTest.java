@@ -10,7 +10,14 @@ import org.lemming.data.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
 import org.lemming.outputs.PrintToScreen;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for reading a Store of localizations and then writing the 
+ * localizations to the screen.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class PrintToScreenTest {
 
 	PrintToScreen p;
@@ -41,14 +48,10 @@ public class PrintToScreenTest {
 		new Thread(d2).start();
 		new Thread(p).start();
 		
-		try {
-			Thread.sleep(1000);
-			
-			assertEquals(localizations.getLength(), 0);
-			assertEquals(frames.getLength(), 0);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(1000);
+		
+		assertEquals(localizations.getLength(), 0);
+		assertEquals(frames.getLength(), 0);
 	}
 
 }

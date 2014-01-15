@@ -7,7 +7,13 @@ import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for inserting dummy frames into a Store 
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class DummyFrameProducerTest {
 
 	DummyFrameProducer d;
@@ -22,16 +28,12 @@ public class DummyFrameProducerTest {
 	}
 
 	@Test
-	public void test() {
-		try {
-			new Thread(d).start();
-			
-			Thread.sleep(1000);
-			
-			assertEquals(q.getLength(), 100);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	public void test() {		
+		new Thread(d).start();
+		
+		LemMING.pause(1000);
+		
+		assertEquals(q.getLength(), 100);
 	}
 
 }
