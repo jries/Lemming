@@ -5,7 +5,10 @@ package org.lemming.data;
  * in principle be anything.
  * 
  * @author Thomas Pengo, Joe Borbely
+<<<<<<< HEAD
  * 
+=======
+>>>>>>> branch 'master' of https://jborbely@bitbucket.org/tpengo/lemming.git
  *
  * @param <T>
  */
