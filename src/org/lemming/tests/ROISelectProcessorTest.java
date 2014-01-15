@@ -1,24 +1,29 @@
 package org.lemming.tests;
 
-import static org.junit.Assert.*;
-import ij.IJ;
-import ij.ImageJ;
-import ij.gui.EllipseRoi;
-import ij.gui.Roi;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import ij.gui.EllipseRoi;
+import ij.gui.Roi;
+
 import org.lemming.data.Localization;
 import org.lemming.data.NonblockingQueueStore;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
 import org.lemming.inputs.FileLocalizer;
-import org.lemming.outputs.GaussRenderOutput;
-//import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processors.ROISelectProcessor;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for filtering localizations within a specified region of interest.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class ROISelectProcessorTest {
 	
 	Store<Localization> localizations;
@@ -43,16 +48,12 @@ public class ROISelectProcessorTest {
 	}
 	
 	@Test
-	public void test() {
+	public void testEmpty() {
 		new Thread(fl).start();
 		new Thread(roi).start();
 		new Thread(pts).start();
 
-		try {
-			Thread.sleep(100);			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(100);
 		
 		assertTrue(localizations.isEmpty());
 		assertTrue(filteredLocalizations.isEmpty());
@@ -60,7 +61,6 @@ public class ROISelectProcessorTest {
 
 	@Test
 	public void testCircleRoi() {
-		// Create non-blocking queue
 		localizations = new NonblockingQueueStore<Localization>();
 		
 		// Add some localizations to the input queue
@@ -69,25 +69,14 @@ public class ROISelectProcessorTest {
 		localizations.put(new XYLocalization(50,50));
 		localizations.put(new XYLocalization(100,100));
 		
-		// Set the region
 		Roi circle = new EllipseRoi(15, 15, 85, 85, 1);
 		
-		// Show it
-		GaussRenderOutput g = new GaussRenderOutput();
-		g.setInput(localizations);
-		//g.run();
-		
-		//IJ.getImage().setRoi(circle);
-		
-		// Create the filter
 		roi = new ROISelectProcessor(circle);
 		roi.setInput(localizations);
 		roi.setOutput(filteredLocalizations);
 		
-		// Run it
 		roi.run();
 		
-		// Check the output
 		assertTrue(localizations.isEmpty());
 		assertEquals(filteredLocalizations.getLength(), 1);
 		assertEquals(filteredLocalizations.get().getX(), 50, .001);

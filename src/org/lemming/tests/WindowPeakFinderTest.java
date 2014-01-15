@@ -15,7 +15,15 @@ import org.lemming.inputs.TIFFLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processors.PeakFinder;
 import org.lemming.processors.WindowPeakFinder;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for finding peaks based on a threshold value and inserts the
+ * pixel values in a Window around the peak, the frame number and the x,y 
+ * coordinates of the localization into a Store. 
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class WindowPeakFinderTest {
 	
 	TIFFLoader tif;
@@ -37,7 +45,7 @@ public class WindowPeakFinderTest {
 		
 		tif.setOutput(frames);
 		peak.setInput(frames);
-		peak.setOutput(localizations); //this is not used yet
+		peak.setOutput(localizations); //this is not used, but needs to be set in order to not get a NullStoreWarning
 		print.setInput(localizations);
 	}
 
@@ -45,16 +53,11 @@ public class WindowPeakFinderTest {
 	public void test() {
 		new Thread(tif).start();
 		new Thread(peak).start();
-		new Thread(print).start();
+		new Thread(print).start();		
 		
-		try {
-			Thread.sleep(2000);
-			
-			equals(frames.isEmpty());
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(2000);
 		
+		equals(frames.isEmpty());
 	}
 
 }

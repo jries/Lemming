@@ -6,6 +6,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.QueueStore;
 
+/**
+ * Test class for a Store.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ *
+ */
 public class QueueStoreTest {
 
 	QueueStore<Integer> q;

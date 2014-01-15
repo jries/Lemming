@@ -2,12 +2,21 @@ package org.lemming.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.FileReader;
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.TIFFLoader;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for reading a TIF file.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class TIFFLoaderTest {
 
 	Frame f;
@@ -16,7 +25,10 @@ public class TIFFLoaderTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		tif = new TIFFLoader("tifSample.tif");
+		Properties p = new Properties();
+		p.load(new FileReader("test.properties"));
+		
+		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
 		frames = new QueueStore<Frame>();
 		
 		tif.setOutput(frames);
@@ -26,21 +38,11 @@ public class TIFFLoaderTest {
 	public void test() {
 		tif.run();
 		
-		assertEquals(600, frames.getLength());
-		
-		
-		int cnt = 0;
-		float[] pixels;
-		while (!frames.isEmpty()){
-			f = frames.get();
-			pixels = (float[])f.getPixels();
-			assertEquals(f.getWidth()*f.getHeight(), pixels.length);
-			System.out.println("Frame: "+ ++cnt + ", Pixel(0,0): " + pixels[0]);
-		}
+		assertEquals(41, frames.getLength());		
 		
 		tif.show();
-		while(true){}
-		
+
+		LemMING.pause(5000);
 	}
 
 }

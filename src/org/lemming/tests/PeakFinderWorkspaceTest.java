@@ -15,7 +15,14 @@ import org.lemming.data.Store;
 import org.lemming.inputs.TIFFLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processors.PeakFinder;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for finding peaks based on a threshold value and inserts the
+ * the frame number and the x,y coordinates of the localization into a HashWorkspace.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class PeakFinderWorkspaceTest {
 	
 	TIFFLoader tif;
@@ -39,7 +46,7 @@ public class PeakFinderWorkspaceTest {
 		
 		tif.setOutput(frames);
 		peak.setInput(frames);
-		peak.setOutput(localizations); //this is not used yet
+		peak.setOutput(localizations); //this is not used, but needs to be set to not get a NullStoreWarning
 		print.setInput(localizations);
 	}
 
@@ -49,20 +56,15 @@ public class PeakFinderWorkspaceTest {
 		new Thread(peak).start();
 		new Thread(print).start();
 		
-		try {
-			Thread.sleep(2000);
-			
-			equals(frames.isEmpty());
-			
-			assertEquals(h.getNumberOfRows(), 324);
-			
-			System.out.println(h.toString());
-			
-			assertTrue(h.hasMember(h.getFrameName()));
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		LemMING.pause(2000);
 		
+		equals(frames.isEmpty());
+		
+		assertEquals(h.getNumberOfRows(), 324);
+		
+		System.out.println(h.toString());
+		
+		assertTrue(h.hasMember(h.getFrameName()));
 	}
 
 }

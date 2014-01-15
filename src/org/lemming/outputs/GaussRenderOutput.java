@@ -22,19 +22,35 @@ import org.lemming.utils.Miscellaneous;
  */
 public class GaussRenderOutput extends SI<Localization> implements Rendering {
 
-	Store<Localization> localizations;
+	/** The image width, in pixels */	
+	int width = 256; 
+	
+	/** The image height, in pixels */
+	int height = 256;
+	
+	/** The total area under the Gaussian curve, default value 1000.0 */
+	double area = 1000.0;
+	
+	/** The background signal of the Gaussian, default value 0.0 */
+	double background = 0.0;
+	
+	/** The aspect ratio of the Gaussian sigma's, sigmay/sigmax, default value 1.0 */
+	double aspectRatio = 1.0;
+	
+	/** The sigma of the 2D Gaussian in the x-dimension in pixels, default value 2.0*/
+	double sigmaX = 2.0;
+	
+	/** The rotation angle, in radians, between a fluorescing molecule and the image canvas, default value 0.0 */
+	double theta = 0.0; // 	
+	
+	/** The title of the image */
+	String title = "LemMING!";
+
 	double[] pixels;
 
-	// set default values for rendering
-	int width = 256; // image width
-	int height = 256; // image height	
-	double area = 1000.0; // total area under the Gaussian curve
-	double background = 0.0; // background signal
-	double aspectRatio = 1.0; // aspect ratio of the sigma's, sigmay/sigmax
-	double sigmaX = 2.0; // sigma of the 2D Gaussian in the x-direction
-	double theta = 0.0; // rotation angle, in radians, between a fluorescing molecule and the image canvas	
-	String title = "LemMING!"; // title of the image
+	Store<Localization> localizations;
 
+	
 	/** Draw an image from a Store of molecule localizations and render each
 	 * molecule as a 2-dimensional Gaussian. This construct uses default variables
 	 * for the image width and height, for the Gaussian parameters and for the
@@ -42,7 +58,9 @@ public class GaussRenderOutput extends SI<Localization> implements Rendering {
 	 * @see #GaussRenderOutput(int, int) GaussRenderOutput(width, height)
 	 * @see #GaussRenderOutput(int, int, double, double, double, double, double, String) GaussRenderOutput(width, height, area, background, aspectRatio, sigmaX, theta, title) 
 	 * @see {@link org.lemming.utils.Functions.gaussian2D} */
-	public GaussRenderOutput() {}
+	public GaussRenderOutput() {
+		this(256, 256);
+	}
 	
 	/** Draw an image from a Store of molecule localizations and render each
 	 * molecule as a 2-dimensional Gaussian. This construct uses default values
@@ -88,7 +106,7 @@ public class GaussRenderOutput extends SI<Localization> implements Rendering {
 	 * @param sigmaX - the Gaussian sigma value in the x-direction
 	 * @param theta - the rotation angle, in radians, between the fluorescing molecule and the image canvas 
 	 * @see {@link org.lemming.utils.Functions.gaussian2D} */
-	void setGaussianParameters(double area, double background, double aspectRatio, double sigmaX, double theta){
+	public void setGaussianParameters(double area, double background, double aspectRatio, double sigmaX, double theta){
 		this.area = area;
 		this.background = background;
 		this.aspectRatio = aspectRatio;
@@ -98,7 +116,7 @@ public class GaussRenderOutput extends SI<Localization> implements Rendering {
 	
 	/** Set the image title to display on Titlebar of the image Window. 
 	 * @param title - the image title */
-	void setTitle(String title){
+	public void setTitle(String title){
 		this.title = title;
 	}
 

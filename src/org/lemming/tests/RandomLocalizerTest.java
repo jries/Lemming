@@ -11,92 +11,90 @@ import org.lemming.interfaces.Rendering;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.HistogramRender;
 import org.lemming.outputs.Jzy3dScatterplot;
+import org.lemming.utils.LemMING;
 
+/**
+ * Test class for creating randomly-positioned localizations and 
+ * adding the localizations into a Store.
+ * 
+ * @author Joe Borbely, Thomas Pengo
+ */
 public class RandomLocalizerTest {
 
 	RandomLocalizer rl;
-	Rendering gro;
+	Rendering ren;
 	Store<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {
-		localizations = new NonblockingQueueStore<Localization>();
+		//localizations = new NonblockingQueueStore<Localization>();
+		localizations = new QueueStore<Localization>();
 		
 		rl = new RandomLocalizer(50000, 256, 256);
 		rl.setOutput(localizations);
 	}
 
 	@Test
-	public void test1() {
-		gro = new GaussRenderOutput(256, 256);
-		gro.setInput(localizations);
+	public void testGaussRender() {
+		ren = new GaussRenderOutput(256, 256);
+		ren.setInput(localizations);
 		
 		new Thread(rl).start();
-		new Thread(gro).start();
+		new Thread(ren).start();
 
 		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}		
+			LemMING.pause(100);
+		}
 		
+		LemMING.pause(2000);
 	}
 
 	@Test
-	public void test2() {
-		gro = new HistogramRender(1024,1024,0,255,0,255);
-		gro.setInput(localizations);
+	public void testHistoRender() {
+		ren = new HistogramRender();
+		ren.setInput(localizations);
 		
 		new Thread(rl).start();
-		new Thread(gro).start();
-
+		new Thread(ren).start();
+		
 		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				return;
-			}
-		}		
+			LemMING.pause(100);
+		}
+		
+		LemMING.pause(2000);
 	}
 
 	@Test
-	public void test3() {
-		gro = new HistogramRender(1024,1024,0,255,0,255);
-		gro.setInput(localizations);
+	public void testMultiplHistoRender() {
+		ren = new HistogramRender();
+		ren.setInput(localizations);
 		
-		Rendering bro = new HistogramRender(1024,1024,0,255,0,255);
-		bro.setInput(localizations);
+		Rendering histo2 = new HistogramRender();
+		histo2.setInput(localizations);
 		
 		new Thread(rl).start();
-		new Thread(gro).start();
-		new Thread(bro).start();
+		new Thread(ren).start();
+		new Thread(histo2).start();
 		
 		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				return;
-			}
-		}		
+			LemMING.pause(100);
+		}
+		
+		LemMING.pause(2000);
 	}
 	
+	/*
 	@Test
-	public void test4() {
-		gro = new Jzy3dScatterplot();
-		gro.setInput(localizations);
+	public void testScatterPlot() {
+		ren = new Jzy3dScatterplot();
+		ren.setInput(localizations);
 		
 		new Thread(rl).start();
 		
-		gro.run();
+		ren.run();
 		
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			return;
-		}
-
+		LemMING.pause(10000);
 	}
+	*/
 
 }
