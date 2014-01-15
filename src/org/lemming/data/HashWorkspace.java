@@ -43,7 +43,7 @@ public class HashWorkspace implements Workspace {
 	HashMap<String, ArrayList> table = new HashMap<String, ArrayList>();
 	
 	String  xVarName = "x", 
-			yVarName = "x",
+			yVarName = "y",
 			zVarName = "z",
 			IDVarName = "id",
 			frameVarName = "frame",
