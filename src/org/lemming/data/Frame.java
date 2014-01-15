@@ -4,6 +4,7 @@ package org.lemming.data;
  * Interface representing a Frame. A Frame is the input to a localization module and typically contains a 2D image, but being generic for T, it can 
  * in principle be anything.
  * 
+ * 
  * @author Thomas Pengo, Joe Borbely
  *
  * @param <T>
