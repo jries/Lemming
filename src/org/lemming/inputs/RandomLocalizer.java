@@ -22,8 +22,8 @@ public class RandomLocalizer extends SO<Localization> {
 	/** the image height, in pixels */
 	double dheight;
 	
-	/** Generate a list of N, randomly-located molecules and put the 
-	 * localizations into a Store.
+	/**
+	 * A generator of N random localizations between (0,0) and (width,height).
 	 * 
 	 * @param N - the number of molecules to generate
 	 * @param width - the image width, in pixels (e.g. 256)
