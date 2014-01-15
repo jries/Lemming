@@ -6,6 +6,8 @@ package org.lemming.data;
  * 
  * 
  * @author Thomas Pengo, Joe Borbely
+ * 
+ * this can be dangerous
  *
  * @param <T>
  */
