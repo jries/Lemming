@@ -5,6 +5,8 @@ package org.lemming.data;
  * in principle be anything.
  * 
  * @author Thomas Pengo, Joe Borbely
+ * 
+ * this can be dangerous
  *
  * @param <T>
  */
