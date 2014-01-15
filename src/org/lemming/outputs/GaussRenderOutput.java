@@ -12,6 +12,14 @@ import org.lemming.interfaces.Rendering;
 import org.lemming.utils.Functions;
 import org.lemming.utils.Miscellaneous;
 
+/**
+ * Renders the localizations received in the input using Gaussians. 
+ * 
+ * The display is updated asynchronously at regular intervals (100 ms).
+ * 
+ * @author Joe Borbely
+ *
+ */
 public class GaussRenderOutput extends SI<Localization> implements Rendering {
 
 	Store<Localization> localizations;
