@@ -56,7 +56,7 @@ public class PeakFinderWorkspaceTest {
 		new Thread(peak).start();
 		new Thread(print).start();
 		
-		LemMING.pause(2000);
+		LemMING.pause(3000);
 		
 		equals(frames.isEmpty());
 		
