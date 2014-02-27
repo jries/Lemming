@@ -12,7 +12,7 @@ import java.util.Queue;
  */
 public class NonblockingQueueStore<DataType> implements Store<DataType> {
 
-	Queue<DataType> q = new LinkedList<>();
+	Queue<DataType> q = new LinkedList();
 	
 	@Override
 	public void put(DataType el) {

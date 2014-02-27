@@ -26,7 +26,7 @@ public class DummyLocalizerTest {
 	@Before
 	public void setUp() throws Exception {
 		d = new DummyLocalizer();
-		frames = new QueueStore<>();
+		frames = new QueueStore();
 		localizations = new QueueStore<Localization>();
 	}
 

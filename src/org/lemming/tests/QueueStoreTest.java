@@ -18,7 +18,7 @@ public class QueueStoreTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		q = new QueueStore<>();
+		q = new QueueStore();
 	}
 
 	@Test

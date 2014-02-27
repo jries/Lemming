@@ -94,17 +94,17 @@ public class HashWorkspace implements Workspace {
 		
 		@Override
 		public long getID() {
-			return (long) get(IDVarName);
+			return (Long) get(IDVarName);
 		}
 
 		@Override
 		public double getX() {
-			return (double) get(xVarName);
+			return (Double) get(xVarName);
 		}
 
 		@Override
 		public double getY() {
-			return (double) get(yVarName);
+			return (Double) get(yVarName);
 
 		}
 
@@ -123,17 +123,17 @@ public class HashWorkspace implements Workspace {
 
 		@Override
 		public long getFrame() {
-			return (long) get(frameVarName);
+			return (Long) get(frameVarName);
 		}
 
 		@Override
 		public double getZ() {
-			return (double) get(zVarName);
+			return (Double) get(zVarName);
 		}
 
 		@Override
 		public int getChannel() {
-			return (int) get(zVarName);
+			return (Integer) get(zVarName);
 		}
 		
 		@Override
@@ -351,7 +351,7 @@ public class HashWorkspace implements Workspace {
 							g.set(prop, p.getReadMethod().invoke(el));
 						}
 						
-					} catch (IntrospectionException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					} catch ( Exception  e) {
 						e.printStackTrace();
 					}
 				}

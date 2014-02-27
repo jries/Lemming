@@ -369,7 +369,7 @@ public class LArrays {
 	
 	/**Returns a fixed-size list backed by the specified array.
 	 * @see java.util.Arrays#asList(T... a) */
-	@SafeVarargs
+	//@SafeVarargs
 	public static <T> List<T> asList(T... a) {return Arrays.asList(a);}
 
 	/**Searches the specified array of bytes for the specified value using the binary search algorithm.

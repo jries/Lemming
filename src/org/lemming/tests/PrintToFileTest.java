@@ -32,7 +32,7 @@ public class PrintToFileTest {
 
 	@Test
 	public void test() {
-		QueueStore<Frame> frames = new QueueStore<>();
+		QueueStore<Frame> frames = new QueueStore();
 		QueueStore<Localization> localizations = new QueueStore<Localization>();
 		
 		DummyFrameProducer i = new DummyFrameProducer();
