@@ -33,10 +33,12 @@ public class PrintToScreenTest {
 		QueueStore<Localization> localizations = new QueueStore<Localization>();
 		
 		DummyFrameProducer i = new DummyFrameProducer();
+		DummyFrameProducer j = new DummyFrameProducer();
 		DummyLocalizer d1 = new DummyLocalizer();
 		DummyLocalizer d2 = new DummyLocalizer();
 		
 		i.setOutput(frames);
+		j.setOutput(frames);
 		d1.setInput(frames);
 		d1.setOutput(localizations);
 		d2.setInput(frames);
@@ -44,6 +46,7 @@ public class PrintToScreenTest {
 		p.setInput(localizations);
 		
 		new Thread(i).start();
+		new Thread(j).start();
 		new Thread(d1).start();
 		new Thread(d2).start();
 		new Thread(p).start();
