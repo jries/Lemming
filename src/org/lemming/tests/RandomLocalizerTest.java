@@ -10,7 +10,6 @@ import org.lemming.inputs.RandomLocalizer;
 import org.lemming.interfaces.Rendering;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.HistogramRender;
-import org.lemming.outputs.Jzy3dScatterplot;
 import org.lemming.utils.LemMING;
 
 /**
