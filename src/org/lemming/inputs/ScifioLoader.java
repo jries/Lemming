@@ -24,19 +24,19 @@ import org.lemming.utils.LFile;
  * @author Joe Borbely, Stephan Preibish, Thomas Pengo
  *
  */
-public class TIFFLoader<T extends RealType<T> & NativeType<T>> extends SO<ImgLib2Frame<T>> {
+public class ScifioLoader<T extends RealType<T> & NativeType<T>> extends SO<ImgLib2Frame<T>> {
 
 	Img<T> theImage;
 	
 	Store<ImgLib2Frame<T>> s; 
 	LFile file; 
 	
-	public TIFFLoader(String filename) {
+	public ScifioLoader(String filename) {
 		this(filename, null);
 	}
  	
     @SuppressWarnings({ "unchecked", "rawtypes" }) 
-	public TIFFLoader(String filename, T type) {
+	public ScifioLoader(String filename, T type) {
     	// create the filename reference
     	file = new LFile(filename);
 

@@ -9,7 +9,7 @@ import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
-import org.lemming.inputs.TIFFLoader;
+import org.lemming.inputs.ScifioLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processors.PeakFinder;
 import org.lemming.utils.LemMING;
@@ -22,7 +22,7 @@ import org.lemming.utils.LemMING;
  */
 public class PeakFinderTest {
 	
-	TIFFLoader tif;
+	ScifioLoader tif;
 	Store<Frame> frames;
 	Store<Localization> localizations;
 	PeakFinder peak;
@@ -33,7 +33,7 @@ public class PeakFinderTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
+		tif = new ScifioLoader(p.getProperty("samples.dir")+"eye.tif");
 		peak = new PeakFinder(200);
 		frames = new QueueStore<Frame>();
 		localizations = new QueueStore<Localization>();
