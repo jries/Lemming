@@ -13,19 +13,22 @@ import org.lemming.outputs.NullStoreWarning;
  *
  * @param <T> Type parameter for the kind of objects that are being generated.
  */
-public abstract class SO<T> implements Source<T>, Runnable {
+public abstract class SO<T> implements Source<T> {
 
 	Store<T> output;
 
 	@Override
-	public void run() {
-		
+	public final void run() {
 		if (output==null)
 			throw new NullStoreWarning(this.getClass().getName()); 
+		
+		beforeRun();
 		
 		while (hasMoreOutputs()) {
 			output.put(newOutput());
 		}
+		
+		afterRun();
 	}
 	
 	/**
@@ -33,11 +36,14 @@ public abstract class SO<T> implements Source<T>, Runnable {
 	 * 
 	 * @return the newly created object
 	 */
-	public abstract T newOutput();
+	protected abstract T newOutput();
 	
 	@Override
 	public void setOutput(Store<T> s) {
 		output = s;
 	}
+	
+	public void beforeRun() {};
+	public void afterRun() {};
 
 }

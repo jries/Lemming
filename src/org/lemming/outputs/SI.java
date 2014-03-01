@@ -3,7 +3,7 @@ package org.lemming.outputs;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Well;
 
-public abstract class SI<T> implements Well<T>, Runnable {
+public abstract class SI<T> implements Well<T> {
 
 	Store<T> input;
 

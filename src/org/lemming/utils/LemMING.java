@@ -12,7 +12,16 @@ public class LemMING {
 		
 		throw new RuntimeException(errMessage);
 	}
-	
+
+	/**
+	 * Display a warning message.
+	 * 
+	 * @param warningMessage - the warning message to display
+	 */
+	public static void warning(String warningMessage) {
+		System.out.println(warningMessage);
+	}
+
 	/**
 	 * Add a pause to the program.<br><br>
 	 * E.g., allow for an image to be displayed for the specified amount of time

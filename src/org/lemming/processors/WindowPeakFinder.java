@@ -1,10 +1,18 @@
 package org.lemming.processors;
 
+import net.imglib2.Cursor;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.Views;
+
 import org.lemming.data.Frame;
 import org.lemming.data.XYFLocalization;
 import org.lemming.data.XYFwLocalization;
 
-public class WindowPeakFinder extends PeakFinder {
+public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends PeakFinder<T, F> {
 
 	public WindowPeakFinder(double threshold) {
 		super(threshold);
@@ -13,47 +21,39 @@ public class WindowPeakFinder extends PeakFinder {
 	int size = 1;	
 
 	@Override
-	public void process(Frame frame) {
-		//double[] pixels = (double[]) frame.getPixels();
-		float[] pixels = (float[]) frame.getPixels();
+	public void process(F frame) {
+		float[] pixels =  new float[9];
 		
-		//for now just print the results to the console
-		//List<Integer> localMax = new ArrayList<Integer>();
+		Interval interval = Intervals.expand( frame.getPixels(), -1 );
 		
-		int width = frame.getWidth();
-		long frameNo = frame.getFrameNumber();
-		int n = pixels.length - width - 1;
-		for (int i = width+1; i < n; i++) {
-			if (pixels[i] > threshold) {
-				float v = pixels[i];
-				if (v >= pixels[i-1-width])
-					if (v >= pixels[i-width])
-						if (v >= pixels[i+1-width])
-							if (v >= pixels[i-1])
-								if (v >= pixels[i+1])
-									if (v >= pixels[i-1+width])
-										if (v >= pixels[i+width])
-											if (v >= pixels[i+1+width]){
-												float [] w = getWindow(pixels, width, i%width, i/width, size);
-												
-												output.put(new XYFwLocalization(w, frameNo, i%width, i/width));
-												//localMax.add(i);
-											}
+		RandomAccessibleInterval<T> source = Views.interval( frame.getPixels(), interval );
+		
+		final Cursor< T > center = Views.iterable( source ).cursor();
+		
+		RandomAccess<T> ra = source.randomAccess();
+		
+		while (center.hasNext()) {
+			center.fwd();
+			
+			double val = center.get().getRealDouble(); 
+			if (val >= threshold) {
+				
+				ra.setPosition(center);
+
+				float v;
+				ra.fwd(0); v = ra.get().getRealFloat(); pixels[5] = v; if (val <= v) break;
+				ra.bck(1); v = ra.get().getRealFloat(); pixels[2] = v; if (val <= v) break;
+				ra.bck(0); v = ra.get().getRealFloat(); pixels[1] = v; if (val <= v) break;
+				ra.bck(0); v = ra.get().getRealFloat(); pixels[0] = v; if (val <= v) break;
+				ra.fwd(1); v = ra.get().getRealFloat(); pixels[3] = v; if (val <= v) break;
+				ra.fwd(1); v = ra.get().getRealFloat(); pixels[6] = v; if (val <= v) break;
+				ra.fwd(0); v = ra.get().getRealFloat(); pixels[7] = v; if (val <= v) break;
+				ra.fwd(0); v = ra.get().getRealFloat(); pixels[8] = v; if (val <= v) break;
+				pixels[4] = (float) val;
+				
+				output.put(new XYFwLocalization(pixels, frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 			}
 		}
-		
-		// TODO we have to keep track of which localization is within which frame
-		
-		//System.out.println(Long.toString(frameNo)+":"+localMax.toString());
-	}
 
-	private float[] getWindow(float[] pixels, int width, int i, int j, int siz) {
-		float[] win = new float[ (2*siz+1)*(2*siz+1) ];
-		
-		for (int di = -siz; di<=siz; di++)
-			for (int dj = -siz; dj<=siz; dj++)
-				win[ (dj+siz)*(2*siz+1)+ di+siz ] = pixels[ j*width + i ];
-		
-		return win;
 	}
 }

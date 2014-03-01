@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.FileLocalizer;
+import org.lemming.interfaces.ImageLocalizer;
 import org.lemming.interfaces.Localizer;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.utils.LemMING;

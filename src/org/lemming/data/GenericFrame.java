@@ -1,5 +1,7 @@
 package org.lemming.data;
 
+import net.imglib2.RandomAccessibleInterval;
+
 /**
  * A GenericFrame is an implementation of Frame which includes basic fields like width, height and frame number. It provides a template for a basic Frame.
  * 
@@ -9,12 +11,12 @@ package org.lemming.data;
  */
 public class GenericFrame<T> implements Frame<T> {
 	
-	T pixels;
+	RandomAccessibleInterval<T> pixels;
 	int width;
 	int height;
 	long frameNo;
 
-	public GenericFrame(long frameNo, int width, int height, T pixels) {
+	public GenericFrame(long frameNo, int width, int height, RandomAccessibleInterval<T> pixels) {
 		this.width = width;
 		this.height = height;
 		this.pixels = pixels;
@@ -27,7 +29,7 @@ public class GenericFrame<T> implements Frame<T> {
 	}
 
 	@Override
-	public T getPixels() {
+	public RandomAccessibleInterval<T> getPixels() {
 		return pixels;
 	}
 

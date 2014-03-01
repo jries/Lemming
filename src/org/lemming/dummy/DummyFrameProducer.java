@@ -1,22 +1,29 @@
 package org.lemming.dummy;
 
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+
 import org.lemming.data.Frame;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Source;
 
-public class DummyFrameProducer implements Source<Frame> {
+public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType>> {
 
-	Store<Frame> output;
+	Store<ImgLib2Frame<UnsignedShortType>> output;
 	
 	@Override
-	public void setOutput(Store<Frame> store) {
+	public void setOutput(Store<ImgLib2Frame<UnsignedShortType>> store) {
 		output = store;
 	}
 	
-	class DummyFrame implements Frame {
+	class DummyFrame extends ImgLib2Frame<UnsignedShortType> {
 		long ID;
 		
 		DummyFrame(long ID) {
+			super(ID, 256, 256, ArrayImgs.unsignedShorts(new long[]{256,256}));
+			
 			this.ID = ID;
 		}
 		
@@ -25,7 +32,7 @@ public class DummyFrameProducer implements Source<Frame> {
 		}
 
 		@Override
-		public Object getPixels() {
+		public RandomAccessibleInterval<UnsignedShortType> getPixels() {
 			return null;
 		}
 
