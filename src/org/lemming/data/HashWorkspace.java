@@ -304,6 +304,7 @@ public class HashWorkspace implements Workspace {
 	 * first-in-first-out order using the methods provided by the Store interface. 
 	 * 
 	 * The put method adds the Localization to the end of the table, the get keeps track of the last row read. 
+	 * The get method is NON-BLOCKING: if the table is empty, or you read all rows, it returns 'null'.
 	 *  
 	 * Note. If the put method is called with a GenericLocalization, then all the fields of the GenericLocalization are kept. That is, if two
 	 * workspaces are connected with the FIFO interface, a put will copy the row for all members. It assumes the two workspaces are compatible, so 

@@ -16,6 +16,7 @@ import org.lemming.data.GenericLocalization;
 import org.lemming.data.HashWorkspace;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
+import org.lemming.data.XYFLocalization;
 import org.lemming.inputs.RandomLocalizer;
 import org.lemming.interfaces.GenericWorkspacePlugin;
 import org.lemming.interfaces.IncompatibleWorkspaceException;
@@ -337,6 +338,19 @@ public class HashWorkspaceTest extends HashWorkspace {
 		} catch (IncompatibleWorkspaceException e) {
 			fail();
 		}		
+	}
+	
+	@Test
+	public void testAddLocalization() {
+		HashWorkspace h = new HashWorkspace();
+
+		Store<Localization> f = h.getFIFO();
+		
+		f.put(new XYFLocalization(1, 2, 3));
+		
+		assertEquals(h.hasMember("frame"), true);
+		
+		System.out.println(h.toString());
 	}
 	
 }

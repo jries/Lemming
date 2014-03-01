@@ -5,10 +5,13 @@ import static org.junit.Assert.*;
 import java.io.FileReader;
 import java.util.Properties;
 
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.HashWorkspace;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
@@ -25,11 +28,11 @@ import org.lemming.utils.LemMING;
  */
 public class PeakFinderWorkspaceTest {
 	
-	TIFFLoader tif;
-	Store<Frame> frames;
+	TIFFLoader<UnsignedShortType> tif;
+	Store<ImgLib2Frame<UnsignedShortType>> frames;
 	Store<Localization> localizations;
 	HashWorkspace h;
-	PeakFinder peak;
+	PeakFinder<UnsignedShortType,ImgLib2Frame<UnsignedShortType>> peak;
 	PrintToScreen print;
 
 	@Before
@@ -37,9 +40,9 @@ public class PeakFinderWorkspaceTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
-		peak = new PeakFinder(200);
-		frames = new QueueStore<Frame>();
+		tif = new TIFFLoader<>(p.getProperty("samples.dir")+"eye.tif", new UnsignedShortType());
+		peak = new PeakFinder<>(200);
+		frames = new QueueStore<>();
 		h = new HashWorkspace();
 		localizations = h.getFIFO();
 		print = new PrintToScreen();

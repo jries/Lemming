@@ -5,9 +5,12 @@ import static org.junit.Assert.*;
 import java.io.FileReader;
 import java.util.Properties;
 
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
@@ -26,10 +29,10 @@ import org.lemming.utils.LemMING;
  */
 public class WindowPeakFinderTest {
 	
-	TIFFLoader tif;
-	Store<Frame> frames;
+	TIFFLoader<UnsignedShortType> tif;
+	Store<ImgLib2Frame<UnsignedShortType>> frames;
 	Store<Localization> localizations;
-	WindowPeakFinder peak;
+	WindowPeakFinder<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> peak;
 	PrintToScreen print;
 
 	@Before
@@ -37,9 +40,9 @@ public class WindowPeakFinderTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
-		peak = new WindowPeakFinder(200);
-		frames = new QueueStore<Frame>();
+		tif = new TIFFLoader<>(p.getProperty("samples.dir")+"eye.tif");
+		peak = new WindowPeakFinder<>(200);
+		frames = new QueueStore<>();
 		localizations = new QueueStore<Localization>();
 		print = new PrintToScreen();
 		

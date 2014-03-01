@@ -3,9 +3,9 @@ package org.lemming.dummy;
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
-import org.lemming.interfaces.Localizer;
+import org.lemming.interfaces.ImageLocalizer;
 
-public class DummyLocalizer<T, F extends Frame<T>> implements Localizer<T,F> {
+public class DummyLocalizer<T, F extends Frame<T>> implements ImageLocalizer<T,F> {
 
 	Store<F> in;
 	Store<Localization> out;

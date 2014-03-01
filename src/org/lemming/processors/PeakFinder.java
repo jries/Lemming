@@ -18,7 +18,7 @@ import org.lemming.data.Localization;
 import org.lemming.data.XYFLocalization;
 import org.lemming.processors.SISO;
 
-public class PeakFinder<T extends RealType<T>> extends SISO<Frame<T>,Localization> {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<F,Localization> {
 
 	/** The intensity of a pixel must be greater than {@code threshold} to be considered a local maximum */
 	double threshold;
@@ -28,7 +28,7 @@ public class PeakFinder<T extends RealType<T>> extends SISO<Frame<T>,Localizatio
  	}
 	
 	@Override
-	public void process(Frame<T> frame) {
+	public void process(F frame) {
 		process1(frame);
 	}
 	
