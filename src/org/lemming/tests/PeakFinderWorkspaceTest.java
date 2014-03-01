@@ -40,9 +40,9 @@ public class PeakFinderWorkspaceTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader<>(p.getProperty("samples.dir")+"eye.tif", new UnsignedShortType());
-		peak = new PeakFinder<>(200);
-		frames = new QueueStore<>();
+		tif = new TIFFLoader<UnsignedShortType>(p.getProperty("samples.dir")+"eye.tif", new UnsignedShortType());
+		peak = new PeakFinder<UnsignedShortType,ImgLib2Frame<UnsignedShortType>>(200);
+		frames = new QueueStore<ImgLib2Frame<UnsignedShortType>>();
 		h = new HashWorkspace();
 		localizations = h.getFIFO();
 		print = new PrintToScreen();

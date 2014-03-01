@@ -42,9 +42,9 @@ public class WindowPeakFinderWorkspaceTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader<>(p.getProperty("samples.dir")+"eye.tif");
-		peak = new WindowPeakFinder<>(200);
-		frames = new QueueStore<>();
+		tif = new TIFFLoader<UnsignedShortType>(p.getProperty("samples.dir")+"eye.tif");
+		peak = new WindowPeakFinder<UnsignedShortType,ImgLib2Frame<UnsignedShortType>>(200);
+		frames = new QueueStore<ImgLib2Frame<UnsignedShortType>>();
 		h = new HashWorkspace();
 		localizations = h.getFIFO();
 		print = new PrintToScreen();
