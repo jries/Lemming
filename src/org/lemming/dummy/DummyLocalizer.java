@@ -5,13 +5,13 @@ import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.interfaces.Localizer;
 
-public class DummyLocalizer implements Localizer {
+public class DummyLocalizer<T, F extends Frame<T>> implements Localizer<T,F> {
 
-	Store<Frame> in;
+	Store<F> in;
 	Store<Localization> out;
 	
 	@Override
-	public void setInput(Store<Frame> s) {
+	public void setInput(Store<F> s) {
 		in = s;
 	}
 
@@ -45,10 +45,15 @@ public class DummyLocalizer implements Localizer {
 	@Override
 	public void run() {
 		while(true) {
-			Frame f = in.get();
+			Frame<T> f = in.get();
 			
 			out.put(new DummyLocalization(f.getFrameNumber(), 0));
 			out.put(new DummyLocalization(0, f.getFrameNumber()));
 		}
+	}
+
+	@Override
+	public boolean hasMoreOutputs() {
+		return true;
 	}
 }

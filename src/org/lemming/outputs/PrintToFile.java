@@ -15,19 +15,25 @@ public class PrintToFile extends SI<Localization> {
 	public PrintToFile(File f) {
 		this.f = f;
 	}
-
+	
 	@Override
-	public void run() {
+	public void beforeRun() {
 		try {
 			w = new FileWriter(f);
-			
-			super.run();
-			
+		} catch (IOException e) {
+			e.printStackTrace();
+			LemMING.error(e.getMessage());
+		}
+	}
+	
+	@Override
+	public void afterRun() {
+		try {
 			w.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 			LemMING.error(e.getMessage());
-		}			
+		}
 	}
 	
 	@Override

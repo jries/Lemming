@@ -10,10 +10,5 @@ import org.lemming.data.Store;
  * @author Thomas Pengo, Joe Borbely
  *
  */
-public interface Localizer extends Runnable {
-	
-	public void setInput(Store<Frame> s);
-	
-	public void setOutput(Store<Localization> s);
-	
+public interface Localizer<T, F extends Frame<T>> extends Source<Localization>, Well<F> {
 }
