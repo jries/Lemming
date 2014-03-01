@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.QueueStore;
-import org.lemming.inputs.TIFFLoader;
+import org.lemming.inputs.ScifioLoader;
 import org.lemming.utils.LemMING;
 
 /**
@@ -17,10 +17,10 @@ import org.lemming.utils.LemMING;
  * 
  * @author Joe Borbely, Thomas Pengo
  */
-public class TIFFLoaderTest {
+public class ScifioLoaderTest {
 
 	Frame f;
-	TIFFLoader tif;
+	ScifioLoader tif;
 	QueueStore<Frame> frames;
 	
 	@Before
@@ -28,7 +28,7 @@ public class TIFFLoaderTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader(p.getProperty("samples.dir")+"eye.tif");
+		tif = new ScifioLoader(p.getProperty("samples.dir")+"eye.tif");
 		frames = new QueueStore<Frame>();
 		
 		tif.setOutput(frames);

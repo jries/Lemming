@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.ImageJTIFFLoader;
-import org.lemming.inputs.TIFFLoader;
+import org.lemming.inputs.ScifioLoader;
 import org.lemming.utils.LemMING;
 
 /**

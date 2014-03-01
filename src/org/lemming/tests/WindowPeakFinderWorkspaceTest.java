@@ -15,7 +15,7 @@ import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.data.Store;
-import org.lemming.inputs.TIFFLoader;
+import org.lemming.inputs.ScifioLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processors.PeakFinder;
 import org.lemming.processors.WindowPeakFinder;
@@ -30,7 +30,7 @@ import org.lemming.utils.LemMING;
  */
 public class WindowPeakFinderWorkspaceTest {
 	
-	TIFFLoader<UnsignedShortType> tif;
+	ScifioLoader<UnsignedShortType> tif;
 	Store<ImgLib2Frame<UnsignedShortType>> frames;
 	Store<Localization> localizations;
 	HashWorkspace h;
@@ -42,7 +42,7 @@ public class WindowPeakFinderWorkspaceTest {
 		Properties p = new Properties();
 		p.load(new FileReader("test.properties"));
 		
-		tif = new TIFFLoader<>(p.getProperty("samples.dir")+"eye.tif");
+		tif = new ScifioLoader<>(p.getProperty("samples.dir")+"eye.tif");
 		peak = new WindowPeakFinder<>(200);
 		frames = new QueueStore<>();
 		h = new HashWorkspace();
