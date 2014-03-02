@@ -18,8 +18,13 @@ import java.nio.ByteOrder;
 
 import javax.swing.JButton;
 
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+
 import org.lemming.data.Frame;
 import org.lemming.data.GenericFrame;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.utils.LFile;
 import org.lemming.utils.LemMING;
 
@@ -35,7 +40,7 @@ import org.lemming.utils.LemMING;
  * @author Joe Borbely
  * 
  **/
-public class DAXLoader extends SO<Frame> {
+public class DAXLoader extends SO<ImgLib2Frame<UnsignedShortType>> {
 
 	public int width;
 	public int height;
@@ -199,9 +204,8 @@ public class DAXLoader extends SO<Frame> {
 	}
 
     @Override
-	public void run() {
+	public void beforeRun() {
        	curFrame = 0;
-		super.run();
  	}
 	
 	@Override
@@ -210,8 +214,10 @@ public class DAXLoader extends SO<Frame> {
 	}
 
 	@Override
-	public Frame newOutput() {
-		Frame out = new GenericFrame(curFrame, width, height, readFrame(curFrame));
+	public ImgLib2Frame<UnsignedShortType> newOutput() {
+		short[] pixelArray = readFrame(curFrame);
+		Img<UnsignedShortType> imglib2Array = ArrayImgs.unsignedShorts(pixelArray, new long[]{width,height});
+		ImgLib2Frame<UnsignedShortType> out = new ImgLib2Frame<UnsignedShortType>(curFrame, width, height, imglib2Array);
 		curFrame++;
 		return out;
 	}

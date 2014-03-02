@@ -9,6 +9,7 @@ import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
+import org.lemming.interfaces.ImageLocalizer;
 import org.lemming.interfaces.Localizer;
 import org.lemming.outputs.ShowMessage;
 import org.lemming.utils.LemMING;
@@ -65,6 +66,21 @@ public class FileLocalizer extends SO<Localization> implements Localizer {
 	}
 	
 	@Override
+	public void beforeRun() {
+		ID=0;
+		try {
+			br = new BufferedReader(new FileReader(filename));
+
+			// Reads first line (needed by hasMoreOutputs)
+			sCurrentLine = br.readLine();			
+		} catch (FileNotFoundException e) {
+			LemMING.error(e.getMessage());
+		} catch (IOException e) {
+			LemMING.error(e.getMessage());
+		}
+	}
+
+	@Override
 	public Localization newOutput() {
 		String[] s = sCurrentLine.split(delimiter);
 		if (s.length > 1) {
@@ -82,7 +98,6 @@ public class FileLocalizer extends SO<Localization> implements Localizer {
 			
 			return null; // unreachable..
 		}
-		
 	}
 
 	BufferedReader br;
@@ -90,25 +105,11 @@ public class FileLocalizer extends SO<Localization> implements Localizer {
 	long ID;
 	
 	@Override
-	public void run() {
-		ID=0;
+	public void afterRun() {
 		try {
-			br = new BufferedReader(new FileReader(filename));
-
-			// Reads first line (needed by hasMoreOutputs)
-			sCurrentLine = br.readLine();
-			
-			super.run();
-		
 			br.close();
-		} catch (FileNotFoundException e) {
-			new ShowMessage(e.getMessage());
 		} catch (IOException e) {
-			new ShowMessage(e.getMessage());
+			LemMING.error(e.getMessage());
 		}
-	}
-
-	@Override
-	public void setInput(Store<Frame> s) {
 	}
 }

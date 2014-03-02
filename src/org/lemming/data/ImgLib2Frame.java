@@ -2,6 +2,7 @@ package org.lemming.data;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 /**
@@ -10,12 +11,12 @@ import net.imglib2.type.numeric.real.FloatType;
  * @author Thomas Pengo, Joe Borbely
  *
  */
-public class ImgLib2Frame implements Frame {
+public class ImgLib2Frame <T extends RealType<T>> implements Frame<T> {
 	
 	long frameNo;
 	int width;
 	int height;
-	RandomAccessibleInterval<FloatType> slice;
+	RandomAccessibleInterval<T> slice;
 	
 	/**
 	 * Creates a Frame with a reference to the appropriate (2D, although not enforced, yet) frame. 
@@ -25,7 +26,7 @@ public class ImgLib2Frame implements Frame {
 	 * @param height
 	 * @param slice
 	 */
-	public ImgLib2Frame(long frameNo, int width, int height, RandomAccessibleInterval<FloatType> slice) {
+	public ImgLib2Frame(long frameNo, int width, int height, RandomAccessibleInterval<T> slice) {
 		this.frameNo = frameNo;
 		this.width = width;
 		this.height = height;
@@ -38,8 +39,9 @@ public class ImgLib2Frame implements Frame {
 	}
 
 	@Override
-	public Object getPixels() {
-		return ImageJFunctions.wrap(slice,"Slice "+frameNo).getProcessor().getPixels();
+	public RandomAccessibleInterval<T> getPixels() {
+		return slice;
+		//return ImageJFunctions.wrap(slice,"Slice "+frameNo).getProcessor().getPixels();
 	}
 
 	@Override

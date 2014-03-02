@@ -1,10 +1,11 @@
 package org.lemming.tests;
 
 import static org.junit.Assert.*;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.data.Frame;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
@@ -29,16 +30,14 @@ public class PrintToScreenTest {
 
 	@Test
 	public void test() {
-		QueueStore<Frame> frames = new QueueStore<>();
+		QueueStore<ImgLib2Frame<UnsignedShortType>> frames = new QueueStore<>();
 		QueueStore<Localization> localizations = new QueueStore<Localization>();
 		
 		DummyFrameProducer i = new DummyFrameProducer();
-		DummyFrameProducer j = new DummyFrameProducer();
-		DummyLocalizer d1 = new DummyLocalizer();
-		DummyLocalizer d2 = new DummyLocalizer();
+		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d1 = new DummyLocalizer<>();
+		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d2 = new DummyLocalizer<>();
 		
 		i.setOutput(frames);
-		j.setOutput(frames);
 		d1.setInput(frames);
 		d1.setOutput(localizations);
 		d2.setInput(frames);
@@ -46,7 +45,6 @@ public class PrintToScreenTest {
 		p.setInput(localizations);
 		
 		new Thread(i).start();
-		new Thread(j).start();
 		new Thread(d1).start();
 		new Thread(d2).start();
 		new Thread(p).start();

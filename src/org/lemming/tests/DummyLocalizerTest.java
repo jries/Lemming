@@ -1,10 +1,12 @@
 package org.lemming.tests;
 
 import static org.junit.Assert.*;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
+import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
@@ -19,13 +21,13 @@ import org.lemming.utils.LemMING;
  */
 public class DummyLocalizerTest {
 
-	DummyLocalizer d;
-	QueueStore<Frame> frames;
+	DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d;
+	QueueStore<ImgLib2Frame<UnsignedShortType>> frames;
 	QueueStore<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {
-		d = new DummyLocalizer();
+		d = new DummyLocalizer<>();
 		frames = new QueueStore<>();
 		localizations = new QueueStore<Localization>();
 	}
