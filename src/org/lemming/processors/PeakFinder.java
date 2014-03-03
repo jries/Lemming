@@ -29,7 +29,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
 	
 	@Override
 	public void process(F frame) {
-		process1(frame);
+		process2(frame);
 	}
 	
 	public void process1(Frame<T> frame) {
@@ -98,14 +98,14 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
 				
 				ra.setPosition(center);
 				
-				ra.fwd(0); if (val <= ra.get().getRealDouble()) break;
-				ra.bck(1); if (val <= ra.get().getRealDouble()) break;
-				ra.bck(0); if (val <= ra.get().getRealDouble()) break;
-				ra.bck(0); if (val <= ra.get().getRealDouble()) break;
-				ra.fwd(1); if (val <= ra.get().getRealDouble()) break;
-				ra.fwd(1); if (val <= ra.get().getRealDouble()) break;
-				ra.fwd(0); if (val <= ra.get().getRealDouble()) break;
-				ra.fwd(0); if (val <= ra.get().getRealDouble()) break;
+				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
+				ra.bck(1); if (val <= ra.get().getRealDouble()) continue;
+				ra.bck(0); if (val <= ra.get().getRealDouble()) continue;
+				ra.bck(0); if (val <= ra.get().getRealDouble()) continue;
+				ra.fwd(1); if (val <= ra.get().getRealDouble()) continue;
+				ra.fwd(1); if (val <= ra.get().getRealDouble()) continue;
+				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
+				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
 				
 				output.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 			}

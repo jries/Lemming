@@ -39,16 +39,24 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 			if (val >= threshold) {
 				
 				ra.setPosition(center);
+				
+				/**
+				 *  0 | 1 | 2
+				 * -----------
+				 *  3 | 4 | 5
+				 * -----------
+				 *  6 | 7 | 8 
+				 */
 
 				float v;
-				ra.fwd(0); v = ra.get().getRealFloat(); pixels[5] = v; if (val <= v) break;
-				ra.bck(1); v = ra.get().getRealFloat(); pixels[2] = v; if (val <= v) break;
-				ra.bck(0); v = ra.get().getRealFloat(); pixels[1] = v; if (val <= v) break;
-				ra.bck(0); v = ra.get().getRealFloat(); pixels[0] = v; if (val <= v) break;
-				ra.fwd(1); v = ra.get().getRealFloat(); pixels[3] = v; if (val <= v) break;
-				ra.fwd(1); v = ra.get().getRealFloat(); pixels[6] = v; if (val <= v) break;
-				ra.fwd(0); v = ra.get().getRealFloat(); pixels[7] = v; if (val <= v) break;
-				ra.fwd(0); v = ra.get().getRealFloat(); pixels[8] = v; if (val <= v) break;
+				ra.fwd(0); v = ra.get().getRealFloat(); pixels[5] = v; if (val <= v) continue;
+				ra.bck(1); v = ra.get().getRealFloat(); pixels[2] = v; if (val <= v) continue;
+				ra.bck(0); v = ra.get().getRealFloat(); pixels[1] = v; if (val <= v) continue;
+				ra.bck(0); v = ra.get().getRealFloat(); pixels[0] = v; if (val <= v) continue;
+				ra.fwd(1); v = ra.get().getRealFloat(); pixels[3] = v; if (val <= v) continue;
+				ra.fwd(1); v = ra.get().getRealFloat(); pixels[6] = v; if (val <= v) continue;
+				ra.fwd(0); v = ra.get().getRealFloat(); pixels[7] = v; if (val <= v) continue;
+				ra.fwd(0); v = ra.get().getRealFloat(); pixels[8] = v; if (val <= v) continue;
 				pixels[4] = (float) val;
 				
 				output.put(new XYFwLocalization(pixels, frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));

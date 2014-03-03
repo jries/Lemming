@@ -65,7 +65,7 @@ public class WindowPeakFinderWorkspaceTest {
 		
 		equals(frames.isEmpty());
 		
-		assertEquals(h.getNumberOfRows(), 324);
+		assertEquals(325, h.getNumberOfRows());
 		
 		System.out.println(h.toString());
 		
