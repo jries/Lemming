@@ -2,8 +2,7 @@ package org.lemming.utils;
 
 public class Gaussian2DFunction implements FitFunction {
 	
-	// 'temporary' values,
-	private int n;
+	private int npts, m, cnt;
 	private double t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
 	private double t11, t12, t13, t14, t15, t16, t17, t18, t19, t20;
 	private double t21, t22, t23, t24, t25, t26, dx, dy, f1, f2;
@@ -13,8 +12,8 @@ public class Gaussian2DFunction implements FitFunction {
 	 * This function can model multiple overlapping PSFs by using the appropriate 
 	 * {@code p} array.
 	 * 
-	 * @param x - a 2 by N list of x,y pixel coordinates, e.g. [ [x1, x2, ..., xN], [y1, y2, ..., yN] ] 
-	 * @param y - the list containing the function values to be evaluated using
+	 * @param x - a 2 by M array of x,y pixel coordinates, e.g. [ [x1, x2, ..., xM], [y1, y2, ..., yM] ] 
+	 * @param y - array of length M^2 containing the function values to be evaluated using
 	 * the values in {@code p} for each value in {@code x}
 	 * @param p - the values of the function parameters
 	 * <ul>
@@ -67,10 +66,11 @@ public class Gaussian2DFunction implements FitFunction {
 	@Override
 	public void fcn(double[][] x, double[] p, double[] y) {
 		// avoid getting the parameter values and performing unnecessary method calls in the inner loop
-		n = x[0].length;
+		m = x[0].length;
+		npts = m*m;
 		t0 = p[0];
-		for (int i=0; i<n; i++)
-			y[i] = t0; // add the background signal
+		for (int i=0; i<npts; i++)
+			y[i] = t0; // the background signal
 		for (int j=0, mx=p.length-1; j<mx; j+=6) {
 			t1 = p[1+j];
 			t2 = p[2+j];
@@ -79,33 +79,39 @@ public class Gaussian2DFunction implements FitFunction {
 			t5 = Math.sin(p[4+j]);
 			t6 = 1.0 / (p[5+j]*p[5+j]);
 			t7 = 1.0 / ((p[6+j]*p[5+j])*(p[6+j]*p[5+j]));
-			for (int i=0; i<n; i++) {
-				dx = x[0][i] - t1;
-				dy = x[1][i] - t2;
-				f1 = dx*t4 - dy*t5;
-				f2 = dx*t5 + dy*t4;
-				y[i] += t3 * Math.exp(-0.5*( f1*f1*t6 + f2*f2*t7 ) ); // add the contribution from each PSF
+			cnt = 0;
+			for (int i=0; i<m; i++) {
+				for (int k=0; k<m; k++) {
+					dx = x[0][i] - t1;
+					dy = x[1][k] - t2;
+					f1 = dx*t4 - dy*t5;
+					f2 = dx*t5 + dy*t4;
+					y[cnt++] += t3 * Math.exp(-0.5*( f1*f1*t6 + f2*f2*t7 ) ); // add the contribution from each PSF
+				}
 			}
 		}
 	}
-	
+
 	/**
 	 * The partial derivatives (i.e. the derivatives with respect to each parameter). 
 	 * Used the <i>CodeGeneration[Fortran]</i> package from <b>Maplesoft</b> to 
 	 * generate this 'optimized' code. 'Optimized' in the sense that it tries to reduce 
 	 * the number of times that a calculation needs to be performed by storing the 
 	 * calculation in a temporary number and using this number for future calculations.
+	 * The code in this method is basically "unreadable"...
 	 * 
-	 * @param x - a 2 by N list of x,y pixel coordinates, e.g. [ [x1, x2, ..., xN], [y1, y2, ..., yN] ]
+	 * @param x - a 2 by M array of x,y pixel coordinates, e.g. [ [x1, x2, ..., xM], 
+	 * [y1, y2, ..., yM] ]
 	 * @param p - an array of the function parameters
-	 * @param der - a ({@code p.length}) x ({@code x[0].length}) array of the 
+	 * @param der - a ({@code p.length}) by M^2 array of the 
 	 * partial derivative values for each parameter
 	 */
 	@Override
 	public void deriv(double[][] x, double[] p, double[][] der) {
 		// avoid getting the parameter values and performing unnecessary method calls in the inner loop
-		n = x[0].length;
-		for (int i=0; i<n; i++)
+		m = x[0].length;
+		npts = m*m;
+		for (int i=0; i<npts; i++)
 			der[0][i] = 1.0; // the partial derivative for the background signal
 		for (int j=0, mx=p.length-1; j<mx; j+=6) {
 	  	    t0 = p[1+j];
@@ -123,34 +129,56 @@ public class Gaussian2DFunction implements FitFunction {
 	  	    t12 = 1.0 / t4 / p[5+j];
 	  	    t13 = t4 * t4;
 	  	    t14 = t9 * t9;
-	  	    for (int i=0; i<n; i++) {
-	  	    	t15 = x[0][i] - t0;
-	  	    	t16 = x[1][i] - t1;
-	  	    	t17 = t15 * t7 - t16 * t8;
-	  	    	t18 = t17 * t5;
-	  	    	t19 = t15 * t8 + t16 * t7;
-	  	    	t20 = t19 * t10;
-	  	    	t21 = t17 * t17;
-	  	    	t22 = t19 * t19;
-	  	    	t23 = t22 * t10;
-	  	    	t24 = Math.exp( (-t21 - t23) * t5 * 0.5 );
-	  	    	t25 = t3 * t5 * t6 * t24 * 0.5;
-	  	    	t26 = t2 * t25;
-	  	    	der[1+j][i] = t26 * (t18 * t7 + t20 * t5 * t8);
-	  	    	der[2+j][i] = t26 * (-t18 * t8 + t20 * t5 * t7);
-	  	    	der[3+j][i] = t25;
-	  	    	der[4+j][i] = t26 * t18 *(t19 - t20);
-	  	    	der[5+j][i] = t11 * t24 * t6 * t12 * (t5 * (t21 + t23) * 0.5 - 1.0);
-	  	    	der[6+j][i] = t11 * t24 * (t22 / (t13 * t14) - t5 * t10) * 0.5;
+	  	    cnt = 0;
+	  	    for (int i=0; i<m; i++) {
+	  	    	for (int k=0; k<m; k++) {
+		  	    	t15 = x[0][i] - t0;
+		  	    	t16 = x[1][k] - t1;
+		  	    	t17 = t15 * t7 - t16 * t8;
+		  	    	t18 = t17 * t5;
+		  	    	t19 = t15 * t8 + t16 * t7;
+		  	    	t20 = t19 * t10;
+		  	    	t21 = t17 * t17;
+		  	    	t22 = t19 * t19;
+		  	    	t23 = t22 * t10;
+		  	    	t24 = Math.exp( (-t21 - t23) * t5 * 0.5 );
+		  	    	t25 = t3 * t5 * t6 * t24 * 0.5;
+		  	    	t26 = t2 * t25;
+		  	    	der[1+j][cnt] = t26 * (t18 * t7 + t20 * t5 * t8);
+		  	    	der[2+j][cnt] = t26 * (-t18 * t8 + t20 * t5 * t7);
+		  	    	der[3+j][cnt] = t25;
+		  	    	der[4+j][cnt] = t26 * t18 *(t19 - t20);
+		  	    	der[5+j][cnt] = t11 * t24 * t6 * t12 * (t5 * (t21 + t23) * 0.5 - 1.0);
+		  	    	der[6+j][cnt++] = t11 * t24 * (t22 / (t13 * t14) - t5 * t10) * 0.5;
+	  	    	}
 	  	    }
+	  	  
 		}
   	}
 
 	@Override
 	public void finalCheck(double[][] x, double[] y, double[] p) {
 	    // make sure the phase is between -pi and pi
-		for (int j=0, mx=p.length-1; j<mx; j+=6)
-			p[4+j] = 2.0*Math.PI*(Math.round(p[4+j]/(2.0*Math.PI)));
+		for (int j=0, mx=p.length-1; j<mx; j+=6) {
+			//System.out.println(p[4+j]);
+			p[4+j] -= 2.0*Math.PI*(Math.round(p[4+j]/(2.0*Math.PI)));
+			//System.out.println(p[4+j]);
+		}
+	}
+	
+	/** 
+	 * Return the value of this function at this {@code x} pixel coordinate using the
+	 * parameter values in {@code p}.
+	 * @param x - the (x,y) pixel coordinate
+	 * @param p - the function parameters
+	 */
+	@Override
+	public double getValue(double[] x, double[] p) {
+		double[][] xx = new double[1][x.length];
+		double[] y = new double[1];
+		xx[1] = x;
+		fcn(xx, p, y);
+		return y[0];
 	}
 
 	@Override
@@ -158,14 +186,27 @@ public class Gaussian2DFunction implements FitFunction {
 
 	/** Not used since the x values are 2D */
 	@Override
-	public void fcn(double[] x, double[] p, double[] y) {}
+	public void fcn(double[] x, double[] p, double[] y) {
+		LemMING.error("Gaussian2DFunction error : value of x must be 2D");
+	}
 
 	/** Not used since the x values are 2D */
 	@Override
-	public void deriv(double[] x, double[] p, double[][] der) {}
+	public void deriv(double[] x, double[] p, double[][] der) {
+		LemMING.error("Gaussian2DFunction error : value of x must be 2D");
+	}
 
 	/** Not used since the x values are 2D */
 	@Override
-	public void finalCheck(double[] x, double[] y, double[] p) {}
+	public void finalCheck(double[] x, double[] y, double[] p) {
+		LemMING.error("Gaussian2DFunction error : value of x must be 2D");
+	}
+
+	/** Not used since the x values are 2D */
+	@Override
+	public double getValue(double x, double[] p) {
+		LemMING.error("Gaussian2DFunction error : value of x must be 2D");
+		return 0;
+	}
 
 }

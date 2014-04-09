@@ -12,65 +12,156 @@ public class LArrays {
 	
 	private static String EMPTY_MESSAGE = "You are trying to analyse an empty array";
 	
-	/** If {@code condition} is true then raise a runtime exception 
+	/** If {@code condition} is true then raise a runtime exception.
+	 * 
 	 * @param condition - the condition to test
 	 * @param msg - the message to display */
 	private static void check(boolean condition, String msg) {
 		if (condition) throw new RuntimeException(msg);
 	}
 
+	/** Returns the sum of the elements in the array */
+	public static long sum(byte[] a) {
+		long val = 0;
+		for (byte v : a)
+			val += v;
+		return val;
+	}
+
+	/** Returns the sum of the elements in the array */
+	public static long sum(short[] a) {
+		long val = 0;
+		for (short v : a)
+			val += v;
+		return val;
+	}
+
+	/** Returns the sum of the elements in the array */
+	public static long sum(int[] a) {
+		long val = 0;
+		for (int v : a)
+			val += v;
+		return val;
+	}
+
+	/** Returns the sum of the elements in the array */
+	public static double sum(long[] a) {
+		double val = 0;
+		for (long v : a)
+			val += v;
+		return val;
+	}
+
+	/** Returns the sum of the elements in the array */
+	public static double sum(float[] a) {
+		double val = 0;
+		for (float v : a)
+			val += v;
+		return val;
+	}
+
+	/** Returns the sum of the elements in the array */
+	public static double sum(double[] a) {
+		double val = 0;
+		for (double v : a)
+			val += v;
+		return val;
+	}
+
 	/** Returns the average value in the array */
 	public static double ave(byte[] a) {
 		check(a.length==0, EMPTY_MESSAGE);
-		double sum = 0.0;
-		for (double value : a)
-			sum += value;
-		return sum/(double)a.length;
+		return sum(a)/(double)a.length;
 	}
 
 	/** Returns the average value in the array */
 	public static double ave(short[] a) {
 		check(a.length==0, EMPTY_MESSAGE);
-		double sum = 0.0;
-		for (double value : a)
-			sum += value;
-		return sum/(double)a.length;
+		return sum(a)/(double)a.length;
 	}
 	
 	/** Returns the average value in the array */
 	public static double ave(int[] a) {
 		check(a.length==0, EMPTY_MESSAGE);
-		double sum = 0.0;
-		for (double value : a)
-			sum += value;
-		return sum/(double)a.length;
+		return sum(a)/(double)a.length;
 	}
 
 	/** Returns the average value in the array */
 	public static double ave(long[] a) {
 		check(a.length==0, EMPTY_MESSAGE);
-		double sum = 0.0;
-		for (double value : a)
-			sum += value;
-		return sum/(double)a.length;
+		return sum(a)/(double)a.length;
 	}
 
 	/** Returns the average value in the array */
 	public static double ave(float[] a) {
 		check(a.length==0, EMPTY_MESSAGE);
-		double sum = 0.0;
-		for (double value : a)
-			sum += value;
-		return sum/(double)a.length;
+		return sum(a)/(double)a.length;
 	}
 
 	/** Returns the average value in the array */
 	public static double ave(double[] a) {
 		check(a.length==0, EMPTY_MESSAGE);
-		double sum = 0.0;
+		return sum(a)/(double)a.length;
+	}
+	
+	/** Returns the standard deviation of the array */
+	public static double stdev(byte[] a) {
+		check(a.length==1, "Need more than 1 element in the array to calculate the stdev");
+		double av = ave(a);
+		double s = 0.0;
 		for (double value : a)
-			sum += value;
-		return sum/(double)a.length;
+			s += (value-av)*(value-av);
+		return Math.sqrt(s/((double)a.length-1.0));
+	}
+
+	/** Returns the standard deviation of the array */
+	public static double stdev(short[] a) {
+		check(a.length==1, "Need more than 1 element in the array to calculate the stdev");
+		double av = ave(a);
+		double s = 0.0;
+		for (double value : a)
+			s += (value-av)*(value-av);
+		return Math.sqrt(s/((double)a.length-1.0));
+	}
+
+	/** Returns the standard deviation of the array */
+	public static double stdev(int[] a) {
+		check(a.length==1, "Need more than 1 element in the array to calculate the stdev");
+		double av = ave(a);
+		double s = 0.0;
+		for (double value : a)
+			s += (value-av)*(value-av);
+		return Math.sqrt(s/((double)a.length-1.0));
+	}
+
+	/** Returns the standard deviation of the array */
+	public static double stdev(long[] a) {
+		check(a.length==1, "Need more than 1 element in the array to calculate the stdev");
+		double av = ave(a);
+		double s = 0.0;
+		for (double value : a)
+			s += (value-av)*(value-av);
+		return Math.sqrt(s/((double)a.length-1.0));
+	}
+
+	/** Returns the standard deviation of the array */
+	public static double stdev(float[] a) {
+		check(a.length==1, "Need more than 1 element in the array to calculate the stdev");
+		double av = ave(a);
+		double s = 0.0;
+		for (double value : a)
+			s += (value-av)*(value-av);
+		return Math.sqrt(s/((double)a.length-1.0));
+	}
+	
+	/** Returns the standard deviation of the array */
+	public static double stdev(double[] a) {
+		check(a.length==1, "Need more than 1 element in the array to calculate the stdev");
+		double av = ave(a);
+		double s = 0.0;
+		for (double value : a)
+			s += (value-av)*(value-av);
+		return Math.sqrt(s/((double)a.length-1.0));
 	}
 	
 	/** Returns the maximum value in the array */
@@ -277,88 +368,30 @@ public class LArrays {
 		}
 		return new double[]{amin, amax};
 	}
-
-	/** Returns the standard deviation of the array */
-	public static double stdev(byte[] a) {
-		if (a.length==1) return 0.0;
-		double av = ave(a);
-		double s = 0.0;
-		for (double value : a)
-			s += (value-av)*(value-av);
-		return Math.sqrt(s/((double)a.length-1.0));
-	}
-
-	/** Returns the standard deviation of the array */
-	public static double stdev(short[] a) {
-		if (a.length==1) return 0.0;
-		double av = ave(a);
-		double s = 0.0;
-		for (double value : a)
-			s += (value-av)*(value-av);
-		return Math.sqrt(s/((double)a.length-1.0));
-	}
-
-	/** Returns the standard deviation of the array */
-	public static double stdev(int[] a) {
-		if (a.length==1) return 0.0;
-		double av = ave(a);
-		double s = 0.0;
-		for (double value : a)
-			s += (value-av)*(value-av);
-		return Math.sqrt(s/((double)a.length-1.0));
-	}
-
-	/** Returns the standard deviation of the array */
-	public static double stdev(long[] a) {
-		if (a.length==1) return 0.0;
-		double av = ave(a);
-		double s = 0.0;
-		for (double value : a)
-			s += (value-av)*(value-av);
-		return Math.sqrt(s/((double)a.length-1.0));
-	}
-
-	/** Returns the standard deviation of the array */
-	public static double stdev(float[] a) {
-		if (a.length==1) return 0.0;
-		double av = ave(a);
-		double s = 0.0;
-		for (double value : a)
-			s += (value-av)*(value-av);
-		return Math.sqrt(s/((double)a.length-1.0));
-	}
 	
-	/** Returns the standard deviation of the array */
-	public static double stdev(double[] a) {
-		if (a.length==1) return 0.0;
-		double av = ave(a);
-		double s = 0.0;
-		for (double value : a)
-			s += (value-av)*(value-av);
-		return Math.sqrt(s/((double)a.length-1.0));
-	}
-
 	/** Performs a linear re-scaling of the array {@code a} by converting
 	 *  the values in {@code a} to go from a range of (originalMin, originalMax) 
 	 *  to a range of (newMin, newMax).<p>
 	 *  The equation is:<p> 
 	 *  rescaled[i] = (a[i] - originalMin) * (newMax - newMin)/(originalMax - originalMin) + newMin
+	 *  
 	 * @param a - the original array
 	 * @param newMin - the minimum value that the returned array will have
 	 * @param newMax - the maximum value that the returned array will have
-	 * @return A new array that is re-scaled to be in the specified range
+	 * @return A new array that is re-scaled to be within the specified range
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T linearRescale(double[] a, double newMin, double newMax) { //, Class<T> c) {		
-		//T[] anew = (T[]) Array.newInstance(c, a.length);
+	public static double[] linearRescale(double[] a, double newMin, double newMax) {	
 		double[] anew = new double[a.length];
 		double[] aMinMax = minMax(a);
-		double ratio = (newMax - newMin)/(aMinMax[1] - aMinMax[0]);
+		double mn = aMinMax[0];
+		double mx = aMinMax[1];
+		double ratio = (newMax - newMin)/(mx - mn);
 		for (int i=0; i<a.length; i++)			
-			//anew[i] = c.cast((a[i] - aMinMax[0]) * ratio + newMin);
-			anew[i] = ((a[i] - aMinMax[0]) * ratio + newMin);
-		return (T)anew;
+			anew[i] = ((a[i] - mn) * ratio + newMin);
+		return anew;
 	}
+	
+	
 	
 	
 	/*

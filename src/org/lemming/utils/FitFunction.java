@@ -9,11 +9,12 @@ public interface FitFunction {
 	
 	/**
 	 * The fitting function, for nD data.
-	 * @param x - the x values (the independent variable)
+	 * @param x - a N by M array specifying the x values (the independent variable)
+	 * N: the number of dimensions, M: the number of data points
 	 * @param p - the values of the function parameters
-	 * @param y - a list that is holding the y values (the value of the function
+	 * @param y - array of length M that is holding the y values (the value of the function
 	 * evaluated at each {@code x} value). Does an in-place replacement of the
-	 * value in {@code y} evaluated at each {@code x} value in order to avoid 
+	 * values in {@code y} evaluated at each {@code x} value in order to avoid 
 	 * creating a new double[] {@code y} array on every method call from the 
 	 * fitting routine.
 	 */
@@ -21,21 +22,38 @@ public interface FitFunction {
 
 	/**
 	 * The fitting function, for 1D data.
-	 * @param x - the x values (the independent variable)
+	 * @param x - array of length M specifying the x values (the independent variable)
 	 * @param p - the values of the function parameters
-	 * @param y - a list that is holding the y values (the value of the function
+	 * @param y - array of length M that is holding the y values (the value of the function
 	 * evaluated at each {@code x} value). Does an in-place replacement of the
-	 * value in {@code y} evaluated at each {@code x} value in order to avoid 
+	 * values in {@code y} evaluated at each {@code x} value in order to avoid 
 	 * creating a new double[] {@code y} array on every method call from the 
 	 * fitting routine.
 	 */
 	public void fcn(double[] x, double[] p, double[] y);
+	
+	/**
+	 * Evaluate the function at point {@code x} using the parameters in {@code p}.
+	 * For 1D data.
+	 * @param x - the x value
+	 * @param p - the values of the function parameters
+	 */
+	public double getValue(double x, double[] p);
+
+	/**
+	 * Evaluate the function at point {@code x} using the parameters in {@code p}.
+	 * For nD data.
+	 * @param x - the x value
+	 * @param p - the values of the function parameters
+	 */
+	public double getValue(double[] x, double[] p);
 
 	/**
 	 * The analytical form of the partial derivatives of the fitting function, for nD data.
-	 * @param x - the x values (the independent variable)
+	 * @param x - a N by M array specifying the x values (the independent variable)
+	 * N: the number of dimensions, M: the number of data points
 	 * @param p - the values of the function parameters
-	 * @param der - a {@code p.length} by {@code y.length} array that is holding 
+	 * @param der - a {@code p.length} by M array that is holding 
 	 * the values of the partial derivatives for each parameter that is evaluated 
 	 * at each {@code x} value. Does an in-place replacement of the value in 
 	 * {@code der} evaluated for each parameter and at each {@code x} value in 
@@ -46,9 +64,9 @@ public interface FitFunction {
 
 	/**
 	 * The analytical form of the partial derivatives of the fitting function, for 1D data.
-	 * @param x - the x values (the independent variable)
+	 * @param x - an array of length M specifying the x values (the independent variable)
 	 * @param p - the values of the function parameters
-	 * @param der - a {@code p.length} by {@code y.length} array that is holding 
+	 * @param der - a {@code p.length} by M array that is holding 
 	 * the values of the partial derivatives for each parameter that is evaluated 
 	 * at each {@code x} value. Does an in-place replacement of the value in 
 	 * {@code der} evaluated for each parameter and at each {@code x} value in 
@@ -66,8 +84,9 @@ public interface FitFunction {
 	 * 2&#960;n).<br><br>You can specify code in this method to modify the 
 	 * values in {@code p}. If you don't want to modify {@code p} in any way
 	 * or if your data set has dimension = 1 then you can just ignore this method.
-	 * @param x - the x values (the independent variable)
-	 * @param y - the y values (the dependent variable) 
+	 * @param x - a N by M array specifying the x values (the independent variable)
+	 * N: the number of dimensions, M: the number of data points
+	 * @param y - array of length M sepcifying the y values (the dependent variable) 
 	 * @param p - the values of the function parameters.
 	 */	
 	public void finalCheck(double[][] x, double[] y, double[] p);
@@ -81,8 +100,8 @@ public interface FitFunction {
 	 * 2&#960;n).<br><br>You can specify code in this method to modify the 
 	 * values in {@code p}. If you don't want to modify {@code p} in any way 
 	 * or if your data set has dimensions > 1 then you can just ignore this method.
-	 * @param x - the x values (the independent variable)
-	 * @param y - the y values (the dependent variable) 
+	 * @param x - array of length M specifying the x values (the independent variable)
+	 * @param y - array of length M specifying the y values (the dependent variable) 
 	 * @param p - the values of the function parameters.
 	 */	
 	public void finalCheck(double[] x, double[] y, double[] p);
