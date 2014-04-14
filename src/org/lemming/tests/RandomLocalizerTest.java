@@ -23,64 +23,37 @@ public class RandomLocalizerTest {
 
 	RandomLocalizer rl;
 	Rendering ren;
-	Store<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {
-		//localizations = new NonblockingQueueStore<Localization>();
-		localizations = new QueueStore<Localization>();
-		
 		rl = new RandomLocalizer(50000, 256, 256);
-		rl.setOutput(localizations);
 	}
 
 	@Test
 	public void testGaussRender() {
 		ren = new GaussRenderOutput(256, 256);
-		ren.setInput(localizations);
-		
-		new Thread(rl).start();
-		new Thread(ren).start();
-
-		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
-			LemMING.pause(100);
-		}
-		
-		LemMING.pause(2000);
+                while (rl.hasMoreOutputs()) {
+                        ren.process(rl.newOutput());
+                }
 	}
 
 	@Test
 	public void testHistoRender() {
 		ren = new HistogramRender();
-		ren.setInput(localizations);
-		
-		new Thread(rl).start();
-		new Thread(ren).start();
-		
-		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
-			LemMING.pause(100);
-		}
-		
-		LemMING.pause(2000);
+                while (rl.hasMoreOutputs()) {
+                        ren.process(rl.newOutput());
+                }
 	}
 
 	@Test
 	public void testMultiplHistoRender() {
 		ren = new HistogramRender();
-		ren.setInput(localizations);
-		
 		Rendering histo2 = new HistogramRender();
-		histo2.setInput(localizations);
-		
-		new Thread(rl).start();
-		new Thread(ren).start();
-		new Thread(histo2).start();
-		
-		while (rl.hasMoreOutputs() || !localizations.isEmpty()) {
-			LemMING.pause(100);
-		}
-		
-		LemMING.pause(2000);
+                while (rl.hasMoreOutputs()) {
+                        Localization localization = rl.newOutput();
+                        ren.process(localization);
+                        histo2.process(localization);
+                }
 	}
 	
 	/*

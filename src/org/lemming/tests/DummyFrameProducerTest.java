@@ -19,23 +19,20 @@ import org.lemming.utils.LemMING;
 public class DummyFrameProducerTest {
 
 	DummyFrameProducer d;
-	QueueStore<ImgLib2Frame<UnsignedShortType>> q;
 	
 	@Before
 	public void setUp() throws Exception {
 		d = new DummyFrameProducer();
-		q = new QueueStore<ImgLib2Frame<UnsignedShortType>>();
-		
-		d.setOutput(q);
 	}
 
 	@Test
 	public void test() {		
-		new Thread(d).start();
-		
-		LemMING.pause(1000);
-		
-		assertEquals(q.getLength(), 100);
+                int frame_count = 0;
+                while (d.hasMoreOutputs()) {
+                    d.newOutput();
+                    ++frame_count;
+                }
+		assertEquals(frame_count, 100);
 	}
 
 }

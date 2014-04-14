@@ -35,27 +35,15 @@ public class PrintToFileTest {
 
 	@Test
 	public void test() {
-		QueueStore<ImgLib2Frame<UnsignedShortType>> frames = new QueueStore<>();
-		QueueStore<Localization> localizations = new QueueStore<Localization>();
-		
 		DummyFrameProducer i = new DummyFrameProducer();
 		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d1 = new DummyLocalizer<>();
 		
-		i.setOutput(frames);
-		d1.setInput(frames);
-		d1.setOutput(localizations);
-		p1.setInput(localizations);
-		p2.setInput(localizations);
-		
-		new Thread(i).start();
-		new Thread(d1).start();
-		new Thread(p1).start();
-		new Thread(p2).start();
-		
-		LemMING.pause(1000);
-
-		assertEquals(localizations.getLength(), 0);
-		assertEquals(frames.getLength(), 0);
+                while (i.hasMoreOutputs()) {
+                        for (Localization localization : dl.process(i.newOutput())) {
+                                p1.process(localization);
+                                p2.process(localization);
+                        }
+                }
 	}
 	
 }

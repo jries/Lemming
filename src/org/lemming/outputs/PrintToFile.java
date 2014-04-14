@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.lemming.data.Localization;
 import org.lemming.utils.LemMING;
 
-public class PrintToFile extends SI<Localization> {
+public class PrintToFile implements Well<Localization> {
 	
 	File f;
 	FileWriter w;

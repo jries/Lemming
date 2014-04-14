@@ -21,21 +21,13 @@ public class MyTest1 {
 
 	@Test
 	public void test() {
-		
-		Store<Localization> s = new QueueStore<Localization>();
-		
-		s.put(new XYLocalization(1, 2));
-		
-		RandomLocalizer rl = new RandomLocalizer(100, 256, 256);
-		rl.setOutput(s);
-		
 		PrintToScreen ps = new PrintToScreen();
-		ps.setInput(s);
+		ps.process(new XYLocalization(1, 2));
 		
-		new Thread(rl).start();
-		new Thread(ps).start();
-		
-		LemMING.pause(1000);
+                RandomLocalizer rl = new RandomLocalizer(100, 256, 256);
+                while (r1.hasMoreOutputs()) {
+                    ps.process(r1.newOutput());
+                }
 	}
 	
 	

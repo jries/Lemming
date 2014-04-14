@@ -29,8 +29,9 @@ public class SpiralLocalizer extends SO<Localization> {
 	@Override
 	public Localization newOutput() {
 		i++;
-		
-	return  new XYLocalization(radius*i/N*Math.cos(2*Math.PI*i/N*turns)+128,radius*i/N*Math.sin(2*Math.PI*i/N*turns)+128);
+                Array<Localization> result = new Array<Localization>(1);
+                result[0] = new XYLocalization(radius*i/N*Math.cos(2*Math.PI*i/N*turns)+128,radius*i/N*Math.sin(2*Math.PI*i/N*turns)+128);
+                return result;
 	}
 
 }

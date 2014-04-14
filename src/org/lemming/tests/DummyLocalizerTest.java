@@ -35,18 +35,15 @@ public class DummyLocalizerTest {
 	@Test
 	public void test() {
 		DummyFrameProducer i = new DummyFrameProducer();
+                DummyLocalizer dummy_localizer = new DummyLocalizer<>();
 		
-		i.setOutput(frames);
-		d.setInput(frames);
-		d.setOutput(localizations);
-		
-		new Thread(i).start();
-		new Thread(d).start();
-		
-		LemMING.pause(1000);
-		
-		assertEquals(localizations.getLength(), 200);
-		assertEquals(frames.getLength(), 0);
+                int localization_count = 0;
+                while (i.hasMoreOutputs()) {
+                    Array<Localization> localizations =
+                        dummy_localizer.process(i.newOutput());
+                    ++localization_count;
+                }
+		assertEquals(localization_count, 200);
 	}
 
 }

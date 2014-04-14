@@ -23,7 +23,6 @@ public class GaussRenderOutputTest {
 	
 	Localizer fl;
 	GaussRenderOutput gro;
-	QueueStore<Localization> localizations; 
 	
 	@Before
 	public void setUp() throws Exception {		
@@ -31,7 +30,6 @@ public class GaussRenderOutputTest {
 		p.load(new FileReader("test.properties"));
 		
 		fl = new FileLocalizer(p.getProperty("samples.dir")+"FileLocalizer.txt");
-		localizations = new QueueStore<Localization>();
 		gro = new GaussRenderOutput();
 		
 		fl.setOutput(localizations);
@@ -40,10 +38,9 @@ public class GaussRenderOutputTest {
 
 	@Test
 	public void test() {
-		new Thread(fl).start();
-		new Thread(gro).start();
-		
-		LemMING.pause(2000);
+                while (f1.hasMoreOutputs()) {
+                    gro.process(f1.newOutput());
+                }
 	}
 
 }

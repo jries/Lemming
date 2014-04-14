@@ -9,18 +9,21 @@ import org.lemming.data.Store;
  *
  * @param <T>
  */
-public interface Source<T> extends Runnable {
-
-	/**
-	 * Sets the output of the source to the specified Store.
-	 * 
-	 * @param store
-	 */
-	public void setOutput(Store<T> store);
+public interface Source<T> {
+        public void beforeRun() {}
+        public void afterRun() {}
 	
 	/**
 	 * Returns true if the Source has more outputs to be generated.
 	 * @return
 	 */
 	public boolean hasMoreOutputs();
+
+	/**
+	 * Returns the generated object.
+         *
+         * May only be called when hasMoreOutputs() returned true.
+	 * @return
+	 */
+	public T newOutput();
 }

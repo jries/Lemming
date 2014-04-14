@@ -11,7 +11,7 @@ import org.lemming.data.XYLocalization;
  * @author Joe Borbely
  *
  */
-public class RandomLocalizer extends SO<Localization> {
+public class RandomLocalizer implements Localizer {
 
 	/** The number of localizations to create */
 	int N;

@@ -14,7 +14,7 @@ import org.lemming.interfaces.Rendering;
  * @author Thomas Pengo
  *
  */
-public class HistogramRender extends SI<Localization> implements Rendering {
+public class HistogramRender implements Rendering {
 	
 	int xBins=256; // the number of bins to use to segment the x-axis
 	int yBins=256; // the number of bins to use to segment the y-axis
@@ -74,15 +74,13 @@ public class HistogramRender extends SI<Localization> implements Rendering {
 	}
 
 	@Override
-	public void run() {
+	public void beforeRun() {
 		t.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				update();
 			}
 		}, 100, 100);		
-				
-		super.run();
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.lemming.data.Frame;
 import org.lemming.data.GenericFrame;
 import org.lemming.data.ImgLib2Frame;
+import org.lemming.interfaces.Source;
 import org.lemming.utils.LFile;
 import org.lemming.utils.LemMING;
 
@@ -40,7 +41,7 @@ import org.lemming.utils.LemMING;
  * @author Joe Borbely
  * 
  **/
-public class DAXLoader extends SO<ImgLib2Frame<UnsignedShortType>> {
+public class DAXLoader extends Source<ImgLib2Frame<UnsignedShortType>> {
 
 	public int width;
 	public int height;

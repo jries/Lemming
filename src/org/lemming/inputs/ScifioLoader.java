@@ -17,6 +17,7 @@ import net.imglib2.view.Views;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Store;
+import org.lemming.interfaces.Source;
 import org.lemming.utils.LArrays;
 import org.lemming.utils.LFile;
 
@@ -26,7 +27,7 @@ import org.lemming.utils.LFile;
  * @author Joe Borbely, Stephan Preibish, Thomas Pengo
  *
  */
-public class ScifioLoader<T extends RealType<T> & NativeType<T>> extends SO<ImgLib2Frame<T>> {
+public class ScifioLoader<T extends RealType<T> & NativeType<T>> implements Source<ImgLib2Frame<T>> {
 
 	Img<T> theImage;
 	

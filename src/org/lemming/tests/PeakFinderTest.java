@@ -23,8 +23,6 @@ import org.lemming.utils.LemMING;
 public class PeakFinderTest {
 	
 	ScifioLoader tif;
-	Store<Frame> frames;
-	Store<Localization> localizations;
 	PeakFinder peak;
 	PrintToScreen print;
 
@@ -35,25 +33,16 @@ public class PeakFinderTest {
 		
 		tif = new ScifioLoader(p.getProperty("samples.dir")+"eye.tif");
 		peak = new PeakFinder(200);
-		frames = new QueueStore<Frame>();
-		localizations = new QueueStore<Localization>();
 		print = new PrintToScreen();
-		
-		tif.setOutput(frames);
-		peak.setInput(frames);
-		peak.setOutput(localizations); //this is not used, but needs to be set in order to not get a NullStoreWarning
-		print.setInput(localizations);
 	}
 
 	@Test
 	public void test() {
-		new Thread(tif).start();
-		new Thread(peak).start();
-		new Thread(print).start();
-		
-		LemMING.pause(2000);
-		
-		equals(frames.isEmpty());
+                while (tif.hasMoreOutputs()) {
+                        for (Localization localization : peak.process(tif.newOutput())) {
+                                print.process(localization);
+                        }
+                }
 	}
 
 }

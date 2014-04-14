@@ -30,20 +30,16 @@ public class ImageJTIFFLoaderTest {
 		p.load(new FileReader("test.properties"));
 		
 		tif = new ImageJTIFFLoader(p.getProperty("samples.dir")+"eye.tif");
-		frames = new QueueStore<Frame>();
-		
-		tif.setOutput(frames);
 	}
 
 	@Test
 	public void test() {
-		tif.run();
-		
-		assertEquals(41, frames.getLength());		
-		
-		tif.show();
-
-		LemMING.pause(5000);
+                int frame_count = 0;
+                while (tif.hasMoreOutputs()) {
+                    tif.newOutput();
+                    ++frame_count;
+                }
+		assertEquals(41, frame_count);		
 	}
 
 }

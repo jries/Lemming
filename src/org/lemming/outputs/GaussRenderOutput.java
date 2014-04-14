@@ -7,8 +7,8 @@ import ij.ImagePlus;
 import ij.process.FloatProcessor;
 
 import org.lemming.data.Localization;
-import org.lemming.data.Store;
 import org.lemming.interfaces.Rendering;
+import org.lemming.interfaces.Well;
 import org.lemming.utils.Functions;
 import org.lemming.utils.Miscellaneous;
 
@@ -20,7 +20,7 @@ import org.lemming.utils.Miscellaneous;
  * @author Joe Borbely
  *
  */
-public class GaussRenderOutput extends SI<Localization> implements Rendering {
+public class GaussRenderOutput implements Rendering {
 
 	/** The image width, in pixels */	
 	int width = 256; 
@@ -48,9 +48,6 @@ public class GaussRenderOutput extends SI<Localization> implements Rendering {
 
 	double[] pixels;
 
-	Store<Localization> localizations;
-
-	
 	/** Draw an image from a Store of molecule localizations and render each
 	 * molecule as a 2-dimensional Gaussian. This construct uses default variables
 	 * for the image width and height, for the Gaussian parameters and for the

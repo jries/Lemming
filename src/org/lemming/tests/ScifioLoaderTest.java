@@ -21,7 +21,6 @@ public class ScifioLoaderTest {
 
 	Frame f;
 	ScifioLoader tif;
-	QueueStore<Frame> frames;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -29,20 +28,16 @@ public class ScifioLoaderTest {
 		p.load(new FileReader("test.properties"));
 		
 		tif = new ScifioLoader(p.getProperty("samples.dir")+"eye.tif");
-		frames = new QueueStore<Frame>();
-		
-		tif.setOutput(frames);
 	}
 
 	@Test
 	public void test() {
-		tif.run();
-		
+                int frame_count = 0;
+                while (tif.hasMoreOutputs()) {
+                    tif.newOutput();
+                    ++frame_count;
+                }
 		assertEquals(41, frames.getLength());		
-		
-		tif.show();
-
-		LemMING.pause(5000);
 	}
 
 }

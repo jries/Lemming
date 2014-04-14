@@ -1,16 +1,15 @@
 package org.lemming.interfaces;
 
-import org.lemming.data.Store;
-
 /**
- * A Well when run reads and processes from the associated Store.
+ * A Well receives inputs and gives no outputs.
  * 
  * @author Thomas Pengo, Joe Borbely
  *
  * @param <T>
  */
-public interface Well<T> extends Runnable {
+public interface Well<T> {
 	
-	public void setInput(Store<T> s);
-
+        public void process(T object);
+	public void beforeRun() {};
+	public void afterRun() {};
 }

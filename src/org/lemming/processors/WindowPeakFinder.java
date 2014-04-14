@@ -21,7 +21,7 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 	int size = 1;	
 
 	@Override
-	public void process(F frame) {
+	public Array<Localization> process(F frame) {
 		float[] pixels =  new float[9];
 		
 		Interval interval = Intervals.expand( frame.getPixels(), -1 );
@@ -32,6 +32,7 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 		
 		RandomAccess<T> ra = source.randomAccess();
 		
+                Array<Localization> result;
 		while (center.hasNext()) {
 			center.fwd();
 			
@@ -59,9 +60,10 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 				ra.fwd(0); v = ra.get().getRealFloat(); pixels[8] = v; if (val <= v) continue;
 				pixels[4] = (float) val;
 				
-				output.put(new XYFwLocalization(pixels, frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+				result.put(new XYFwLocalization(pixels, frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 			}
 		}
+                return result;
 
 	}
 }

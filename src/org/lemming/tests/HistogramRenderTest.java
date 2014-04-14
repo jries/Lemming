@@ -22,7 +22,6 @@ public class HistogramRenderTest {
 
 	FileLocalizer f;
 	HistogramRender histo;
-	Store<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {		
@@ -30,10 +29,6 @@ public class HistogramRenderTest {
 		p.load(new FileReader("test.properties"));
 		
 		f = new FileLocalizer(p.getProperty("samples.dir")+"HistoRender.csv");
-		
-		localizations = new QueueStore<Localization>();
-		
-		f.setOutput(localizations);
 	}
 
 	@Test
@@ -46,12 +41,9 @@ public class HistogramRenderTest {
 		histo.setTitle("Histogram All");
 
 		// read localizations from the file and render the histogram
-		new Thread(f).start();
-		new Thread(histo).start();		
-		
-		while (!localizations.isEmpty()) LemMING.pause(100);
-		
-		LemMING.pause(2000);
+                while (f1.hasMoreOutputs()) {
+                    histo.process(f1.newOutput());
+                }
 	}
 
 	@Test
@@ -63,13 +55,9 @@ public class HistogramRenderTest {
 		histo.setInput(localizations);
 		histo.setTitle("Histogram Region");
 
-		// read localizations from the file and render the histogram
-		new Thread(f).start();
-		new Thread(histo).start();		
-		
-		while (!localizations.isEmpty()) LemMING.pause(100);
-		
-		LemMING.pause(2000);
+                while (f1.hasMoreOutputs()) {
+                    histo.process(f1.newOutput());
+                }
 	}
 
 }

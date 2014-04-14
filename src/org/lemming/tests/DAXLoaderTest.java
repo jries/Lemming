@@ -36,7 +36,8 @@ public class DAXLoaderTest {
 
 	DAXLoader dax;
 	QueueStore<ImgLib2Frame<UnsignedShortType>> frames;
-	
+	SO<ImgLib2Frame<UnsignedShortType>> so;
+
 	@Before
 	public void setUp() throws Exception {		
 		Properties p = new Properties();
@@ -44,8 +45,7 @@ public class DAXLoaderTest {
 	
 		dax = new DAXLoader(p.getProperty("samples.dir")+"daxSample.dax");
 		frames = new QueueStore<ImgLib2Frame<UnsignedShortType>>();
-		
-		dax.setOutput(frames);
+                so = new SO<ImgLib2Frame<UnsignedShortType>>(dax, frames);
 	}
 
 	@Test

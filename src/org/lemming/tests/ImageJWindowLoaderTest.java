@@ -26,7 +26,6 @@ public class ImageJWindowLoaderTest {
 
 	Frame f;
 	ImageJWindowLoader tif;
-	QueueStore<Frame> frames;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -39,20 +38,16 @@ public class ImageJWindowLoaderTest {
 		p.load(new FileReader("test.properties"));
 		
 		tif = new ImageJWindowLoader();
-		frames = new QueueStore<Frame>();
-		
-		tif.setOutput(frames);
 	}
 
 	@Test
 	public void test() {
-		tif.run();
-		
-		assertEquals(27, frames.getLength());		
-		
-		tif.show();
-
-		LemMING.pause(5000);
+                int frame_count = 0;
+                while (tif.hasMoreOutputs()) {
+                    tif.newOutput();
+                    ++frame_count;
+                }
+		assertEquals(27, frame_count);		
 	}
 
 }

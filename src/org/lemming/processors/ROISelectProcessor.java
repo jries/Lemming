@@ -4,7 +4,7 @@ import ij.gui.Roi;
 
 import org.lemming.data.Localization;
 
-public class ROISelectProcessor extends SISO<Localization,Localization> {	
+public class ROISelectProcessor implements Processor<Localization,Localization> {	
 	
 	Roi roi;
 	
@@ -18,11 +18,13 @@ public class ROISelectProcessor extends SISO<Localization,Localization> {
 	
 	@Override
 	public void process(Localization loc) {
-		double x = loc.getX();
-		double y = loc.getY();
-		
-		if (roi.contains( (int) x, (int) y))
-			output.put(loc);
+                double x = loc.getX();
+                double y = loc.getY();
+                
+                if (roi.contains( (int) x, (int) y))
+                        return loc;
+                else 
+                        return nullptr;
 	}
 
 }

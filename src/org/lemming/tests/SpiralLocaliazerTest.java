@@ -18,21 +18,12 @@ public class SpiralLocaliazerTest {
 
 	@Test
 	public void test() {
-		
 		SpiralLocalizer sl = new SpiralLocalizer();
-		
 		GaussRenderOutput gr = new GaussRenderOutput();
 		
-		Store<Localization> store = new QueueStore<Localization>();
-		
-		sl.setOutput(store);
-		gr.setInput(store);
-		
-		new Thread(sl).start();
-		new Thread(gr).start();
-		
-		LemMING.pause(10000);
-		
+                while (sl.hasMoreOutputs()) {
+                        gr.process(sl.newOutput());
+                }
 	}
 
 }

@@ -11,12 +11,7 @@ import org.lemming.interfaces.Source;
 
 public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType>> {
 
-	Store<ImgLib2Frame<UnsignedShortType>> output;
-	
-	@Override
-	public void setOutput(Store<ImgLib2Frame<UnsignedShortType>> store) {
-		output = store;
-	}
+        int i = 0;
 	
 	class DummyFrame extends ImgLib2Frame<UnsignedShortType> {
 		long ID;
@@ -48,18 +43,13 @@ public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType
 	}
 	
 	@Override
-	public void run() {
-		for(int i=0; i<100; i++)
-			output.put(new DummyFrame(i));
-		
-		hasMore = false;
+	public ImgLib2Frame<UnsignedShortType> newOutput() {
+                output.put(new DummyFrame(i++));
 	}
-
-	boolean hasMore = true;
 			
 	@Override
 	public boolean hasMoreOutputs() {
-		return hasMore;
+		return i < 100;
 	}
 
 }

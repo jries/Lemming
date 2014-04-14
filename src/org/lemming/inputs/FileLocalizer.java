@@ -11,6 +11,7 @@ import org.lemming.data.Store;
 import org.lemming.data.XYLocalization;
 import org.lemming.interfaces.ImageLocalizer;
 import org.lemming.interfaces.Localizer;
+import org.lemming.interfaces.Source;
 import org.lemming.outputs.ShowMessage;
 import org.lemming.utils.LemMING;
 
@@ -23,7 +24,7 @@ import org.lemming.utils.LemMING;
  * @author Joe Borbely
  *
  */
-public class FileLocalizer extends SO<Localization> implements Localizer {
+public class FileLocalizer implements Localizer {
 	
 	Store<Localization> localizations;
 	String filename;

@@ -9,13 +9,14 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
 import org.lemming.data.ImgLib2Frame;
+import org.lemming.interfaces.Source;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 
-public class ImageJWindowLoader<T extends RealType<T> & NativeType<T>> extends SO<ImgLib2Frame<T>> {
+public class ImageJWindowLoader<T extends RealType<T> & NativeType<T>> implements Source<ImgLib2Frame<T>> {
 
 	int curSlice = 0;
 	

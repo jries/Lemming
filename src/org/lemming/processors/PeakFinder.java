@@ -18,7 +18,7 @@ import org.lemming.data.Localization;
 import org.lemming.data.XYFLocalization;
 import org.lemming.processors.SISO;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<F,Localization> {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Processor<F,Array<Localization>> {
 
 	/** The intensity of a pixel must be greater than {@code threshold} to be considered a local maximum */
 	double threshold;
@@ -28,11 +28,11 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
  	}
 	
 	@Override
-	public void process(F frame) {
+	public Array<Localization> process(F frame) {
 		process2(frame);
 	}
 	
-	public void process1(Frame<T> frame) {
+	public Array<Localization> process1(Frame<T> frame) {
 		//double[] pixels = (double[]) frame.getPixels();
 		//float[] pixels = (float[]) frame.getPixels();
 		
@@ -69,7 +69,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
 		    }
 		    
 		    if (isMaximum)
-		    	output.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+		    	result.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 		}
 		
 		//for now just print the results to the console
@@ -78,7 +78,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
 		//System.out.println(Long.toString(frameNo)+":"+localMax.toString());
 	}
 		
-	public void process2(Frame<T> frame) {
+	public Array<Localization> process2(Frame<T> frame) {
 		//double[] pixels = (double[]) frame.getPixels();
 		//float[] pixels = (float[]) frame.getPixels();
 		
@@ -90,6 +90,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
 		
 		RandomAccess<T> ra = source.randomAccess();
 		
+                Array<Localization> result;
 		while (center.hasNext()) {
 			center.fwd();
 			
@@ -107,10 +108,10 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends SISO<
 				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
 				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
 				
-				output.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+				result.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 			}
 		}
-
+                return result;
 	}
 	
 }
