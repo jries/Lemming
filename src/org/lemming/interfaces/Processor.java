@@ -1,19 +1,14 @@
 package org.lemming.interfaces;
 
-import org.lemming.data.Store;
-
 /**
- * A processor transforms T1s into T2s.
- * 
- * @author Thomas Pengo, Joe Borbely
+ * A processor is a module that transforms T1s into T2s.
  *
- * @param <T1> the input types
- * @param <T2> the output types
+ * The processor may return null to indicate that the operation
+ * had no results.
+ * 
+ * @param <T1> the input type
+ * @param <T2> the output type
  */
-public interface Processor<T1, T2> extends Runnable {
-
-	public void setInput(Store<T1> s);
-	
-	public void setOutput(Store<T2> s);
-	
+public interface Processor<T1, T2> {
+	public abstract T2 process(T1 input);
 }
