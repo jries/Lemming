@@ -1,4 +1,4 @@
-package org.lemming.data;
+package org.lemming.queue;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

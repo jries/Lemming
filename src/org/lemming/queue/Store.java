@@ -1,4 +1,4 @@
-package org.lemming.data;
+package org.lemming.queue;
 
 /**
  * Store represents a repository of generic objects. Only a get, a put and an isempty class are provided.
