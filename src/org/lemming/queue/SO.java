@@ -28,9 +28,11 @@ public class SO<T> implements Runnable {
 
 	@Override
 	public final void run() {
+                source.beforeRun();
 		while (source.hasMoreOutputs()) {
 			output.put(source.newOutput());
 		}
+                source.afterRun();
 	}
 	
 }

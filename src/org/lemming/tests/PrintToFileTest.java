@@ -38,12 +38,18 @@ public class PrintToFileTest {
 		DummyFrameProducer i = new DummyFrameProducer();
 		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d = new DummyLocalizer<>();
 		
+                i.beforeRun();
+                p1.beforeRun();
+                p2.beforeRun();
                 while (i.hasMoreOutputs()) {
                         for (Localization localization : d.process(i.newOutput())) {
                                 p1.process(localization);
                                 p2.process(localization);
                         }
                 }
+                i.afterRun();
+                p1.afterRun();
+                p2.afterRun();
 	}
 	
 }

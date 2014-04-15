@@ -43,10 +43,12 @@ public class ImageJWindowLoaderTest {
 	@Test
 	public void test() {
                 int frame_count = 0;
+                tif.beforeRun();
                 while (tif.hasMoreOutputs()) {
                     tif.newOutput();
                     ++frame_count;
                 }
+                tif.afterRun();
 		assertEquals(27, frame_count);		
 	}
 

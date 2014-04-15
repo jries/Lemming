@@ -21,9 +21,13 @@ public class SpiralLocaliazerTest {
 		SpiralLocalizer sl = new SpiralLocalizer();
 		GaussRenderOutput gr = new GaussRenderOutput();
 		
+                sl.beforeRun();
+                gr.beforeRun();
                 while (sl.hasMoreOutputs()) {
                         gr.process(sl.newOutput());
                 }
+                gr.afterRun();
+                sl.afterRun();
 	}
 
 }

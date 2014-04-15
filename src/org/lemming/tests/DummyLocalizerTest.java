@@ -34,8 +34,7 @@ public class DummyLocalizerTest {
 		
                 int localization_count = 0;
                 while (i.hasMoreOutputs()) {
-                    d.process(i.newOutput());
-                    localization_count += 1;
+                    localization_count += d.process(i.newOutput()).size();
                 }
 		assertEquals(localization_count, 200);
 	}

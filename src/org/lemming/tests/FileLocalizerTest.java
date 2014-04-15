@@ -32,22 +32,26 @@ public class FileLocalizerTest {
 	@Test
 	public void testCSV() {
 		fl = new FileLocalizer(p.getProperty("samples.dir")+"FileLocalizer.csv");
+                fl.beforeRun();
                 int frame_count = 0;
                 while (fl.hasMoreOutputs()) {
                     fl.newOutput();
                     ++frame_count;
                 }
+                fl.afterRun();
 		assertEquals(10, frame_count);
 	}
 
 	@Test
 	public void testTXT() {
 		fl = new FileLocalizer(p.getProperty("samples.dir")+"FileLocalizer.txt");
+                fl.beforeRun();
                 int frame_count = 0;
                 while (fl.hasMoreOutputs()) {
                     fl.newOutput();
                     ++frame_count;
                 }
+                fl.afterRun();
 		assertEquals(10, frame_count);
 	}
 

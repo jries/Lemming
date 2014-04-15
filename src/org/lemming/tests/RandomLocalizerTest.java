@@ -29,28 +29,40 @@ public class RandomLocalizerTest {
 	@Test
 	public void testGaussRender() {
 		ren = new GaussRenderOutput(256, 256);
+                rl.beforeRun();
+                ren.beforeRun();
                 while (rl.hasMoreOutputs()) {
                         ren.process(rl.newOutput());
                 }
+                ren.afterRun();
+                rl.afterRun();
 	}
 
 	@Test
 	public void testHistoRender() {
 		ren = new HistogramRender();
+                rl.beforeRun();
+                ren.beforeRun();
                 while (rl.hasMoreOutputs()) {
                         ren.process(rl.newOutput());
                 }
+                ren.afterRun();
+                rl.afterRun();
 	}
 
 	@Test
 	public void testMultiplHistoRender() {
 		ren = new HistogramRender();
 		Rendering histo2 = new HistogramRender();
+                rl.beforeRun();
+                ren.beforeRun();
                 while (rl.hasMoreOutputs()) {
                         Localization localization = rl.newOutput();
                         ren.process(localization);
                         histo2.process(localization);
                 }
+                ren.afterRun();
+                rl.afterRun();
 	}
 	
 	/*
