@@ -1,5 +1,8 @@
 package org.lemming.processors;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
+
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
@@ -9,6 +12,7 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
 import org.lemming.data.Frame;
+import org.lemming.data.Localization;
 import org.lemming.data.XYFLocalization;
 import org.lemming.data.XYFwLocalization;
 
@@ -21,7 +25,7 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 	int size = 1;	
 
 	@Override
-	public Array<Localization> process(F frame) {
+	public AbstractList<Localization> process(F frame) {
 		float[] pixels =  new float[9];
 		
 		Interval interval = Intervals.expand( frame.getPixels(), -1 );
@@ -32,7 +36,7 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 		
 		RandomAccess<T> ra = source.randomAccess();
 		
-                Array<Localization> result;
+                ArrayList<Localization> result = new ArrayList<Localization>();
 		while (center.hasNext()) {
 			center.fwd();
 			
@@ -60,7 +64,7 @@ public class WindowPeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 				ra.fwd(0); v = ra.get().getRealFloat(); pixels[8] = v; if (val <= v) continue;
 				pixels[4] = (float) val;
 				
-				result.put(new XYFwLocalization(pixels, frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+				result.add(new XYFwLocalization(pixels, frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 			}
 		}
                 return result;

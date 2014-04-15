@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
-import org.lemming.data.Store;
+import org.lemming.queue.QueueStore;
+import org.lemming.queue.Store;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.utils.LemMING;
 

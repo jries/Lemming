@@ -121,7 +121,7 @@ public class GaussRenderOutput implements Rendering {
 	Timer t = new Timer();
 
 	@Override
-	public void run() {
+	public void beforeRun() {
 		pixels = new double[width*height];
 		fp = new FloatProcessor(width, height, pixels);
 		ip = new ImagePlus(title, fp);
@@ -133,9 +133,11 @@ public class GaussRenderOutput implements Rendering {
 				update();
 			}
 		}, 100, 100);		
-				
-		super.run();
 	}
+
+	@Override
+	public void afterRun() {
+        }
 
 	double maxVal=-Float.MAX_VALUE; // keeps track of the maximum value in the histogram
 

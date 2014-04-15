@@ -1,7 +1,7 @@
 package org.lemming.processors;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.List;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -16,9 +16,9 @@ import net.imglib2.view.Views;
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
 import org.lemming.data.XYFLocalization;
-import org.lemming.processors.SISO;
+import org.lemming.interfaces.Processor;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Processor<F,Array<Localization>> {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Processor<F,AbstractList<Localization>> {
 
 	/** The intensity of a pixel must be greater than {@code threshold} to be considered a local maximum */
 	double threshold;
@@ -28,11 +28,11 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Pr
  	}
 	
 	@Override
-	public Array<Localization> process(F frame) {
-		process2(frame);
+	public AbstractList<Localization> process(F frame) {
+		return process2(frame);
 	}
 	
-	public Array<Localization> process1(Frame<T> frame) {
+	public AbstractList<Localization> process1(Frame<T> frame) {
 		//double[] pixels = (double[]) frame.getPixels();
 		//float[] pixels = (float[]) frame.getPixels();
 		
@@ -44,6 +44,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Pr
 
 		final RectangleShape shape = new RectangleShape( 1, true );
 
+                ArrayList<Localization> result = new ArrayList<Localization>();
 		for ( final Neighborhood< T > localNeighborhood : shape.neighborhoods( source ) )
 		{
 		    // what is the value that we investigate?
@@ -68,9 +69,12 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Pr
 		        }
 		    }
 		    
-		    if (isMaximum)
-		    	result.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+		    if (isMaximum) {
+		    	result.add(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+                    }
 		}
+
+                return result;
 		
 		//for now just print the results to the console
 		//List<Integer> localMax = new ArrayList<Integer>();
@@ -78,7 +82,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Pr
 		//System.out.println(Long.toString(frameNo)+":"+localMax.toString());
 	}
 		
-	public Array<Localization> process2(Frame<T> frame) {
+	public AbstractList<Localization> process2(Frame<T> frame) {
 		//double[] pixels = (double[]) frame.getPixels();
 		//float[] pixels = (float[]) frame.getPixels();
 		
@@ -90,7 +94,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Pr
 		
 		RandomAccess<T> ra = source.randomAccess();
 		
-                Array<Localization> result;
+                ArrayList<Localization> result = new ArrayList<Localization>();
 		while (center.hasNext()) {
 			center.fwd();
 			
@@ -108,7 +112,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> implements Pr
 				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
 				ra.fwd(0); if (val <= ra.get().getRealDouble()) continue;
 				
-				result.put(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
+				result.add(new XYFLocalization(frame.getFrameNumber(), center.getIntPosition(0), center.getIntPosition(1)));
 			}
 		}
                 return result;

@@ -1,8 +1,17 @@
 package org.lemming.outputs;
 
 import org.lemming.data.Localization;
+import org.lemming.interfaces.Well;
 
-public class PrintToScreen extends SI<Localization> {
+public class PrintToScreen implements Well<Localization> {
+
+	@Override
+	public void beforeRun() {
+        }
+
+	@Override
+	public void afterRun() {
+        }
 
 	@Override
 	public void process(Localization l) {

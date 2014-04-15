@@ -2,9 +2,9 @@ package org.lemming.tests;
 
 import org.lemming.data.Localization;
 import org.lemming.data.XYLocalization;
-import org.lemming.inputs.SO;
+import org.lemming.interfaces.Source;
 
-public class SpiralLocalizer extends SO<Localization> {
+public class SpiralLocalizer implements Source<Localization> {
 
 	int i = 0;
 	
@@ -29,9 +29,15 @@ public class SpiralLocalizer extends SO<Localization> {
 	@Override
 	public Localization newOutput() {
 		i++;
-                Array<Localization> result = new Array<Localization>(1);
-                result[0] = new XYLocalization(radius*i/N*Math.cos(2*Math.PI*i/N*turns)+128,radius*i/N*Math.sin(2*Math.PI*i/N*turns)+128);
-                return result;
+                return new XYLocalization(radius*i/N*Math.cos(2*Math.PI*i/N*turns)+128,radius*i/N*Math.sin(2*Math.PI*i/N*turns)+128);
 	}
+
+	@Override
+	public void beforeRun() {
+        }
+
+	@Override
+	public void afterRun() {
+        }
 
 }

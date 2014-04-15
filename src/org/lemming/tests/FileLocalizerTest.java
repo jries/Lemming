@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.inputs.FileLocalizer;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.utils.LemMING;
@@ -33,8 +33,8 @@ public class FileLocalizerTest {
 	public void testCSV() {
 		fl = new FileLocalizer(p.getProperty("samples.dir")+"FileLocalizer.csv");
                 int frame_count = 0;
-                while (f1.hasMoreOutputs()) {
-                    f1.newOutput();
+                while (fl.hasMoreOutputs()) {
+                    fl.newOutput();
                     ++frame_count;
                 }
 		assertEquals(10, frame_count);
@@ -44,8 +44,8 @@ public class FileLocalizerTest {
 	public void testTXT() {
 		fl = new FileLocalizer(p.getProperty("samples.dir")+"FileLocalizer.txt");
                 int frame_count = 0;
-                while (f1.hasMoreOutputs()) {
-                    f1.newOutput();
+                while (fl.hasMoreOutputs()) {
+                    fl.newOutput();
                     ++frame_count;
                 }
 		assertEquals(10, frame_count);

@@ -22,13 +22,17 @@ public class ImageJWindowLoader<T extends RealType<T> & NativeType<T>> implement
 	
 	ImagePlus img;
 	
+	public ImageJWindowLoader() {
+	}
+	
 	@Override
 	public void beforeRun() {
 		img = WindowManager.getCurrentImage();
 	}
-	
-	public ImageJWindowLoader() {
-	}
+
+	@Override
+	public void afterRun() {
+        }
 	
 	@Override
 	public boolean hasMoreOutputs() {
@@ -36,7 +40,7 @@ public class ImageJWindowLoader<T extends RealType<T> & NativeType<T>> implement
 	}
 
 	@Override
-	protected ImgLib2Frame<T> newOutput() {
+	public ImgLib2Frame<T> newOutput() {
 		curSlice++;
 		
 		ImageProcessor ip = img.getStack().getProcessor(curSlice);

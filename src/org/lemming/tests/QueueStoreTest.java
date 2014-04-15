@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 
 /**
  * Test class for a Store.

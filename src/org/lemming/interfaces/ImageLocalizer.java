@@ -1,8 +1,10 @@
 package org.lemming.interfaces;
 
+import java.util.AbstractList;
+
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.Store;
+import org.lemming.queue.Store;
 
 /**
  * A localizer is transforms Frames into Localizations.
@@ -10,5 +12,5 @@ import org.lemming.data.Store;
  * @author Thomas Pengo, Joe Borbely
  *
  */
-public interface ImageLocalizer<T, F extends Frame<T>> extends Localizer, Processor<F, Array<Localization>> {
+public interface ImageLocalizer<T, F extends Frame<T>> extends Processor<F, AbstractList<Localization>> {
 }

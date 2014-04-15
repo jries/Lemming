@@ -6,12 +6,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
+import org.lemming.queue.StoreSplitter;
+import org.lemming.queue.SO;
+import org.lemming.queue.SI;
 import org.lemming.inputs.RandomLocalizer;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.utils.LemMING;
-import org.lemming.utils.StoreSplitter;
 
 /**
  * Test class for splitting a Store into multiple Stores.
@@ -20,9 +22,9 @@ import org.lemming.utils.StoreSplitter;
  */
 public class StoreSplitterTest {
 
-	RandomLocalizer rl;
-	GaussRenderOutput gro;
-	PrintToScreen pts;
+	Runnable rl;
+	Runnable gro;
+	Runnable pts;
 	QueueStore<Localization> localizations;
 	QueueStore<Localization> printLocalizations;
 	QueueStore<Localization> renderLocalizations;
@@ -30,22 +32,19 @@ public class StoreSplitterTest {
 
 	@Before
 	public void setUp() throws Exception {
-		rl = new RandomLocalizer(20, 256, 256);
-		gro = new GaussRenderOutput(256, 256);
-		gro.setTitle("Store Splitter Test");
-		pts = new PrintToScreen();
 		splitter = new StoreSplitter<Localization>();
-		
+
 		printLocalizations = new QueueStore<Localization>();
 		renderLocalizations = new QueueStore<Localization>();
 		localizations = new QueueStore<Localization>();
 		
-		rl.setOutput(localizations);
+                rl = new SO<Localization>(new RandomLocalizer(20, 256, 256), localizations);
+                gro = new SI<Localization>(renderLocalizations, new GaussRenderOutput(256, 256));
+                pts = new SI<Localization>(printLocalizations, new PrintToScreen());
+		
 		splitter.setInput(localizations);		
 		splitter.addOutput(printLocalizations);
 		splitter.addOutput(renderLocalizations);		
-		gro.setInput(renderLocalizations);
-		pts.setInput(printLocalizations);
 	}
 
 	@Test

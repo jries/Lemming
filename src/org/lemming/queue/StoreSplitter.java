@@ -1,11 +1,7 @@
-package org.lemming.utils;
+package org.lemming.queue;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.lemming.data.QueueStore;
-import org.lemming.data.Store;
-import org.lemming.outputs.NullStoreWarning;
 
 public class StoreSplitter<DataType> implements Runnable {
 

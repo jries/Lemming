@@ -3,10 +3,15 @@ package org.lemming.queue;
 import org.lemming.queue.Store;
 import org.lemming.interfaces.Well;
 
-public abstract class SI<T> implements Well<T>, Runnable {
+public class SI<T> implements Runnable {
 
 	Store<T> input;
         Well<T> well;
+
+        public SI(Store<T> input, Well<T> well) {
+            this.input = input;
+            this.well = well;
+        }
 
 	@Override
 	public void run() {
@@ -21,11 +26,6 @@ public abstract class SI<T> implements Well<T>, Runnable {
 		}
 		
 		well.afterRun();
-	}
-
-	@Override
-	public void setInput(Store<T> s) {
-		input = s;
 	}
 
 }

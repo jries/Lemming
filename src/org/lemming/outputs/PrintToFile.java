@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.lemming.data.Localization;
+import org.lemming.interfaces.Well;
 import org.lemming.utils.LemMING;
 
 public class PrintToFile implements Well<Localization> {

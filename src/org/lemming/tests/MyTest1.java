@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
-import org.lemming.data.Store;
+import org.lemming.queue.QueueStore;
+import org.lemming.queue.Store;
 import org.lemming.data.XYLocalization;
 import org.lemming.inputs.RandomLocalizer;
 import org.lemming.outputs.PrintToScreen;
@@ -25,8 +25,8 @@ public class MyTest1 {
 		ps.process(new XYLocalization(1, 2));
 		
                 RandomLocalizer rl = new RandomLocalizer(100, 256, 256);
-                while (r1.hasMoreOutputs()) {
-                    ps.process(r1.newOutput());
+                while (rl.hasMoreOutputs()) {
+                    ps.process(rl.newOutput());
                 }
 	}
 	

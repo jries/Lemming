@@ -6,7 +6,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
-import org.lemming.data.Store;
+import org.lemming.queue.Store;
 import org.lemming.interfaces.Source;
 
 public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType>> {
@@ -41,10 +41,18 @@ public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType
 			return 0;
 		}
 	}
+
+        @Override
+	public void beforeRun() {
+ 	}
+	
+        @Override
+	public void afterRun() {
+ 	}
 	
 	@Override
 	public ImgLib2Frame<UnsignedShortType> newOutput() {
-                output.put(new DummyFrame(i++));
+                return new DummyFrame(i++);
 	}
 			
 	@Override

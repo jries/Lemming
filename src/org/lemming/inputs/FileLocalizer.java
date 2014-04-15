@@ -7,12 +7,10 @@ import java.io.IOException;
 
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.Store;
+import org.lemming.queue.Store;
 import org.lemming.data.XYLocalization;
-import org.lemming.interfaces.ImageLocalizer;
-import org.lemming.interfaces.Localizer;
 import org.lemming.interfaces.Source;
-import org.lemming.outputs.ShowMessage;
+import org.lemming.queue.ShowMessage;
 import org.lemming.utils.LemMING;
 
 /**
@@ -24,7 +22,7 @@ import org.lemming.utils.LemMING;
  * @author Joe Borbely
  *
  */
-public class FileLocalizer implements Localizer {
+public class FileLocalizer implements Source<Localization> {
 	
 	Store<Localization> localizations;
 	String filename;

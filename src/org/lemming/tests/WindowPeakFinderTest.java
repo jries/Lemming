@@ -12,8 +12,8 @@ import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
-import org.lemming.data.Store;
+import org.lemming.queue.QueueStore;
+import org.lemming.queue.Store;
 import org.lemming.inputs.ScifioLoader;
 import org.lemming.outputs.PrintToScreen;
 import org.lemming.processors.PeakFinder;
@@ -46,7 +46,9 @@ public class WindowPeakFinderTest {
 	@Test
 	public void test() {
                 while (tif.hasMoreOutputs()) {
-                        print.process(peak.process(tif.newOutput()));
+                        for (Localization localization : peak.process(tif.newOutput())) {
+                                print.process(localization);
+                        }
                 }
 	}
 

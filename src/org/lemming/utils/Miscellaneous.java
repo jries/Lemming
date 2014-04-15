@@ -1,6 +1,6 @@
 package org.lemming.utils;
 
-import org.lemming.outputs.ShowMessage;
+import org.lemming.queue.ShowMessage;
 
 public class Miscellaneous {
 	
@@ -20,7 +20,7 @@ public class Miscellaneous {
 		
 		// Make sure that (x0, y0) is within the image
 		if(x0 > imageWidth || y0 > imageHeight) {
-			new ShowMessage(String.format("Warning, localization not within image. Got (%d,%d), image size is (%d,%d)", x0, y0, imageWidth, imageHeight));
+			System.out.println(String.format("Warning, localization not within image. Got (%d,%d), image size is (%d,%d)", x0, y0, imageWidth, imageHeight));
 			return null;
 		}
 		

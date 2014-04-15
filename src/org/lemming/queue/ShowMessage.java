@@ -1,4 +1,4 @@
-package org.lemming.outputs;
+package org.lemming.queue;
 
 public class ShowMessage {
 

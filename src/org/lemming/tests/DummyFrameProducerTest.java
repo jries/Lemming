@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.utils.LemMING;
 

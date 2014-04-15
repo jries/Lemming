@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
 import org.lemming.outputs.PrintToScreen;
@@ -30,29 +30,14 @@ public class PrintToScreenTest {
 
 	@Test
 	public void test() {
-		QueueStore<ImgLib2Frame<UnsignedShortType>> frames = new QueueStore<>();
-		QueueStore<Localization> localizations = new QueueStore<Localization>();
-		
 		DummyFrameProducer i = new DummyFrameProducer();
-		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d1 = new DummyLocalizer<>();
-		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d2 = new DummyLocalizer<>();
+		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d = new DummyLocalizer<>();
 		
-		i.setOutput(frames);
-		d1.setInput(frames);
-		d1.setOutput(localizations);
-		d2.setInput(frames);
-		d2.setOutput(localizations);
-		p.setInput(localizations);
-		
-		new Thread(i).start();
-		new Thread(d1).start();
-		new Thread(d2).start();
-		new Thread(p).start();
-		
-		LemMING.pause(1000);
-		
-		assertEquals(localizations.getLength(), 0);
-		assertEquals(frames.getLength(), 0);
+                while (i.hasMoreOutputs()) {
+                    for (Localization l : d.process(i.newOutput())) {
+                        p.process(l);
+                    }
+                }
 	}
 
 }

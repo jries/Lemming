@@ -20,8 +20,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
-import org.lemming.data.QueueStore;
 import org.lemming.inputs.DAXLoader;
+import org.lemming.queue.QueueStore;
+import org.lemming.queue.SO;
 import org.lemming.utils.LemMING;
 
 /**
@@ -50,7 +51,7 @@ public class DAXLoaderTest {
 
 	@Test
 	public void test() {
-		dax.run();
+		so.run();
 		
 		assertEquals(57, frames.getLength());
 		

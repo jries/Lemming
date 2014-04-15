@@ -1,4 +1,4 @@
-package org.lemming.data;
+package org.lemming.queue;
 
 /**
  * The Peekable interface will tag stores that can be peeked. Peeking creates a new Store referencing the same queue.

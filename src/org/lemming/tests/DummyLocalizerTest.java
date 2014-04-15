@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
 import org.lemming.utils.LemMING;
@@ -22,26 +22,20 @@ import org.lemming.utils.LemMING;
 public class DummyLocalizerTest {
 
 	DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d;
-	QueueStore<ImgLib2Frame<UnsignedShortType>> frames;
-	QueueStore<Localization> localizations;
 	
 	@Before
 	public void setUp() throws Exception {
 		d = new DummyLocalizer<>();
-		frames = new QueueStore<>();
-		localizations = new QueueStore<Localization>();
 	}
 
 	@Test
 	public void test() {
 		DummyFrameProducer i = new DummyFrameProducer();
-                DummyLocalizer dummy_localizer = new DummyLocalizer<>();
 		
                 int localization_count = 0;
                 while (i.hasMoreOutputs()) {
-                    Array<Localization> localizations =
-                        dummy_localizer.process(i.newOutput());
-                    ++localization_count;
+                    d.process(i.newOutput());
+                    localization_count += 1;
                 }
 		assertEquals(localization_count, 200);
 	}

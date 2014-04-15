@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.dummy.DummyFrameProducer;
 import org.lemming.dummy.DummyLocalizer;
 import org.lemming.outputs.PrintToFile;
@@ -36,10 +36,10 @@ public class PrintToFileTest {
 	@Test
 	public void test() {
 		DummyFrameProducer i = new DummyFrameProducer();
-		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d1 = new DummyLocalizer<>();
+		DummyLocalizer<UnsignedShortType, ImgLib2Frame<UnsignedShortType>> d = new DummyLocalizer<>();
 		
                 while (i.hasMoreOutputs()) {
-                        for (Localization localization : dl.process(i.newOutput())) {
+                        for (Localization localization : d.process(i.newOutput())) {
                                 p1.process(localization);
                                 p2.process(localization);
                         }

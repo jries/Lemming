@@ -10,6 +10,6 @@ package org.lemming.interfaces;
 public interface Well<T> {
 	
         public void process(T object);
-	public void beforeRun() {};
-	public void afterRun() {};
+	public void beforeRun();
+	public void afterRun();
 }

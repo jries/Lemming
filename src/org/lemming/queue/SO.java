@@ -1,7 +1,7 @@
 package org.lemming.queue;
 
 import org.lemming.interfaces.Source;
-import org.lemming.outputs.NullStoreWarning;
+import org.lemming.queue.NullStoreWarning;
 import org.lemming.queue.Store;
 
 /**
@@ -13,12 +13,12 @@ import org.lemming.queue.Store;
  *
  * @param <T> Type parameter for the kind of objects that are being generated.
  */
-public abstract class SO<T> implements Runnable {
+public class SO<T> implements Runnable {
 
 	Store<T> output;
         Source<T> source;
 
-        SO(Source<T> source, Store<T> output) {
+        public SO(Source<T> source, Store<T> output) {
             if (output==null)
                     throw new NullStoreWarning(this.getClass().getName()); 
 

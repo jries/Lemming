@@ -8,7 +8,7 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.inputs.ScifioLoader;
 import org.lemming.utils.LemMING;
 
@@ -37,7 +37,7 @@ public class ScifioLoaderTest {
                     tif.newOutput();
                     ++frame_count;
                 }
-		assertEquals(41, frames.getLength());		
+		assertEquals(41, frame_count);		
 	}
 
 }

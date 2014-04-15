@@ -1,8 +1,6 @@
 package org.lemming.queue;
 
 import org.lemming.interfaces.Processor;
-import org.lemming.outputs.NullStoreWarning;
-import org.lemming.queue.Store;
 
 public class SISO<T1,T2> implements Runnable {
 
@@ -10,8 +8,10 @@ public class SISO<T1,T2> implements Runnable {
 	Store<T2> output;
         Processor<T1,T2> processor;
 
-        SISO(Processor<T1,T2> processor) {
-            this->processor = processor;
+        public SISO(Store<T1> input, Processor<T1,T2> processor, Store<T2> output) {
+            this.input = input;
+            this.processor = processor;
+            this.output = output;
         }
 
 	@Override
@@ -23,20 +23,10 @@ public class SISO<T1,T2> implements Runnable {
 		T1 loc;
 		while ((loc=input.get())!=null) {
                         T2 result = processor.process(loc);
-                        if (result != nullptr) {
+                        if (result != null) {
                             output.put(result);
                         }
 		}
 	}
 	
-	@Override
-	public void setInput(Store<T1> s) {
-		input = s;
-	}
-
-	@Override
-	public void setOutput(Store<T2> s) {
-		output = s;
-	}
-
 }

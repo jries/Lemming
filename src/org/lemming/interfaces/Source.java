@@ -1,6 +1,6 @@
 package org.lemming.interfaces;
 
-import org.lemming.data.Store;
+import org.lemming.queue.Store;
 
 /**
  * A source creates new T into setOutput when run.  
@@ -10,8 +10,8 @@ import org.lemming.data.Store;
  * @param <T>
  */
 public interface Source<T> {
-        public void beforeRun() {}
-        public void afterRun() {}
+        public void beforeRun();
+        public void afterRun();
 	
 	/**
 	 * Returns true if the Source has more outputs to be generated.

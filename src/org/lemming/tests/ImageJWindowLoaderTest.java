@@ -11,7 +11,7 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Frame;
-import org.lemming.data.QueueStore;
+import org.lemming.queue.QueueStore;
 import org.lemming.inputs.ImageJTIFFLoader;
 import org.lemming.inputs.ImageJWindowLoader;
 import org.lemming.inputs.ScifioLoader;

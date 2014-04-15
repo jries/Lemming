@@ -3,6 +3,7 @@ package org.lemming.processors;
 import ij.gui.Roi;
 
 import org.lemming.data.Localization;
+import org.lemming.interfaces.Processor;
 
 public class ROISelectProcessor implements Processor<Localization,Localization> {	
 	
@@ -17,14 +18,15 @@ public class ROISelectProcessor implements Processor<Localization,Localization> 
 	}
 	
 	@Override
-	public void process(Localization loc) {
+	public Localization process(Localization loc) {
                 double x = loc.getX();
                 double y = loc.getY();
                 
-                if (roi.contains( (int) x, (int) y))
+                if (roi.contains( (int) x, (int) y)) {
                         return loc;
-                else 
-                        return nullptr;
+                } else {
+                        return null;
+                }
 	}
 
 }

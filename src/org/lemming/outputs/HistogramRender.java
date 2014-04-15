@@ -84,6 +84,10 @@ public class HistogramRender implements Rendering {
 	}
 
 	@Override
+	public void afterRun() {
+        }
+
+	@Override
 	public void process(Localization element) {
 		double x = element.getX();
 		double y = element.getY();

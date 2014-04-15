@@ -41,7 +41,7 @@ import org.lemming.utils.LemMING;
  * @author Joe Borbely
  * 
  **/
-public class DAXLoader extends Source<ImgLib2Frame<UnsignedShortType>> {
+public class DAXLoader implements Source<ImgLib2Frame<UnsignedShortType>> {
 
 	public int width;
 	public int height;
@@ -204,9 +204,13 @@ public class DAXLoader extends Source<ImgLib2Frame<UnsignedShortType>> {
 		return daxFrame;
 	}
 
-    @Override
+        @Override
 	public void beforeRun() {
        	curFrame = 0;
+ 	}
+	
+        @Override
+	public void afterRun() {
  	}
 	
 	@Override

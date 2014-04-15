@@ -1,25 +1,14 @@
 package org.lemming.dummy;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
+
 import org.lemming.data.Frame;
 import org.lemming.data.Localization;
-import org.lemming.data.Store;
+import org.lemming.queue.Store;
 import org.lemming.interfaces.ImageLocalizer;
 
 public class DummyLocalizer<T, F extends Frame<T>> implements ImageLocalizer<T,F> {
-
-	Store<F> in;
-	Store<Localization> out;
-	
-	@Override
-	public void setInput(Store<F> s) {
-		in = s;
-	}
-
-	@Override
-	public void setOutput(Store<Localization> s) {
-		out = s;
-	}
-	
 	static class DummyLocalization implements Localization {
 		static long CUR_ID = 0;
 		
@@ -43,17 +32,11 @@ public class DummyLocalizer<T, F extends Frame<T>> implements ImageLocalizer<T,F
 	}
 	
 	@Override
-	public void run() {
-		while(true) {
-			Frame<T> f = in.get();
-			
-			out.put(new DummyLocalization(f.getFrameNumber(), 0));
-			out.put(new DummyLocalization(0, f.getFrameNumber()));
-		}
+	public AbstractList<Localization> process(F f) {
+                ArrayList<Localization> result = new ArrayList<Localization>();
+                result.add(new DummyLocalization(f.getFrameNumber(), 0));
+                result.add(new DummyLocalization(0, f.getFrameNumber()));
+                return result;
 	}
 
-	@Override
-	public boolean hasMoreOutputs() {
-		return true;
-	}
 }

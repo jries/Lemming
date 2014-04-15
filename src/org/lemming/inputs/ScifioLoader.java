@@ -16,7 +16,7 @@ import net.imglib2.view.Views;
 
 import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
-import org.lemming.data.Store;
+import org.lemming.queue.Store;
 import org.lemming.interfaces.Source;
 import org.lemming.utils.LArrays;
 import org.lemming.utils.LFile;
@@ -66,9 +66,13 @@ public class ScifioLoader<T extends RealType<T> & NativeType<T>> implements Sour
 
     long curSlice;
     
-    @Override
+        @Override
 	public void beforeRun() {
 		curSlice = 0;
+ 	}
+    
+        @Override
+	public void afterRun() {
  	}
     
 	@Override

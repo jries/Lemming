@@ -1,9 +1,12 @@
 package org.lemming.inputs;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.lemming.data.Localization;
 import org.lemming.data.XYLocalization;
+import org.lemming.interfaces.Source;
 
 /**
  * A generator of N random localizations between (0,0) and (width,height)
@@ -11,7 +14,7 @@ import org.lemming.data.XYLocalization;
  * @author Joe Borbely
  *
  */
-public class RandomLocalizer implements Localizer {
+public class RandomLocalizer implements Source<Localization> {
 
 	/** The number of localizations to create */
 	int N;
@@ -35,6 +38,14 @@ public class RandomLocalizer implements Localizer {
 	}
 	
 	@Override
+	public void beforeRun() {
+	}
+
+	@Override
+	public void afterRun() {
+        }
+	
+	@Override
 	public boolean hasMoreOutputs() {
 		return N>0;
 	}
@@ -42,7 +53,7 @@ public class RandomLocalizer implements Localizer {
 	@Override
 	public Localization newOutput() {
 		Random rand = new Random();
-    	N--;
-    	return new XYLocalization(dwidth*rand.nextDouble(), dheight*rand.nextDouble());
+                N--;
+                return new XYLocalization(dwidth*rand.nextDouble(), dheight*rand.nextDouble());
 	}
 }
