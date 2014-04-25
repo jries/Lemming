@@ -1,13 +1,12 @@
 function [dxt,dyt]=driftstructure2Dsimple(frame, x,y)
-
+% unit: x, y, can be pixel or nm or anyhting
 %frame starts with 1, ascending order
-% 
 % parameters and typical values (please adopt)
-par.pixrec=15; %pixelsize of reconstructed images in nm
+par.pixrec=.15; %pixelsize of reconstructed images in units
 par.window=11; %size of region in pixels which gets fittd to determine
 % displacement
-par.numtimepoints=10; %number of time points evaluated 
-par.maxdrift=500; %maximal drift in nm (not crucial, rather choose to
+par.numtimepoints=20; %number of time points evaluated 
+par.maxdrift=5; %maximal drift in nm (not crucial, rather choose to
 % high
 
 %other functions needed:
@@ -15,15 +14,15 @@ par.maxdrift=500; %maximal drift in nm (not crucial, rather choose to
 %my2DGaussfit
 
 %copyright: Jonas Ries, EMBL, jonas.ries@embl.de
-
+positions=[frame x y];
 numframes=double(positions(end,1));
 %% calculate movie and FFT of movie
-pixrec=par.pixrec; %in nm
+pixrec=par.pixrec; %in units
 window=ceil((par.window-1)/2);
 timepoints=par.numtimepoints; %how many timepoints
-maxdrift=par.maxdrift; %in nanometers
+maxdrift=par.maxdrift; %in units
 
-positions=[frame x y];
+
 
 mx=[min(positions(:,2)) max(positions(:,2))]; %ROI which is used for drift correction. 
 my=[min(positions(:,3)) max(positions(:,3))]; %You can put your own routine here
@@ -87,7 +86,7 @@ plot(cfit1,dx,'o',ctrue,dxt,'k')
 hold on
 plot(cfit1,dy,'o',ctrue,dyt,'r')
 xlabel('frame')
-ylabel('dx, dy (nm)')
+ylabel('dx, dy (units of x,y)')
 
 fitposc=adddrift(positions,dxt,dyt); %recalculate positions
 

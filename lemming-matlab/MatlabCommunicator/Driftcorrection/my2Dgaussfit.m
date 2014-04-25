@@ -87,7 +87,7 @@ if ~isempty(find(isnan(fitinit.startp)))
     fitinit.startp=zeros(8,1);
 end
 
-       startph=fitinit.startp(1:fitinit.nfitp)
+       startph=fitinit.startp(1:fitinit.nfitp);
 %        startph(4)=startp(4);
 %        startph(3)=startp(3);
       if weighted
