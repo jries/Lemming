@@ -1,13 +1,13 @@
-function [fitposc]=driftstructure2Dsimple(positions,par)
-%positions =[frame x y] in nanometers
+function [dxt,dyt]=driftstructure2Dsimple(frame, x,y)
+
 %frame starts with 1, ascending order
 % 
 % parameters and typical values (please adopt)
-% par.pixrec=15; %pixelsize of reconstructed images in nm
-% par.window=11; %size of region in pixels which gets fittd to determine
+par.pixrec=15; %pixelsize of reconstructed images in nm
+par.window=11; %size of region in pixels which gets fittd to determine
 % displacement
-% par.numtimepoints=10; %number of time points evaluated 
-% par.maxdrift=500; %maximal drift in nm (not crucial, rather choose to
+par.numtimepoints=10; %number of time points evaluated 
+par.maxdrift=500; %maximal drift in nm (not crucial, rather choose to
 % high
 
 %other functions needed:
@@ -23,7 +23,7 @@ window=ceil((par.window-1)/2);
 timepoints=par.numtimepoints; %how many timepoints
 maxdrift=par.maxdrift; %in nanometers
 
-
+positions=[frame x y];
 
 mx=[min(positions(:,2)) max(positions(:,2))]; %ROI which is used for drift correction. 
 my=[min(positions(:,3)) max(positions(:,3))]; %You can put your own routine here
