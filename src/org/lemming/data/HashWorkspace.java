@@ -6,6 +6,8 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -433,4 +435,74 @@ public class HashWorkspace implements Workspace {
 		return IDVarName;		
 	}
 	
+	/**
+	 * sort according to list of members
+	 * 
+	 * Jonas Ries
+	 */
+	public void sortMembers(String[] membersList){
+		
+
+		/*modified from http://stackoverflow.com/questions/4859261/get-the-indices-of-an-array-after-sorting
+		* later: performance increase by using table, members?
+		*/
+		class ArrayIndexComparator implements Comparator<Integer>
+		{
+		    private final HashWorkspace ws;
+		    private final String[] membersList;
+
+		    public ArrayIndexComparator(HashWorkspace ws, String[] membersList)
+		    {
+		        this.ws = ws;
+		        this.membersList=membersList;
+		    }
+
+		    public Integer[] createIndexArray()
+		    {
+		        Integer[] indexes = new Integer[nRows];
+		        for (int i = 0; i < nRows; i++)
+		        {
+		            indexes[i] = i; // Autoboxing
+		        }
+		        return indexes;
+		    }
+
+		    @Override
+		    public int compare(Integer index1, Integer index2)
+		    {
+		    	int sortvalue=0;
+	    		GenericLocalization g1 = ws.getRow(index1);
+	    		GenericLocalization g2 = ws.getRow(index2);
+		    	for (int k=0;k<membersList.length;k++){
+
+		    		sortvalue=((Comparable)g1.get(membersList[k])).compareTo(g2.get(membersList[k]));
+		    		if(sortvalue != 0) break;
+		    		
+		    	}
+		    	return sortvalue;
+		    }
+		}
+		
+		/*now the sort method
+		 * 
+		 */
+		long t0 = System.currentTimeMillis();
+		ArrayIndexComparator comparator = new ArrayIndexComparator(this,membersList);
+		Integer[] indexes = comparator.createIndexArray();
+		Arrays.sort(indexes, comparator);
+		long t1 = System.currentTimeMillis()-t0;
+		this.resort(indexes);
+		long t2 = System.currentTimeMillis()-t0;
+		System.out.println("sort: "+t1);
+		System.out.println("resort: "+t2);
+		
+	}
+	public void resort(Integer[] indexes){
+		HashWorkspace wscopy= new HashWorkspace(this, false);
+		for(int k=0;k<indexes.length;k++){
+			wscopy.addRow(this.getRow(indexes[k]));
+		}
+		this.table=wscopy.table;
+		//this.addAll(wscopy);
+	}
 }
