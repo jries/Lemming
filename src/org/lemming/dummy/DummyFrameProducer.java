@@ -4,14 +4,25 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 
-import org.lemming.data.Frame;
 import org.lemming.data.ImgLib2Frame;
 import org.lemming.data.Store;
+import org.lemming.interfaces.Parameter;
 import org.lemming.interfaces.Source;
 
 public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType>> {
 
+	@Parameter
+	public long noFrames = 0;
+	
 	Store<ImgLib2Frame<UnsignedShortType>> output;
+	
+	public DummyFrameProducer() {
+		this(100);
+	}
+	
+	public DummyFrameProducer(long noFrames) {
+		this.noFrames = noFrames;
+	}
 	
 	@Override
 	public void setOutput(Store<ImgLib2Frame<UnsignedShortType>> store) {
@@ -49,7 +60,7 @@ public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType
 	
 	@Override
 	public void run() {
-		for(int i=0; i<100; i++)
+		for(int i=0; i<noFrames; i++)
 			output.put(new DummyFrame(i));
 		
 		hasMore = false;
