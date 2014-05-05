@@ -75,7 +75,7 @@ public class HashWorkspace implements Workspace {
 	public void addNewMember(String member) {
 		int N = getNumberOfRows();
 		
-		ArrayList l = new ArrayList();
+		ArrayList l = new ArrayList(N);
 		for (int i = 0; i<N; i++)
 			l.add(null);	// NULLPOINTEREXCEPTION??
 		
@@ -459,12 +459,12 @@ public class HashWorkspace implements Workspace {
 
 		    public Integer[] createIndexArray()
 		    {
-		        Integer[] indexes = new Integer[nRows];
+		        Integer[] indices = new Integer[nRows];
 		        for (int i = 0; i < nRows; i++)
 		        {
-		            indexes[i] = i; // Autoboxing
+		        	indices[i] = i; // Autoboxing
 		        }
-		        return indexes;
+		        return indices;
 		    }
 
 		    @Override
@@ -486,23 +486,25 @@ public class HashWorkspace implements Workspace {
 		/*now the sort method
 		 * 
 		 */
-		long t0 = System.currentTimeMillis();
+		
 		ArrayIndexComparator comparator = new ArrayIndexComparator(this,membersList);
+		long t0 = System.currentTimeMillis();
 		Integer[] indexes = comparator.createIndexArray();
+		long t3 = System.currentTimeMillis()-t0;
 		Arrays.sort(indexes, comparator);
-		long t1 = System.currentTimeMillis()-t0;
+		long t1 = System.currentTimeMillis()-t0-t3;
 		this.resort(indexes);
-		long t2 = System.currentTimeMillis()-t0;
+		long t2 = System.currentTimeMillis()-t0-t1;
+		System.out.println("indices: "+t3);
 		System.out.println("sort: "+t1);
 		System.out.println("resort: "+t2);
 		
 	}
-	public void resort(Integer[] indexes){
+	public void resort(Integer[] indices){
 		HashWorkspace wscopy= new HashWorkspace(this, false);
-		for(int k=0;k<indexes.length;k++){
-			wscopy.addRow(this.getRow(indexes[k]));
+		for(int k=0;k<indices.length;k++){
+			wscopy.addRow(this.getRow(indices[k]));
 		}
 		this.table=wscopy.table;
-		//this.addAll(wscopy);
 	}
 }
