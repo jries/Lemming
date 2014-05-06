@@ -1,6 +1,7 @@
 package org.lemming.tests;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Test;
 import org.lemming.dummy.DummyFrameProducer;
@@ -9,6 +10,18 @@ import org.lemming.utils.Parameters;
 import static org.junit.Assert.*;
 
 public class ParameterTest {
+	
+	@Test
+	public void testEntrySet() {
+		DummyFrameProducer d = new DummyFrameProducer(100);
+		
+		Map<String,Object> parameters = Parameters.getParameterMap(d);
+		
+		for (Entry<String, Object> e : parameters.entrySet())
+			System.out.println(e.getKey()+" = "+e.getValue());
+		
+		assertEquals(100l,parameters.get("noFrames"));
+	}
 
 	@Test
 	public void testMap() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {

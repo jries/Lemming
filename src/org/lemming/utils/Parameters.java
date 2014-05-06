@@ -76,8 +76,39 @@ public class Parameters {
 			 */
 			@Override
 			public Set<java.util.Map.Entry<String, Object>> entrySet() {
-				// TODO not implemented
-				return null;
+				HashSet<Map.Entry<String, Object>> entries = new HashSet<Map.Entry<String,Object>>();
+				try {
+					for (final Field f : o.getClass().getFields()) {
+						if (f.isAnnotationPresent(Parameter.class))
+							entries.add(new Entry<String, Object>() {
+								
+								@Override
+								public Object setValue(Object value) {
+									return null;
+								}
+								
+								@Override
+								public Object getValue() {
+									try {
+										return f.get(o);
+									} catch (IllegalArgumentException e) {
+										e.printStackTrace();
+									} catch (IllegalAccessException e) {
+										e.printStackTrace();
+									}
+									throw new RuntimeException("Field "+f.getName()+" of "+o.toString()+" is not accessible.");
+								}
+								
+								@Override
+								public String getKey() {
+									return f.getName();
+								}
+							});
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return entries;
 			}
 			
 			
