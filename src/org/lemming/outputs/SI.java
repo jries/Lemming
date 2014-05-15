@@ -5,7 +5,7 @@ import org.lemming.interfaces.Well;
 
 public abstract class SI<T> implements Well<T> {
 
-	Store<T> input;
+	protected Store<T> input;			// "protected" added to be able to call it from another package (for matlab)
 
 	@Override
 	public void run() {

@@ -6,8 +6,8 @@ import org.junit.Test;
 import org.lemming.data.Frame;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.ImageJTIFFLoader;
+import org.lemming.matlab.MatlabOpener;
 import org.lemming.utils.LemMING;
-import org.lemming.utils.MatlabOpener;
 
 public class MatlabOpenerTest {
 	MatlabOpener o;

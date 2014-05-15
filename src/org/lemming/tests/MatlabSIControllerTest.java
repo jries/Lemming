@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.RandomLocalizer;
-import org.lemming.outputs.MatlabSIController;
+import org.lemming.matlab.MatlabSIController;
 import org.lemming.utils.LemMING;
 
 public class MatlabSIControllerTest {

@@ -7,7 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
-import org.lemming.inputs.MatlabSOController;
+import org.lemming.matlab.MatlabSOController;
 import org.lemming.outputs.GaussRenderOutput;
 import org.lemming.utils.LemMING;
 

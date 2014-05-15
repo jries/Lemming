@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.lemming.data.Localization;
 import org.lemming.data.QueueStore;
 import org.lemming.inputs.RandomLocalizer;
+import org.lemming.matlab.MatlabSISOController;
 import org.lemming.outputs.GaussRenderOutput;
-import org.lemming.processors.MatlabSISOController;
 import org.lemming.utils.LemMING;
 
 public class MatlabSISOControllerTest {
