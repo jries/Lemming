@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 30
+/svn/!svn/ver/57/trunk/plugins
+END
+plot3D.m
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/17/trunk/plugins/plot3D.m
+END
+hello_message.m
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/8/trunk/plugins/hello_message.m
+END
+adaptVisibleRangeForPixelSize.m
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/54/trunk/plugins/adaptVisibleRangeForPixelSize.m
+END
+Drift_correction_fiducial.fig
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/50/trunk/plugins/Drift_correction_fiducial.fig
+END
+generic_command.m
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/38/trunk/plugins/generic_command.m
+END
+averageDensity.m
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/38/trunk/plugins/averageDensity.m
+END
+density_column.m
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/24/trunk/plugins/density_column.m
+END
+density_plot.m
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/37/trunk/plugins/density_plot.m
+END
+toNanometers.m
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/57/trunk/plugins/toNanometers.m
+END
+Drift_correction_fiducial.m
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/50/trunk/plugins/Drift_correction_fiducial.m
+END
+pspectrum.m
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/38/trunk/plugins/pspectrum.m
+END

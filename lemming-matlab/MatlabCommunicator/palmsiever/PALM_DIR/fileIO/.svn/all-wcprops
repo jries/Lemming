@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 29
+/svn/!svn/ver/58/trunk/fileIO
+END
+ExampleOtherFileSpec.m
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/32/trunk/fileIO/ExampleOtherFileSpec.m
+END
+importFileSpecOther.txt
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/26/trunk/fileIO/importFileSpecOther.txt
+END
+Generic.m
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/!svn/ver/33/trunk/fileIO/Generic.m
+END
+ExampleAsciiFilespec.txt
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/23/trunk/fileIO/ExampleAsciiFilespec.txt
+END

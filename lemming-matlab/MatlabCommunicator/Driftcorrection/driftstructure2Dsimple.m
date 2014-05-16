@@ -2,11 +2,11 @@ function [dxt,dyt]=driftstructure2Dsimple(frame, x,y)
 % unit: x, y, can be pixel or nm or anyhting
 %frame starts with 1, ascending order
 % parameters and typical values (please adopt)
-par.pixrec=.15; %pixelsize of reconstructed images in units
-par.window=11; %size of region in pixels which gets fittd to determine
+par.pixrec=.1; %pixelsize of reconstructed images in units
+par.window=20; %size of region in pixels which gets fittd to determine
 % displacement
-par.numtimepoints=20; %number of time points evaluated 
-par.maxdrift=5; %maximal drift in nm (not crucial, rather choose to
+par.numtimepoints=10; %number of time points evaluated 
+par.maxdrift=10; %maximal drift in nm (not crucial, rather choose to
 % high
 
 %other functions needed:
@@ -14,7 +14,10 @@ par.maxdrift=5; %maximal drift in nm (not crucial, rather choose to
 %my2DGaussfit
 
 %copyright: Jonas Ries, EMBL, jonas.ries@embl.de
-positions=[frame x y];
+lf=length(frame);
+positions=zeros(lf,3);
+positions(:,1)=frame;positions(:,2)=x;positions(:,3)=y;
+% positions=[frame' x' y'];
 numframes=double(positions(end,1));
 %% calculate movie and FFT of movie
 pixrec=par.pixrec; %in units
@@ -24,8 +27,9 @@ maxdrift=par.maxdrift; %in units
 
 
 
-mx=[min(positions(:,2)) max(positions(:,2))]; %ROI which is used for drift correction. 
-my=[min(positions(:,3)) max(positions(:,3))]; %You can put your own routine here
+mx=[min(min(positions(:,2))-maxdrift) max(max(positions(:,2))+maxdrift)]; %ROI which is used for drift correction. 
+my=[min(min(positions(:,3))-maxdrift) max(max(positions(:,3))+maxdrift)]; %You can put your own routine here
+
 
 dummypic=myhist2(1,1,pixrec,pixrec,mx,my); %determine size of reconstructed image
 srec=size(dummypic);
@@ -88,7 +92,7 @@ plot(cfit1,dy,'o',ctrue,dyt,'r')
 xlabel('frame')
 ylabel('dx, dy (units of x,y)')
 
-fitposc=adddrift(positions,dxt,dyt); %recalculate positions
+% fitposc=adddrift(positions,dxt,dyt); %recalculate positions
 
 function Fmovier=makemovie %calculate fourier transforms of images
 binframes=floor(numframes/timepoints);

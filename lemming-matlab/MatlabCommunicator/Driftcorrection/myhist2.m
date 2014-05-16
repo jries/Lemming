@@ -26,5 +26,6 @@ fig=find(ig);
 
 linind=sub2ind(size(out),x(ig),y(ig));
 for k=1:length(linind)
-    out(linind(k))=out(linind(k))+w(fig(k));
+%     out(linind(k))=out(linind(k))+w(fig(k));
+ out(linind(k))=out(linind(k))+1;
 end

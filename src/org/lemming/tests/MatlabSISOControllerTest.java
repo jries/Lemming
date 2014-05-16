@@ -48,7 +48,7 @@ public class MatlabSISOControllerTest {
 		gro = new GaussRenderOutput();
 		
 		// Set pipeline
-		c.setInput(localizations);
+		c.setInput(localizations);  
 		c.setOutput(localizations2);
 		gro.setInput(localizations2);
 		
