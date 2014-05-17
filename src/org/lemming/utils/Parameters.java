@@ -1,5 +1,6 @@
 package org.lemming.utils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,6 +26,27 @@ public class Parameters {
 		Field f = o.getClass().getField(field);
 		if (f != null && f.isAnnotationPresent(Parameter.class)) {
 			return f.get(o);
+		} else
+			throw new RuntimeException("Object "+o+" has no such parameter "+field);
+	}
+	
+	public static boolean isReadOnly(Object o, String field) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		return get(o, field).readOnly();
+	}
+	
+	public static boolean isOptional(Object o, String field) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		return get(o, field).optional();
+	}
+	
+	public static Parameter get(Object o, String field) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		Field f = o.getClass().getField(field);
+		if (f != null && f.isAnnotationPresent(Parameter.class)) {
+			Parameter p = null;
+			Annotation[] anns = f.getAnnotations();
+			for (int i=0; i<anns.length; i++)
+				if (anns[i] instanceof Parameter)
+					p = (Parameter) anns[i];
+			return p;
 		} else
 			throw new RuntimeException("Object "+o+" has no such parameter "+field);
 	}

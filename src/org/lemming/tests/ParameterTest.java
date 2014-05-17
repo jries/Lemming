@@ -77,4 +77,17 @@ public class ParameterTest {
 		if (params.containsKey("nonono"))
 			fail();
 	}
+	
+	@Test
+	public void testReadOnly() {
+		DummyFrameProducer d = new DummyFrameProducer(100);
+		
+		try {
+			assertTrue(Parameters.isReadOnly(d, "noFrames"));
+		} catch (NoSuchFieldException | SecurityException
+				| IllegalArgumentException | IllegalAccessException e) {
+			fail();
+		}
+		
+	}
 }

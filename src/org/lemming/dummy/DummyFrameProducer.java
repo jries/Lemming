@@ -11,7 +11,7 @@ import org.lemming.interfaces.Source;
 
 public class DummyFrameProducer implements Source<ImgLib2Frame<UnsignedShortType>> {
 
-	@Parameter
+	@Parameter(readOnly = true, optional = false)
 	public long noFrames = 0;
 	
 	Store<ImgLib2Frame<UnsignedShortType>> output;
