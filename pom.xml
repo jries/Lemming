@@ -1,0 +1,182 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+		<groupId>net.imagej</groupId>
+		<artifactId>pom-imagej</artifactId>
+		<version>5.3.0</version>
+		<relativePath />
+  </parent>
+  
+  
+  <groupId>org.lemming</groupId>
+  <artifactId>lemming</artifactId>
+  <version>0.3</version>
+  <name>Lemming</name>
+  <description>The ultimate localization microscopy software</description>
+  
+	<repositories>
+		<repository>
+			<id>imagej.releases</id>
+			<url>http://maven.imagej.net/content/repositories/releases</url>
+		</repository>
+		<repository>
+			<id>imagej.snapshots</id>
+			<url>http://maven.imagej.net/content/repositories/snapshots</url>
+		</repository>
+		<repository>
+			<id>javolution.snapshots</id>
+			<url>https://maven.java.net/content/repositories/snapshots</url>
+		</repository>
+	    <repository>
+	      <id>sonatype</id>
+	      <name>Sonatype OSS Snapshots Repository</name>
+	      <url>http://oss.sonatype.org/content/groups/public</url>
+	    </repository>
+	</repositories>
+	
+	<pluginRepositories>
+	    <pluginRepository>
+	      <id>sonatype</id>
+	      <name>Sonatype OSS Snapshots Repository</name>
+	      <url>http://oss.sonatype.org/content/groups/public</url>
+	    </pluginRepository>
+ 	</pluginRepositories>	
+	
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<version>3.1</version>
+			<type>maven-plugin</type>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm-gpl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-realtransform</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.scif</groupId>
+			<artifactId>scifio</artifactId>
+		</dependency>
+		<dependency>
+        	<groupId>org.javolution</groupId>
+        	<artifactId>javolution-core-java</artifactId>
+        	<version>6.1.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>	
+	<build>
+	<plugins>
+		<plugin>
+	        <groupId>org.eclipse.m2e</groupId>
+	        <artifactId>lifecycle-mapping</artifactId>
+	        <configuration>
+	          <lifecycleMappingMetadata>
+	            <pluginExecutions>
+	              <pluginExecution>
+	                <pluginExecutionFilter>
+	                  <groupId>org.apache.maven.plugins</groupId>
+	                  <artifactId>maven-enforcer-plugin</artifactId>
+	                  <versionRange>[1.0.0,)</versionRange>
+	                  <goals>
+	                    <goal>enforce</goal>
+	                  </goals>
+	                </pluginExecutionFilter>
+	                <action>
+	                  <ignore />
+	                </action>
+	              </pluginExecution>
+	            </pluginExecutions>
+	          </lifecycleMappingMetadata>
+	        </configuration>
+	    </plugin>	
+	
+    	<plugin>
+      		<artifactId>maven-compiler-plugin</artifactId>
+        	<configuration>
+          		<source>1.7</source>
+          		<target>1.7</target>
+        	</configuration>
+    	</plugin>
+    	<plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>native-maven-plugin</artifactId>
+          <configuration>
+	          <compilerStartOptions>
+	            <compilerStartOption>${commonCompilerOptions}</compilerStartOption>
+	          </compilerStartOptions>
+          </configuration>
+        </plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-javadoc-plugin</artifactId>
+		    <configuration>
+		        <!-- bootclasspath required by Sun's JVM -->
+		        <bootclasspath>${sun.boot.class.path}</bootclasspath>
+		        <!-- General Javadoc settings -->
+		        <doctitle>${project.name} (${project.version})</doctitle>
+		        <show>private</show>
+		        <!-- Styling -->
+				<!-- Stylesheet -->
+		        <stylesheetfile>${basedir}/Scripts/Javadoc/style/jboss/api/stylesheet.css</stylesheetfile>
+				<!-- Directory containing the styling resources (pics, ...) -->
+		        <javadocDirectory>${basedir}/Scripts/Javadoc/style/jboss/api</javadocDirectory>
+				<!-- true to include styling resources into generated site -->
+		        <docfilessubdirs>true</docfilessubdirs>
+		        <!-- Apple's JVM sometimes requires more memory -->
+		        <additionalJOption>-J-Xmx1024m</additionalJOption>
+		        <verbose>true</verbose>
+		    </configuration>
+		</plugin>
+  
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-javadoc-plugin</artifactId>
+		    <configuration>
+		        <!-- Doclet -->
+		        <doclet>ydoc.doclets.YStandard</doclet>
+		        <docletArtifact>
+		            <groupId>com.yworks</groupId>
+		            <artifactId>umldoclet</artifactId>
+		            <version>3.0.02</version>
+		        </docletArtifact>
+		        <additionalparam>
+		            -umlautogen
+		            -resourcepath ${yworks.uml.path}/resources
+		        </additionalparam>
+		        <!-- bootclasspath required by Sun's JVM -->
+		        <bootclasspath>${sun.boot.class.path}</bootclasspath>
+		        <!-- General Javadoc settings -->
+		        <doctitle>${project.name} (${project.version})</doctitle>
+		        <show>private</show>
+		        <!-- Styling -->
+		        <stylesheetfile>${basedir}/Scripts/Javadoc/style/jboss/api/stylesheet.css</stylesheetfile>
+		        <javadocDirectory>${basedir}/Scripts/Javadoc/style/jboss/api</javadocDirectory>
+		        <docfilessubdirs>true</docfilessubdirs>
+		        <!-- Apple's JVM sometimes requires more memory -->
+		        <additionalJOption>-J-Xmx1024m</additionalJOption>
+		        <verbose>true</verbose>
+		    </configuration>
+		</plugin>
+	</plugins>
+	</build>
+</project>
