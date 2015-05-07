@@ -2,10 +2,10 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-		<groupId>net.imagej</groupId>
-		<artifactId>pom-imagej</artifactId>
-		<version>5.3.0</version>
+		<groupId>net.imglib2</groupId>
+		<artifactId>pom-imglib2</artifactId>
 		<relativePath />
+		<version>5.2.1</version>
   </parent>
   
   
@@ -25,6 +25,10 @@
 			<url>http://maven.imagej.net/content/repositories/snapshots</url>
 		</repository>
 		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+		<repository>
 			<id>javolution.snapshots</id>
 			<url>https://maven.java.net/content/repositories/snapshots</url>
 		</repository>
@@ -33,6 +37,14 @@
 	      <name>Sonatype OSS Snapshots Repository</name>
 	      <url>http://oss.sonatype.org/content/groups/public</url>
 	    </repository>
+	    <repository>
+      		<id>ome.releases</id>
+      		<url>http://artifacts.openmicroscopy.org/artifactory/ome.releases</url>
+    	</repository>
+    	<repository>
+      		<id>ome.snapshots</id>
+     		<url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
+   		</repository>
 	</repositories>
 	
 	<pluginRepositories>
@@ -41,6 +53,13 @@
 	      <name>Sonatype OSS Snapshots Repository</name>
 	      <url>http://oss.sonatype.org/content/groups/public</url>
 	    </pluginRepository>
+	    	
+	    <pluginRepository>
+	      <id>central</id>
+	      <name>Central Repository</name>
+	      <url>http://repo.maven.apache.org/maven2</url>
+	      <layout>default</layout>
+	    </pluginRepository>
  	</pluginRepositories>	
 	
 	<dependencies>
@@ -48,12 +67,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			</dependency>
-		<dependency>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>3.1</version>
-			<type>maven-plugin</type>
-		</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2</artifactId>
@@ -82,6 +95,11 @@
         	<groupId>org.javolution</groupId>
         	<artifactId>javolution-core-java</artifactId>
         	<version>6.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>bio-formats_plugins</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>	
 	<build>
@@ -169,6 +187,8 @@
 		        <doctitle>${project.name} (${project.version})</doctitle>
 		        <show>private</show>
 		        <!-- Styling -->
+		        <stylesheetfile>${basedir}/doc/stylesheet.css</stylesheetfile>
+		        <javadocDirectory>${basedir}/doc</javadocDirectory>
 		        <stylesheetfile>${basedir}/Scripts/Javadoc/style/jboss/api/stylesheet.css</stylesheetfile>
 		        <javadocDirectory>${basedir}/Scripts/Javadoc/style/jboss/api</javadocDirectory>
 		        <docfilessubdirs>true</docfilessubdirs>

@@ -1,62 +1,46 @@
 package org.lemming.tests;
 
-import java.io.FileReader;
-import java.util.Properties;
+import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.data.QueueStore;
-import org.lemming.inputs.ImageJTIFFLoader;
-import org.lemming.interfaces.Frame;
-import org.lemming.interfaces.Localization;
-import org.lemming.interfaces.Store;
-import org.lemming.outputs.PrintToScreen;
-import org.lemming.processors.PeakFinder;
-import org.lemming.utils.LemMING;
+import org.lemming.modules.IJTiffLoader;
+import org.lemming.modules.PeakFinder;
+import org.lemming.pipeline.FastStore;
+import org.lemming.pipeline.Frame;
+import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.Pipeline;
 
-/**
- * Test class for finding peaks based on a threshold value and inserts the
- * the frame number and the x,y coordinates of the localization into a Store.
- * 
- * @author Joe Borbely, Thomas Pengo
- */
 @SuppressWarnings("rawtypes")
 public class PeakFinderTest {
-	
-	ImageJTIFFLoader tif;
-	Store<Frame> frames;
-	Store<Localization> localizations;
-	PeakFinder peak;
-	PrintToScreen print;
 
+	private Pipeline pipe;
+	private FastStore<Frame> frames;
+	private IJTiffLoader tif;
+	private FastStore<Localization> localizations;
+	private PeakFinder peak;
 	
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
-		Properties p = new Properties();
-		p.load(new FileReader("test.properties"));
+		pipe = new Pipeline();	
 		
-		tif = new ImageJTIFFLoader(p.getProperty("samples.dir")+"4b_green.tif");
-		peak = new PeakFinder(200);
-		frames = new QueueStore<Frame>();
-		localizations = new QueueStore<Localization>();
-		print = new PrintToScreen();
+		frames = new FastStore<Frame>();
+		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif","frames");
+		tif.setOutput("frames",frames);
+		pipe.add(tif);
 		
-		tif.setOutput(frames);
-		peak.setInput(frames);
-		peak.setOutput(localizations); //this is not used, but needs to be set in order to not get a NullStoreWarning
-		print.setInput(localizations);
+		localizations = new FastStore<Localization>();
+		peak = new PeakFinder(700,4,"frames","locs");
+		peak.setInput("frames", frames);
+		peak.setOutput("locs", localizations);
+		pipe.add(peak);
 	}
 
 	@Test
 	public void test() {
-		new Thread(tif).start();
-		new Thread(peak).start();
-		new Thread(print).start();
-		
-		LemMING.pause(2000);
-		
-		equals(frames.isEmpty());
+		pipe.run();
+		System.out.println(peak.getProcessingTime());		
+		assertEquals(true,frames.isEmpty());
 	}
 
 }
