@@ -49,4 +49,9 @@ public class Localization implements LocalizationInterface {
 		return frame;
 	}
 
+	@Override
+	public Element deepClone() {
+		return new Localization(ID, frame, X, Y);
+	}
+
 }

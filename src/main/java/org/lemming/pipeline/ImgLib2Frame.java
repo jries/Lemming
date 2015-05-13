@@ -1,9 +1,9 @@
 package org.lemming.pipeline;
 
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.NumericType;
 
-public class ImgLib2Frame<T extends RealType<T>> implements Frame<T> {
+public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 
 	private long frameNo;
 	private int width;
@@ -64,5 +64,19 @@ public class ImgLib2Frame<T extends RealType<T>> implements Frame<T> {
 	public void setLast(boolean isLast) {
 		this.isLast = isLast;
 	}
+
+	@Override
+	public int compareTo(Frame<T> o) {
+		if (this.getFrameNumber() > o.getFrameNumber())
+			return 1;
+		else if (this.getFrameNumber() == o.getFrameNumber()) return 0;
+		else return -1;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public Element deepClone() {
+		return new ImgLib2Frame(frameNo, height, height, slice);
+	}	
 
 }

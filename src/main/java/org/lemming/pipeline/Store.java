@@ -1,6 +1,6 @@
 package org.lemming.pipeline;
 
-public interface Store<DataType> {
+public interface Store<DataType extends Element> {
 	/**
 	 * Adds the element el to the store.
 	 * 
@@ -13,6 +13,12 @@ public interface Store<DataType> {
 	 * @return element 
 	 */
 	public DataType get();
+	
+	/**
+	 * Retrieves an element from the store without removing it.
+	 * @return element 
+	 */
+	public DataType peek();
 	
 	/**
 	 * The store is empty.	 * 

@@ -11,17 +11,19 @@ import java.util.Map;
 
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.NumericType;
 
+import org.lemming.pipeline.Element;
 import org.lemming.pipeline.ImgLib2Frame;
-import org.lemming.pipeline.ModuleProcessor;
+import org.lemming.pipeline.Module;
 
-public class IJTiffLoader<T extends RealType<T>> extends ModuleProcessor {
+public class IJTiffLoader<T extends NumericType<T>> extends Module{
 	
 	private int curSlice = 0;
 	private String filename; 
 	private ImagePlus img;
 	private String outputKey;
+	private int stackSize;
 	
 	public IJTiffLoader(String path, String key) {
 		filename = path;
@@ -30,23 +32,25 @@ public class IJTiffLoader<T extends RealType<T>> extends ModuleProcessor {
 	
 	@Override
 	public void beforeRun() {
-		if (new File(filename).exists())
+		if (new File(filename).exists()){
 			img = new ImagePlus(filename);
+			stackSize = img.getStack().getSize();
+		}
 		else 
 			System.err.println("File not exist!");
 	}
 
-	@Override
 	public boolean hasMoreOutputs() {
-		return curSlice < img.getStack().getSize();
+		return curSlice < stackSize;
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public void process(Map<String, Object> data) {
-				
-		curSlice++;
-		ImageProcessor ip = img.getStack().getProcessor(curSlice);
+	public void process(Map<String, Element> data) {
+		
+		if (curSlice >= stackSize){ cancel(); return; }
+		
+		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
 		
 		long[] dims = new long[]{ip.getWidth(), ip.getHeight()};
 		
@@ -59,7 +63,7 @@ public class IJTiffLoader<T extends RealType<T>> extends ModuleProcessor {
 			theImage = (Img<T>) ArrayImgs.unsignedBytes((byte[])ip.getPixels(), dims);
 		}
 		
-		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
+		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
 		if (!hasMoreOutputs())
 			frame.setLast(true);
 		data.put(outputKey, frame);

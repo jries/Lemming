@@ -8,29 +8,25 @@ import java.util.Map;
  * @author Ronny Sczech
  */
 
+@SuppressWarnings("rawtypes")
 public interface ModuleInterface extends Runnable{
-	
-	/**
-	 * @return Returns true if more outputs has to be generated.
-	 */
-	public boolean hasMoreOutputs();
 	
 	public void cancel();
 	
 	public Object getInput(String key);
 	
-	public Map<String, Object> getInputs();
+	public Map<String, Element> getInputs();
 	
 	public Object getOutput(String key);
 	
-	public Map<String, Object> getOutputs();
+	public Map<String, Element> getOutputs();
 	
-	public void setInput(String key, Store<?> store);
+	public void setInput(String key, Store store);
 	
-	public void setInputs(Map<String, Store<?>> storeMap);
+	public void setInputs(Map<String, Store> storeMap);
 	
-	public void setOutput(String key, Store<?> store);
+	public void setOutput(String key, Store store);
 	
-	public void setOutputs(Map<String, Store<?>> storeMap);
+	public void setOutputs(Map<String, Store> storeMap);
 	
 }

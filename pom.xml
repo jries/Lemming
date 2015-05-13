@@ -110,17 +110,30 @@
 	        <configuration>
 	          <lifecycleMappingMetadata>
 	            <pluginExecutions>
+	            <pluginexecution>
+                   <pluginexecutionfilter>
+                         <groupid>org.apache.maven.plugins</groupid>
+                         <artifactid>maven-toolchains-plugin</artifactid>
+                         <versionrange>[1.0,)</versionrange>
+                         <goals>
+                             <goal>toolchain</goal>
+                         </goals>
+                     </pluginexecutionfilter>
+                     <action>
+                         <ignore>true</ignore>
+                     </action>
+                  </pluginexecution>
 	              <pluginExecution>
 	                <pluginExecutionFilter>
 	                  <groupId>org.apache.maven.plugins</groupId>
 	                  <artifactId>maven-enforcer-plugin</artifactId>
-	                  <versionRange>[1.0.0,)</versionRange>
+	                  <versionRange>[1.0,)</versionRange>
 	                  <goals>
 	                    <goal>enforce</goal>
 	                  </goals>
 	                </pluginExecutionFilter>
 	                <action>
-	                  <ignore />
+	                  <ignore>true</ignore>
 	                </action>
 	              </pluginExecution>
 	            </pluginExecutions>
@@ -198,5 +211,5 @@
 		    </configuration>
 		</plugin>
 	</plugins>
-	</build>
+	</build>	
 </project>

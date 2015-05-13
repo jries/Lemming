@@ -2,7 +2,7 @@ package org.lemming.pipeline;
 
 import net.imglib2.RandomAccessibleInterval;
 
-public interface Frame<T> extends Element {
+public interface Frame<T> extends Element, Comparable<Frame<T>> {
 	/** 
 	 * @return Return the frame number in the movie */
 	public long getFrameNumber();

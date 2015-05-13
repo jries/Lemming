@@ -5,9 +5,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javolution.util.FastTable;
 
-public class FastStore<DataType> implements Store<DataType> {
+public class FastStore implements Store<Element> {
 	
-	private FastTable<DataType> q = new FastTable<DataType>();
+	private FastTable<Element> q = new FastTable<>();
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	/**
@@ -24,12 +24,18 @@ public class FastStore<DataType> implements Store<DataType> {
 	}
 
 	@Override
-	public void put(DataType el) {
-		q.offer(el);
+	public void put(Element el) {
+		lock.writeLock().lock();
+		try{
+			q.offer(el);
+		} finally {
+			lock.writeLock().unlock();
+		}
 	}
 	
-	public DataType peek(){
-		DataType res = null;
+	@Override
+	public Element peek(){
+		Element res = null;
 		lock.readLock().lock();
 		try{
 			while (!isEmpty()){
@@ -44,8 +50,8 @@ public class FastStore<DataType> implements Store<DataType> {
 	}
 
 	@Override
-	public DataType get() {
-		DataType res = null;
+	public Element get() {
+		Element res = null;
 		lock.readLock().lock();
 		try{
 			while (!isEmpty()){

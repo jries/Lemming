@@ -6,20 +6,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.IJTiffLoader;
 import org.lemming.pipeline.FastStore;
-import org.lemming.pipeline.Frame;
 
 @SuppressWarnings("rawtypes")
 public class IJTiffLoaderTest {
 
 	private IJTiffLoader tif;
-	private FastStore<Frame> frames;
+	private FastStore frames;
 
 	
 	@Before
 	public void setUp() throws Exception {
 		
 		tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif","frames");
-		frames = new FastStore<Frame>();
+		frames = new FastStore();
 		tif.setOutput("frames", frames);
 	}
 

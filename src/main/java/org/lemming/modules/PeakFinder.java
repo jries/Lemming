@@ -2,9 +2,10 @@ package org.lemming.modules;
 
 import java.util.Map;
 
+import org.lemming.pipeline.Element;
 import org.lemming.pipeline.Frame;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.ModuleProcessor;
+import org.lemming.pipeline.Module;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -15,9 +16,8 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends ModuleProcessor {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Module {
 	
-	private boolean hasMoreOutputs;
 	private int size;
 	private double threshold;
 	private String outputKey;
@@ -25,12 +25,14 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 
 	/**
 	 * @param threshold - threshold for subtracting background
+	 * @param size - kernel size 
+	 * @param out - output store
+	 * @param in - input store
 	 */
-	public PeakFinder(double threshold, int size, String in, String out) {
+	public PeakFinder(final double threshold, final int size, final String in, final String out) {
 		System.currentTimeMillis();
 		setThreshold(threshold);
 		this.size = size;
-		hasMoreOutputs = true;
 		outputKey = out;
 		inputKey = in;
 		setNumThreads();
@@ -40,14 +42,9 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 		this.threshold = threshold;
 	}
 
-	@Override
-	public boolean hasMoreOutputs() {
-		return hasMoreOutputs;
-	}
-
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Map<String, Object> data) {
+	public void process(Map<String, Element> data) {
 		
 		F frame = (F) data.get(inputKey);
 		if (frame==null) return;
@@ -58,7 +55,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 			Localization lastloc = new Localization(frame.getFrameNumber(), 0, 0);
 			lastloc.setLast(true);
 			data.put(outputKey,lastloc);
-			hasMoreOutputs = false;
 			cancel();
 			return;
 		}
@@ -67,7 +63,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 		
 	}
 	
-	private void process1(F frame, Map<String, Object> data) {
+	private void process1(final F frame, Map<String, Element> data) {
 		Interval interval = Intervals.expand( frame.getPixels(), -size );
 		
 		RandomAccessibleInterval<T> source = Views.interval( frame.getPixels(), interval );

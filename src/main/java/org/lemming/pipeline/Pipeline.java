@@ -12,13 +12,13 @@ public class Pipeline implements Runnable {
 	 */
 	public Pipeline(){
 		this.group = new ThreadGroup("Pipe");
-		this.pipe = new LinkedList<Thread>();
+		this.pipe = new LinkedList<>();
 	}
 	
 	/**
 	 * @param module - Runnable to add
 	 */
-	public void add(ModuleProcessor module){
+	public void add(AbstractModule module){
 		pipe.addLast(new Thread(group,module,module.getClass().getName()));
 	}
 	
@@ -26,11 +26,11 @@ public class Pipeline implements Runnable {
 	/**
 	 * @param module - Module to run as sequential
 	 */
-	public void addSequential(ModuleProcessor module){
+	public void addSequential(Module module){
 		if (!pipe.isEmpty()) run();
 		module.run();
 	
-		while(module.hasMoreOutputs()){ //wait until store is filled up completely
+		while(module.isRunning()){ //wait until store is filled up completely
 			pause(10);
 		}
 		System.out.println("module " + module.getClass().getSimpleName() + " completed!");
@@ -53,7 +53,7 @@ public class Pipeline implements Runnable {
 		group.interrupt();
 	}
 	
-	private void pause(long ms){
+	private static void pause(long ms){
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
