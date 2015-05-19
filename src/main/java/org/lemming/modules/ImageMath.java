@@ -26,9 +26,8 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	private int counter;
 	private long start;
 	
-	public ImageMath(Pair<String,String> ins, String out){
+	public ImageMath(Pair<String,String> ins){
 		inputKeys = ins;
-		outputKey = out;
 	}
 	
 	public void setOperator(operators op){
@@ -39,10 +38,15 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	@SuppressWarnings("unchecked")
 	@Override
 	public void process(Map<String, Element> data) {
-		F frameA = (F) data.get(inputKeys.getA());
-		if (frameA==null) return;
 		F frameB = (F) data.get(inputKeys.getB());
-		if (frameB==null) return;
+		if (frameB==null){ 
+			return;
+		}
+		F frameA = (F) data.get(inputKeys.getA());
+		if (frameA==null){ 
+			inputs.get(inputKeys.getB()).put(frameB);
+			return;
+		}
 		
 		// if no match put it back to inputs
 		if (frameA.getFrameNumber() != frameB.getFrameNumber()){
@@ -54,21 +58,19 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		Pair<F,F> framePair= new ValuePair<>(frameA,frameB);
 		
 		if (frameA.isLast()){ // make the poison pill
-			if (inputs.get(inputKeys.getA()).isEmpty()){
-				process1(framePair);
-				cancel();
-				return;
-			}
-			inputs.get(inputKeys.getA()).put(frameA); //if queue is not empty put back to the end
-			inputs.get(inputKeys.getB()).put(frameB);
+			ImgLib2Frame<T> lastFrame = process1(framePair);
+			lastFrame.setLast(true);
+			outputs.get(outputKey).put(lastFrame);
+			cancel();
+			counter++;
 			return;
 		}
+
+		outputs.get(outputKey).put(process1(framePair));
+		counter++;		
 		
-		ImgLib2Frame<T> out = process1(framePair);
-		outputs.get(outputKey).put(out);
-		counter++;
 		//if (counter % 100 == 0)
-		//	System.out.println("Frames calculated:"+counter);
+		//	System.out.println("Frames calculated:" + counter);
 		
 	}
 
@@ -112,13 +114,36 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	}
 	
 	@Override
-	protected void beforeRun(){
+	protected void beforeRun(){ // check for equal number in the two input stores
+		outputKey = outputs.keySet().iterator().next();
 		start = System.currentTimeMillis();
+		for ( String key : inputs.keySet()){
+				while (inputs.get(key).isEmpty()) pause(10);
+			}
+		int length = 0;
+		boolean loop = true;
+		while(loop){
+			for ( String key : inputs.keySet()){
+				if (length == inputs.get(key).getLength())
+					loop = false;
+				length = inputs.get(key).getLength();
+			}
+			pause(10);
+		}
+		System.out.println("Image Math - Input ready");
 	}
 	
 	@Override
 	protected void afterRun(){
-		System.out.println("Math done " + counter +" in " + (System.currentTimeMillis()-start) + "ms.");
+		System.out.println("Math done with " + counter + " frames in " + (System.currentTimeMillis()-start) + "ms.");
+	}
+	
+	private static void pause(long ms){
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			System.err.println(e.getMessage());
+		}
 	}
 
 }

@@ -19,6 +19,7 @@ public class FastStore implements Store<Element> {
 	/**
 	 * @return Returns the length of the queue.
 	 */
+	@Override
 	public int getLength() {
 		return q.size();
 	}
@@ -57,7 +58,7 @@ public class FastStore implements Store<Element> {
 			while (!isEmpty()){
 				res = q.poll();
 				if (res != null) break;
-			} 
+			} 	
 		} finally {
 			lock.readLock().unlock();
 		}

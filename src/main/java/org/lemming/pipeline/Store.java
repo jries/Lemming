@@ -25,4 +25,6 @@ public interface Store<DataType extends Element> {
 	 * @return Checks if the store is empty.
 	 */
 	boolean isEmpty();
+	
+	public int getLength();
 }

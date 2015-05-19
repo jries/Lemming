@@ -22,6 +22,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 	private double threshold;
 	private String outputKey;
 	private String inputKey;
+	private long start;
 
 	/**
 	 * @param threshold - threshold for subtracting background
@@ -29,17 +30,22 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 	 * @param out - output store
 	 * @param in - input store
 	 */
-	public PeakFinder(final double threshold, final int size, final String in, final String out) {
+	public PeakFinder(final double threshold, final int size) {
 		System.currentTimeMillis();
 		setThreshold(threshold);
 		this.size = size;
-		outputKey = out;
-		inputKey = in;
 		setNumThreads();
  	}
 
 	private void setThreshold(double threshold) {
 		this.threshold = threshold;
+	}
+	
+	@Override
+	protected void beforeRun(){
+		start = System.currentTimeMillis();
+		inputKey = inputs.keySet().iterator().next(); // for this module there should be only one key
+		outputKey = outputs.keySet().iterator().next(); // for this module there should be only one key
 	}
 
 	@SuppressWarnings("unchecked")
@@ -107,5 +113,10 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 	public double getThreshold() {
 		return threshold;
 	}
+	
+	@Override
+	protected void afterRun(){
+		System.out.println("PeakFinder done in " + (System.currentTimeMillis()-start) + "ms.");
+	} 
 
 }

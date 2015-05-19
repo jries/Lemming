@@ -26,15 +26,13 @@ public class Pipeline implements Runnable {
 	/**
 	 * @param module - Module to run as sequential
 	 */
-	public void addSequential(Module module){
+	public void addSequential(AbstractModule module){
 		if (!pipe.isEmpty()) run();
 		module.run();
 	
 		while(module.isRunning()){ //wait until store is filled up completely
 			pause(10);
 		}
-		System.out.println("module " + module.getClass().getSimpleName() + " completed!");
-	
 		pipe.clear();
 	}
 

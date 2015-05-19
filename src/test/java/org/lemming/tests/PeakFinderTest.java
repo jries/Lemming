@@ -23,12 +23,12 @@ public class PeakFinderTest {
 		pipe = new Pipeline();	
 		
 		frames = new FastStore();
-		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif","frames");
+		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
 		tif.setOutput("frames",frames);
 		pipe.add(tif);
 		
 		localizations = new FastStore();
-		peak = new PeakFinder(700,4,"frames","locs");
+		peak = new PeakFinder(700,4);
 		peak.setInput("frames", frames);
 		peak.setOutput("locs", localizations);
 		pipe.add(peak);

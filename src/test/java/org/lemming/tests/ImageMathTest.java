@@ -9,6 +9,7 @@ import net.imglib2.util.ValuePair;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.lemming.modules.FastMedianFilter;
 import org.lemming.modules.IJTiffLoader;
 import org.lemming.modules.ImageMath;
 import org.lemming.modules.StoreSplitter;
@@ -20,40 +21,43 @@ import org.lemming.pipeline.Store;
 public class ImageMathTest {
 
 	private ImageMath im;
-	private FastStore frames;
-	private FastStore calculated;
+	private FastStore frames = new FastStore();
+	private FastStore calculated = new FastStore();
 	private Pipeline pipe;
 	private IJTiffLoader tif;
 	private StoreSplitter splitter;
-	private FastStore frames1;
-	private FastStore frames2;
+	private FastStore frames1 = new FastStore();
+	private FastStore frames2 = new FastStore();
+	private FastStore filtered = new FastStore();
+	private FastMedianFilter fmf;
 
 	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Pipeline();
 		
-		frames = new FastStore();
-		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif","frames");
-		tif.setOutput("frames",frames);
+		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
+		tif.setOutput("frames", frames);
 		pipe.add(tif);
 		
-		splitter = new StoreSplitter("frames");
+		splitter = new StoreSplitter();
 		Map<String,Store> storeMap = new HashMap<>();
-		frames1 = new FastStore();
-		frames2 = new FastStore();
+		splitter.setInput("frames", frames);
 		storeMap.put("frames1", frames1);
 		storeMap.put("frames2", frames2);
-		splitter.setInput("frames", frames);
 		splitter.setOutputs(storeMap);
-		pipe.add(splitter);		
+		pipe.add(splitter);	
 		
-		im = new ImageMath(new ValuePair("frames1","frames2"),"calculated");
-		im.setInput("frames1", frames1);
+		fmf = new FastMedianFilter(50, true);
+		fmf.setInput("frames1", frames1);
+		fmf.setOutput("filtered", filtered);
+		pipe.add(fmf);
+		
+		im = new ImageMath(new ValuePair("frames2","filtered"));
 		im.setInput("frames2", frames2);
-		calculated = new FastStore();
+		im.setInput("filtered", filtered);
 		im.setOutput("calculated", calculated);
-		im.setOperator(ImageMath.operators.ADDITION);
+		im.setOperator(ImageMath.operators.SUBSTRACTION);
 		pipe.add(im);
 	}
 

@@ -14,23 +14,21 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	private int numTasks;
 	protected final ExecutorService service;
 	
-	protected Map<String, Store> inputs;
-	protected Map<String, Store> outputs;
+	protected Map<String, Store> inputs = new HashMap<>();
+	protected Map<String, Store> outputs = new HashMap<>();
 	
 	public AbstractModule(){
 		running = true;
 		setNumThreads();
 		service = Executors.newFixedThreadPool(numTasks);
-		inputs = new HashMap<>();
-		outputs = new HashMap<>();
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	protected void newOutput(final String key, Element data) {
-		if (outputs.containsKey(key)){
-			Store store = outputs.get(key);
-			store.put(data);
-		}
+		Store store = outputs.get(key);
+		if (store==null)
+			throw new NullPointerException("wrong mapping!");
+		store.put(data);
 	}
 	
 	protected Map<String, Element> nextInput() {
@@ -45,7 +43,6 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	@Override
 	public void setNumThreads(int numThreads) {
 		numTasks=numThreads;
-		
 	}
 
 	@Override
@@ -103,5 +100,9 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	@Override
 	public void setOutputs(Map<String, Store> storeMap) {
 		outputs = storeMap;
+	}
+
+	public boolean isRunning() {
+		return running;
 	}
 }

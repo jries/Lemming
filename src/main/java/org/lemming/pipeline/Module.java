@@ -79,10 +79,6 @@ public abstract class Module extends AbstractModule{
 	protected void beforeRun() {		
 	}
 	
-	public boolean isRunning(){
-		return running;
-	}
-	
 	/**
 	 * Method to be overwritten by children of this class.
 	 * @param data - data to process

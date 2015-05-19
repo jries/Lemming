@@ -25,12 +25,12 @@ public class FastMedianFilterTest {
 		pipe = new Pipeline();
 		
 		frames = new FastStore();
-		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif","frames");
+		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
 		tif.setOutput("frames",frames);
 		pipe.add(tif);
 		
 		filtered = new FastStore();
-		fmf = new FastMedianFilter(50, "frames", "filtered");
+		fmf = new FastMedianFilter(50,true);
 		fmf.setInput("frames", frames);
 		fmf.setOutput("filtered", filtered);
 		pipe.add(fmf);

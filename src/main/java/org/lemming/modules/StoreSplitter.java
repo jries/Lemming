@@ -13,15 +13,15 @@ public class StoreSplitter<E extends Element> extends SingleRunModule {
 	private Integer counter=0;
 	private long start;
 
-	public StoreSplitter(String in) {
-		inputKey = in;
+	public StoreSplitter() {
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void beforeRun(){
 		start = System.currentTimeMillis();
-		store = inputs.get(inputKey);
+		store = inputs.values().iterator().next();
+		inputKey = inputs.keySet().iterator().next();
 		if (store==null)
 			throw new NullPointerException("input is empty!");
 	}
@@ -38,6 +38,7 @@ public class StoreSplitter<E extends Element> extends SingleRunModule {
 				cloned.setLast(true);
 				outputs.get(key).put(cloned);
 			}
+			counter++;
 			cancel();
 			return;
 		}
@@ -54,7 +55,7 @@ public class StoreSplitter<E extends Element> extends SingleRunModule {
 	
 	@Override
 	protected void afterRun(){
-		System.out.println("Splitting done " + counter +" in " + (System.currentTimeMillis()-start) + "ms.");
+		System.out.println("Splitting of " + counter +" elements done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 
 }

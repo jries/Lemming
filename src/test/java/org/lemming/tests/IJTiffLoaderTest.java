@@ -17,7 +17,7 @@ public class IJTiffLoaderTest {
 	@Before
 	public void setUp() throws Exception {
 		
-		tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif","frames");
+		tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif");
 		frames = new FastStore();
 		tif.setOutput("frames", frames);
 	}

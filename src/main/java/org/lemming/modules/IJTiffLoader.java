@@ -22,22 +22,25 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 	private int curSlice = 0;
 	private String filename; 
 	private ImagePlus img;
-	private String outputKey;
 	private int stackSize;
+	private String outputkey;
+	private long start;
 	
-	public IJTiffLoader(String path, String key) {
+	public IJTiffLoader(String path) {
 		filename = path;
-		outputKey = key;
 	}
 	
 	@Override
 	public void beforeRun() {
+		start = System.currentTimeMillis();
 		if (new File(filename).exists()){
 			img = new ImagePlus(filename);
 			stackSize = img.getStack().getSize();
 		}
 		else 
 			System.err.println("File not exist!");
+		
+		outputkey = outputs.keySet().iterator().next(); // for this module there should be only one key
 	}
 
 	public boolean hasMoreOutputs() {
@@ -66,12 +69,12 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
 		if (!hasMoreOutputs())
 			frame.setLast(true);
-		data.put(outputKey, frame);
+		data.put(outputkey, frame);
 	}
 	
 	@Override
 	public void afterRun(){
-		System.out.println("loading finished");
+		System.out.println("Loading done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 	
 	public void show(){
