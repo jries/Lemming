@@ -35,7 +35,7 @@ public class FastMedianFilterTest {
 		fmf.setOutput("filtered", filtered);
 		pipe.add(fmf);
 		
-		saver = new SaveImages("/home/ronny/Bilder/out.tif", "filtered");
+		saver = new SaveImages("/home/ronny/Bilder/out.tif");
 		saver.setInput("filtered", filtered);
 		pipe.add(saver);
 	}

@@ -116,7 +116,6 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	@Override
 	protected void beforeRun(){ // check for equal number in the two input stores
 		outputKey = outputs.keySet().iterator().next();
-		start = System.currentTimeMillis();
 		for ( String key : inputs.keySet()){
 				while (inputs.get(key).isEmpty()) pause(10);
 			}
@@ -131,19 +130,12 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 			pause(10);
 		}
 		System.out.println("Image Math - Input ready");
+		start = System.currentTimeMillis();
 	}
 	
 	@Override
 	protected void afterRun(){
 		System.out.println("Math done with " + counter + " frames in " + (System.currentTimeMillis()-start) + "ms.");
-	}
-	
-	private static void pause(long ms){
-		try {
-			Thread.sleep(ms);
-		} catch (InterruptedException e) {
-			System.err.println(e.getMessage());
-		}
 	}
 
 }

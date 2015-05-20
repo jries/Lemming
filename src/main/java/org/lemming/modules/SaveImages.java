@@ -12,7 +12,6 @@ import net.imglib2.type.numeric.NumericType;
 import org.lemming.pipeline.Element;
 import org.lemming.pipeline.Frame;
 import org.lemming.pipeline.SingleRunModule;
-import org.lemming.pipeline.Store;
 
 public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
@@ -20,20 +19,17 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 	private String filename;
 	private ImageStack stack;
 
-	public SaveImages(String filename, String inputKey){
+	public SaveImages(String filename){
 		this.filename = filename;
-		this.inputKey = inputKey;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void beforeRun(){
-		Store s = inputs.get(inputKey);
-		F frame = null;
-		while (frame == null)
-			frame = (F) s.get();
+		inputKey = inputs.keySet().iterator().next();
+		while (inputs.get(inputKey).isEmpty()) pause(10);
+		F frame = (F) inputs.get(inputKey).peek();
 		stack = ImageJFunctions.wrap(frame.getPixels(), "").createEmptyStack();
-		stack.addSlice(ImageJFunctions.wrap(frame.getPixels(), "" + frame.getFrameNumber()).getProcessor());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -45,7 +41,6 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 		if (frame.isLast()){ // make the poison pill
 			System.out.println("Last Frame saved:" +  frame.getFrameNumber());
 			cancel();
-			return;
 		}
 	}
 	

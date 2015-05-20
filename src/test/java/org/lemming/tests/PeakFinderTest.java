@@ -2,10 +2,13 @@ package org.lemming.tests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.IJTiffLoader;
 import org.lemming.modules.PeakFinder;
+import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
 
@@ -17,6 +20,7 @@ public class PeakFinderTest {
 	private IJTiffLoader tif;
 	private FastStore localizations;
 	private PeakFinder peak;
+	private SaveLocalizations saver;
 	
 	@Before
 	public void setUp() throws Exception {
@@ -32,6 +36,10 @@ public class PeakFinderTest {
 		peak.setInput("frames", frames);
 		peak.setOutput("locs", localizations);
 		pipe.add(peak);
+		
+		saver = new SaveLocalizations(new File("/home/ronny/Bilder/out.csv"));
+		saver.setInput("locs", localizations);
+		pipe.add(saver);
 	}
 
 	@Test

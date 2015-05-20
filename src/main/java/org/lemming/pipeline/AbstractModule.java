@@ -105,4 +105,12 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	public boolean isRunning() {
 		return running;
 	}
+	
+	protected static void pause(long ms){
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {
+			System.err.println(e.getMessage());
+		}
+	}
 }
