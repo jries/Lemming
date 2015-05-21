@@ -50,7 +50,7 @@ public abstract class Module extends AbstractModule{
 			
 			afterRun();
 			try {
-				service.awaitTermination(1, TimeUnit.MINUTES);
+				service.awaitTermination(5, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
 				System.err.println(e.getMessage());
 			}

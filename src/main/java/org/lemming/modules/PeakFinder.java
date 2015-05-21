@@ -80,7 +80,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 
 	}
 
-	@SuppressWarnings("unchecked")
 	private void process1(final F frame) {
 		Interval interval = Intervals.expand(frame.getPixels(), -size);
 

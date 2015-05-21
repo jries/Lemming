@@ -41,7 +41,6 @@ public class SaveLocalizations extends SingleRunModule {
 		start = System.currentTimeMillis();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void process(Map<String, Element> data) {
 		Localization loc = (Localization) data.get(inputKey);
@@ -64,9 +63,8 @@ public class SaveLocalizations extends SingleRunModule {
 		out.append(loc.getX());
 		out.append(", ");
 		out.append(loc.getY());
-		out.append(", ");
-
 		out.append("\n");
+		
 		try {
 			w.write(out.toString());
 		} catch (IOException e) {

@@ -31,7 +31,6 @@ import net.imglib2.view.Views;
 public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extends Frame<T>>
 		extends SingleRunModule {
 
-	private String outputKey;
 	private String inputKey;
 	private int nFrames, counter = 0;
 	private FastTable<F> frameList = new FastTable<>();
@@ -39,6 +38,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	private FastTable<Callable<F>> callables = new FastTable<>();
 	private int lastListSize = 0;
 	private boolean interpolating;
+	private Store output;
 
 	public FastMedianFilter(final int numFrames, boolean interpolating) {
 		nFrames = numFrames;
@@ -51,7 +51,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		// for this module there should be only one key
 		inputKey = inputs.keySet().iterator().next(); 
 		// for this module there should be only one key											
-		outputKey = outputs.keySet().iterator().next(); 											
+		output = outputs.values().iterator().next(); 											
 	}
 
 	@SuppressWarnings("unchecked")
@@ -134,10 +134,9 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		return newFrame;
 	}
 
-	@SuppressWarnings({ "unchecked", "null" })
+	@SuppressWarnings("null")
 	@Override
 	protected void afterRun() {
-		Store<Frame<T>> outStore = outputs.get(outputKey);
 
 		List<F> results = new ArrayList<>();
 
@@ -190,7 +189,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 												* ((float) i + 1) / nFrames));
 					}
 
-					outStore.put(new ImgLib2Frame<>(
+					output.put(new ImgLib2Frame<>(
 							frameA.getFrameNumber() + i, frameA.getWidth(),
 							frameA.getHeight(), outFrame));
 				}
@@ -199,7 +198,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
-				outStore.put(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
+				output.put(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
 						frameB.getWidth(), frameB.getHeight(), frameB
 								.getPixels()));
 			}
@@ -209,18 +208,18 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 					frameB.getFrameNumber() + lastListSize, frameB.getWidth(),
 					frameB.getHeight(), frameB.getPixels());
 			lastFrame.setLast(true);
-			outStore.put(lastFrame);
+			output.put(lastFrame);
 		} else {
 			F lastElements = results.remove(results.size()-1);
 			for (F element : results) {
 				for (int i = 0; i < nFrames; i++)
-					outStore.put(new ImgLib2Frame<>(element.getFrameNumber()
+					output.put(new ImgLib2Frame<>(element.getFrameNumber()
 							+ i, element.getWidth(), element.getWidth(),
 							element.getPixels()));
 			}
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
-				outStore.put(new ImgLib2Frame<>(lastElements.getFrameNumber() + i,
+				output.put(new ImgLib2Frame<>(lastElements.getFrameNumber() + i,
 						lastElements.getWidth(), lastElements.getHeight(), lastElements
 								.getPixels()));
 			}
@@ -229,7 +228,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 					lastElements.getFrameNumber() + lastListSize, lastElements.getWidth(),
 					lastElements.getHeight(), lastElements.getPixels());
 			lastFrame.setLast(true);
-			outStore.put(lastFrame);
+			output.put(lastFrame);
 		}
 
 		try {

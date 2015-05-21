@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 
 import net.imglib2.algorithm.MultiThreaded;
 
-@SuppressWarnings("rawtypes")
 public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	
 	protected volatile boolean running;
@@ -23,7 +22,6 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 		service = Executors.newFixedThreadPool(numTasks);
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	protected void newOutput(final String key, Element data) {
 		Store store = outputs.get(key);
 		if (store==null)

@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javolution.util.FastTable;
 
-public class FastStore implements Store<Element> {
+public class FastStore implements Store {
 	
 	private FastTable<Element> q = new FastTable<>();
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();

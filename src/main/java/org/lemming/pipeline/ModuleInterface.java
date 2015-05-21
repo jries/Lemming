@@ -8,7 +8,6 @@ import java.util.Map;
  * @author Ronny Sczech
  */
 
-@SuppressWarnings("rawtypes")
 public interface ModuleInterface extends Runnable{
 	
 	public void cancel();
