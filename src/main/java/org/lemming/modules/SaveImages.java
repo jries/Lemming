@@ -4,8 +4,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 
-import java.util.Map;
-
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.NumericType;
 
@@ -15,7 +13,6 @@ import org.lemming.pipeline.SingleRunModule;
 
 public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
-	private String inputKey;
 	private String filename;
 	private ImageStack stack;
 
@@ -26,16 +23,15 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void beforeRun(){
-		inputKey = inputs.keySet().iterator().next();
-		while (inputs.get(inputKey).isEmpty()) pause(10);
-		F frame = (F) inputs.get(inputKey).peek();
+		iterator = inputs.keySet().iterator().next();
+		F frame = (F) inputs.get(iterator).peek();
 		stack = ImageJFunctions.wrap(frame.getPixels(), "").createEmptyStack();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Map<String, Element> data) {
-		F frame = (F) data.get(inputKey);
+	public void process(Element data) {
+		F frame = (F) data;
 		if (frame == null) return;
 		stack.addSlice(ImageJFunctions.wrap(frame.getPixels(), "" + frame.getFrameNumber()).getProcessor());
 		if (frame.isLast()){ // make the poison pill

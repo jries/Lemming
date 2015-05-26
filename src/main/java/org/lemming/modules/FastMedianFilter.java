@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +30,6 @@ import net.imglib2.view.Views;
 public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extends Frame<T>>
 		extends SingleRunModule {
 
-	private String inputKey;
 	private int nFrames, counter = 0;
 	private FastTable<F> frameList = new FastTable<>();
 	private long start;
@@ -49,15 +47,15 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
 		// for this module there should be only one key
-		inputKey = inputs.keySet().iterator().next(); 
+		iterator = inputs.keySet().iterator().next(); 
 		// for this module there should be only one key											
 		output = outputs.values().iterator().next(); 											
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Map<String, Element> data) {
-		final F frame = (F) data.get(inputKey);
+	public void process(Element data) {
+		final F frame = (F) data;
 		if (frame == null)
 			return;
 

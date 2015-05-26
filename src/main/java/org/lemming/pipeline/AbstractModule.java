@@ -9,28 +9,28 @@ import net.imglib2.algorithm.MultiThreaded;
 
 public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	
-	protected volatile boolean running;
 	private int numTasks;
 	protected final ExecutorService service;
-	
 	protected Map<String, Store> inputs = new HashMap<>();
 	protected Map<String, Store> outputs = new HashMap<>();
 	
+	protected volatile boolean running = true;
+	protected String iterator="";
+	
 	public AbstractModule(){
-		running = true;
 		setNumThreads();
 		service = Executors.newFixedThreadPool(numTasks);
 	}
-
-	protected void newOutput(final String key, Element data) {
-		Store store = outputs.get(key);
+	
+	protected void newOutput(final Element data) {
+		Store store = outputs.get(iterator);
 		if (store==null)
 			throw new NullPointerException("wrong mapping!");
 		store.put(data);
 	}
 	
-	protected Map<String, Element> nextInput() {
-		return getInputs();
+	protected Element nextInput() {
+		return getInput(iterator);
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	}
 
 	@Override
-	public Object getInput(String key) {
+	public Element getInput(String key) {
 		return inputs.get(key).get();
 	}
 
@@ -68,7 +68,7 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	}
 
 	@Override
-	public Object getOutput(String key) {
+	public Element getOutput(String key) {
 		return outputs.get(key).get();
 	}
 

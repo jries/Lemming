@@ -1,5 +1,7 @@
 package org.lemming.pipeline;
 
+import java.util.Collection;
+
 public interface GenericStore<E extends Element> {
 	/**
 	 * Adds the element el to the store.
@@ -27,4 +29,6 @@ public interface GenericStore<E extends Element> {
 	boolean isEmpty();
 	
 	public int getLength();
+
+	Collection<Element> view();
 }

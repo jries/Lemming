@@ -7,8 +7,6 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
 import java.io.File;
-import java.util.Map;
-
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.NumericType;
@@ -23,7 +21,6 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 	private String filename; 
 	private ImagePlus img;
 	private int stackSize;
-	private String outputkey;
 	private long start;
 	
 	public IJTiffLoader(String path) {
@@ -40,7 +37,7 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 		else 
 			System.err.println("File not exist!");
 		
-		outputkey = outputs.keySet().iterator().next(); // for this module there should be only one key
+		iterator = outputs.keySet().iterator().next();
 	}
 
 	public boolean hasMoreOutputs() {
@@ -49,9 +46,9 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public void process(Map<String, Element> data) {
+	public Element process(Element data) {
 		
-		if (curSlice >= stackSize){ cancel(); return; }
+		if (curSlice >= stackSize){ cancel(); return null; }
 		
 		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
 		
@@ -69,7 +66,7 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
 		if (!hasMoreOutputs())
 			frame.setLast(true);
-		data.put(outputkey, frame);
+		return frame;
 	}
 	
 	@Override
@@ -80,5 +77,4 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 	public void show(){
 		img.show();
 	}
-
 }

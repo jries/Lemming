@@ -1,14 +1,11 @@
 package org.lemming.modules;
 
-import java.util.Map;
-
 import org.lemming.pipeline.Element;
 import org.lemming.pipeline.SingleRunModule;
 import org.lemming.pipeline.Store;
 
 public class StoreSplitter extends SingleRunModule {
 
-	private String inputKey;
 	private Store store;
 	private Integer counter=0;
 	private long start;
@@ -20,14 +17,14 @@ public class StoreSplitter extends SingleRunModule {
 	protected void beforeRun(){
 		start = System.currentTimeMillis();
 		store = inputs.values().iterator().next();
-		inputKey = inputs.keySet().iterator().next();
+		iterator = inputs.keySet().iterator().next();
 		if (store==null)
 			throw new NullPointerException("input is empty!");
 	}
 
 	@Override
-	public void process(Map<String, Element> data) {
-		Element el = data.get(inputKey); 
+	public void process(Element data) {
+		Element el = data; 
 		if (el==null) return;
 		
 		if(el.isLast()){ //process the rest;

@@ -1,10 +1,9 @@
 package org.lemming.math;
 
 import net.imglib2.histogram.Histogram1d;
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.numeric.NumericType;
 
-public class FindThreshold<T extends RealType<T>> {
+public class FindThreshold<T extends NumericType<T>> {
 
 	private ThresholdingType m_ttype;
 	private T m_type;
@@ -15,14 +14,14 @@ public class FindThreshold<T extends RealType<T>> {
 		m_type = type;
 	}
 
-	public FloatType compute(final Histogram1d<T> hist) {
+	public T compute(final Histogram1d<T> hist) {
 
 		if (hist.getBinCount() > Integer.MAX_VALUE) {
 			throw new RuntimeException(
 					"to many histogram bins can't allocate a big enought array.");
 		}
 
-		FloatType r = new FloatType();
+		T r = m_type.createVariable();
 
 		// testing for histograms with only one filled bin
 		int filled = 0;
@@ -33,7 +32,7 @@ public class FindThreshold<T extends RealType<T>> {
 		}
 		if (filled == 1) {
 			// only one bin contains content
-			r.setReal(m_type.getMaxValue());
+			r.setOne();
 			return r;
 		}
 
@@ -80,7 +79,7 @@ public class FindThreshold<T extends RealType<T>> {
 		}
 
 		hist.getCenterValue(bin, m_type);
-		r.setReal(m_type.getRealFloat());
+		r.set(m_type.copy());
 
 		return r;
 	}

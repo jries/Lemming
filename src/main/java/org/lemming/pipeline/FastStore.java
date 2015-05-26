@@ -1,8 +1,8 @@
 package org.lemming.pipeline;
 
+import java.util.Collection;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import javolution.util.FastTable;
 
 public class FastStore implements Store {
@@ -28,7 +28,7 @@ public class FastStore implements Store {
 	public void put(Element el) {
 		lock.writeLock().lock();
 		try{
-			q.offer(el);
+			q.addLast(el);
 		} finally {
 			lock.writeLock().unlock();
 		}
@@ -69,6 +69,11 @@ public class FastStore implements Store {
 	@Override
 	public boolean isEmpty() {
 		return q.isEmpty();
+	}
+	
+	@Override
+	public  Collection<Element> view(){
+		return q.immutable().value();
 	}
 
 }

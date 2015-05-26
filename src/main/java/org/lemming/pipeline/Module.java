@@ -1,8 +1,6 @@
 package org.lemming.pipeline;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -15,22 +13,23 @@ public abstract class Module extends AbstractModule{
 	
 	@Override
 	public void run() {
-
-		if (!inputs.isEmpty()){ // first check for existing inputs
+		
+		if (!inputs.isEmpty()){ // first check for existing inputs	
 			beforeRun();
-			
-			final ArrayList< Future< Void > > futures = new ArrayList< >();
+			if (inputs.get(iterator)!=null)
+				while (inputs.get(iterator).isEmpty()) pause(10);
+			final ArrayList<Future<Void>> futures = new ArrayList<>();
 			
 			for ( int taskNum = 0; taskNum < getNumThreads(); ++taskNum ){
 	
-				final Callable< Void > r = new Callable< Void >(){
+				final Callable<Void> r = new Callable<Void>(){
 					
 					@Override
 					public Void call() {
 						while (running) {
-								if (Thread.currentThread().isInterrupted()) break;
-								Map<String, Element> data = nextInput();
-								process(data);
+							if (Thread.currentThread().isInterrupted()) break;
+							Element data = nextInput();
+							process(data);
 						}
 						return null;
 					}
@@ -39,7 +38,7 @@ public abstract class Module extends AbstractModule{
 				futures.add( service.submit( r ) );
 			}
 			
-			for ( final Future< Void > f : futures ){
+			for ( final Future<Void> f : futures ){
 				try{
 					f.get();
 				}
@@ -56,16 +55,12 @@ public abstract class Module extends AbstractModule{
 			}
 			return;
 		}
-		if (!outputs.isEmpty()){ // no inputs but maybe only outputs
+		if (!outputs.isEmpty()){ // no inputs but maybe only output		
 			beforeRun();
-						
 			while (running) {
 				if (Thread.currentThread().isInterrupted()) break;
-				Map<String, Element> data = new HashMap<>();
-				process(data);
-				
-				for (String key : data.keySet())
-					newOutput(key,data.get(key));
+				Element data = process(null);
+				newOutput(data);
 			}
 			
 			afterRun();	
@@ -82,7 +77,8 @@ public abstract class Module extends AbstractModule{
 	/**
 	 * Method to be overwritten by children of this class.
 	 * @param data - data to process
+	 * @return 
 	 */
-	public abstract void process(Map<String, Element> data);
+	public abstract Element process(Element data);
 
 }

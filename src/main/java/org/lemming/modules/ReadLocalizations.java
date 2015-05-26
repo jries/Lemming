@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
-
 import org.lemming.pipeline.Element;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
@@ -16,7 +14,6 @@ public class ReadLocalizations extends SingleRunModule {
 	private File file;
 	private BufferedReader br;
 	private String delimiter;
-	private String outputKey;
 	private String sCurrentLine;
 	private long start;
 
@@ -28,7 +25,7 @@ public class ReadLocalizations extends SingleRunModule {
 	@Override
 	public void beforeRun() {
 		start = System.currentTimeMillis();
-		outputKey = outputs.keySet().iterator().next();
+		iterator = outputs.keySet().iterator().next();
 		
 		try {
 			br = new BufferedReader(new FileReader(file));	
@@ -40,8 +37,7 @@ public class ReadLocalizations extends SingleRunModule {
 	}
 
 	@Override
-	public void process(Map<String, Element> data) {
-		
+	public void process(Element data) { // data not used here
 		try {
 			String[] s = sCurrentLine.split(delimiter);
 			for (int i = 0; i<s.length;i++)
@@ -54,7 +50,7 @@ public class ReadLocalizations extends SingleRunModule {
 					cancel();
 					localization.setLast(true);
 				}
-				data.put(outputKey, localization);				
+				outputs.get(iterator).put(localization);				
 			}
 		} catch (IOException e1) {
 			System.err.println(e1.getMessage());

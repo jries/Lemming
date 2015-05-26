@@ -2,18 +2,18 @@ package org.lemming.pipeline;
 
 public class Localization implements LocalizationInterface {
 
-	private double X,Y;
-	private long ID;
+	final private double X,Y;
+	final private long ID;
 	static private long curID = 0;
-	private boolean isLast = false;
-	private long frame = 0;
+	private boolean isLast;
+	final private long frame;
 	
 	public Localization(long ID, long frame,  double x, double y) {
-		this.X=x; this.Y=y; this.ID=ID; this.frame=frame;
+		this.X=x; this.Y=y; this.ID=ID; this.frame=frame; isLast=false;
 	}
 	
 	public Localization(long frame, double x, double y) {
-		X=x; Y=y; ID=curID++; this.frame=frame;
+		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false;
 	}
 	
 	@Override
@@ -26,7 +26,7 @@ public class Localization implements LocalizationInterface {
 	 */
 	@Override
 	public void setLast(boolean isLast) {
-		this.isLast=isLast;
+		this.isLast = isLast;
 	}
 
 	@Override

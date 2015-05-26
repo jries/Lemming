@@ -4,19 +4,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
+
 import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.FittedLocalization;
 import org.lemming.pipeline.SingleRunModule;
 
-public class SaveLocalizations extends SingleRunModule {
+public class SaveFittedLocalizations extends SingleRunModule {
 
 	final private Locale curLocale;
 	private File file;
 	private FileWriter w;
 	private long start;
-	private int counter=0;
+	private int counter = 0;
 
-	public SaveLocalizations(File file) {
+	public SaveFittedLocalizations(File file) {
 		this.curLocale = Locale.getDefault();
 		this.file = file;
 	}
@@ -38,17 +39,18 @@ public class SaveLocalizations extends SingleRunModule {
 
 	@Override
 	public void process(Element data) {
-		Localization loc = (Localization) data;
-		if (loc==null) return;
-		if(loc.isLast()){
-			if (inputs.get(iterator).isEmpty()){
+		FittedLocalization loc = (FittedLocalization) data;
+		if (loc == null)
+			return;
+		if (loc.isLast()) {
+			if (inputs.get(iterator).isEmpty()) {
 				cancel();
 				return;
 			}
 			inputs.get(iterator).put(loc);
 			return;
 		}
-		
+
 		StringBuilder out = new StringBuilder();
 
 		out.append(loc.getID());
@@ -58,13 +60,19 @@ public class SaveLocalizations extends SingleRunModule {
 		out.append(loc.getX());
 		out.append(", ");
 		out.append(loc.getY());
+		out.append(", ");
+		out.append(loc.getZ());
+		out.append(", ");
+		out.append(loc.getsX());
+		out.append(", ");
+		out.append(loc.getsY());
 		out.append("\n");
-		
+
 		try {
 			w.write(out.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
+		}
 		counter++;
 	}
 
@@ -76,7 +84,8 @@ public class SaveLocalizations extends SingleRunModule {
 			e.printStackTrace();
 		}
 		Locale.setDefault(curLocale);
-		System.out.println("" + counter + " localizations saved in " + (System.currentTimeMillis()-start) + "ms.");
+		System.out.println("" + counter + " fitted localizations saved in "
+				+ (System.currentTimeMillis() - start) + "ms.");
 	}
 
 }

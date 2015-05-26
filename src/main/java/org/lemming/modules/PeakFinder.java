@@ -1,11 +1,10 @@
 package org.lemming.modules;
 
-import java.util.Map;
-
 import org.lemming.pipeline.Element;
 import org.lemming.pipeline.Frame;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.Module;
+import org.lemming.pipeline.Store;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -16,15 +15,13 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends
-		Module {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Module {
 
 	private int size;
 	private double threshold;
-	private String outputKey;
-	private String inputKey;
 	private long start;
 	private int counter;
+	private Store output;
 
 	/**
 	 * @param threshold
@@ -50,33 +47,31 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 	@Override
 	protected void beforeRun() {
 		// for this module there should be only one key
-		inputKey = inputs.keySet().iterator().next(); 
+		iterator = inputs.keySet().iterator().next(); 
 		// for this module there should be only one key
-		outputKey = outputs.keySet().iterator().next(); 
-		while (inputs.get(inputKey).isEmpty())
-			pause(10);
+		output = outputs.values().iterator().next(); 
 		start = System.currentTimeMillis();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Map<String, Element> data) {
+	public Element process(Element data) {
 
-		F frame = (F) data.get(inputKey);
+		F frame = (F) data;
 		if (frame == null)
-			return;
+			return null;
 
 		process1(frame);
 		if (frame.isLast()) { // make the poison pill
 			cancel();
-			System.out.println("Last frame finished:" + frame.getFrameNumber());
-			Localization lastloc = new Localization(frame.getFrameNumber(), 0, 0);
+			Localization lastloc = new Localization(frame.getFrameNumber(), -1, -1);
 			lastloc.setLast(true);
-			outputs.get(outputKey).put(lastloc);
-			return;
+			output.put(lastloc);
+			return null;
 		}
 		//if (frame.getFrameNumber() % 500 == 0)
 		//	System.out.println("Frames finished:" + frame.getFrameNumber());
+		return null;
 
 	}
 
@@ -114,9 +109,8 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends
 			}
 
 			if (isMaximum){
-				outputs.get(outputKey).put(
-						new Localization(frame.getFrameNumber(), 
-								center.getIntPosition(0), center.getIntPosition(1)));
+				output.put(new Localization(frame.getFrameNumber(), 
+						center.getIntPosition(0), center.getIntPosition(1)));
 				counter++;
 			}
 		}

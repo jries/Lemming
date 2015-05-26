@@ -1,43 +1,40 @@
 package org.lemming.pipeline;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public abstract class SingleRunModule extends AbstractModule {
 
 	@Override
 	public void run() {
-		beforeRun();
 		
 		if (!inputs.isEmpty()){
+			beforeRun();
+			if (inputs.get(iterator)!=null)
+				while (inputs.get(iterator).isEmpty()) pause(10);
 			while (running) {
 				if (Thread.currentThread().isInterrupted()) break;
-				Map<String, Element> data = nextInput();
+				Element data = nextInput();
 				process(data);
 			}
 			afterRun();	
 			return;
 		}
 		if (!outputs.isEmpty()){
+			beforeRun();
 			while (running) {
 				if (Thread.currentThread().isInterrupted()) break;
-				Map<String, Element> data = new HashMap<>();
+				Element data = (Element) new Object();
 				process(data);
-				
-				for (String key : data.keySet())
-					newOutput(key,data.get(key));
+				newOutput(data);
 			}
 			afterRun();	
 			return;
 		}			
 	}
 
-	public abstract void process(Map<String, Element> data);
-
 	protected void afterRun() {
 	}
 
 	protected void beforeRun() {
 	}
-
+	
+	public abstract void process(Element data);
 }

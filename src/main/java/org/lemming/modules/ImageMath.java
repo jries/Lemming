@@ -1,7 +1,5 @@
 package org.lemming.modules;
 
-import java.util.Map;
-
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.NumericType;
@@ -13,6 +11,7 @@ import org.lemming.pipeline.Element;
 import org.lemming.pipeline.Frame;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
+import org.lemming.pipeline.Store;
 
 public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
@@ -21,10 +20,10 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	}
 
 	private operators operator;
-	private String outputKey;
 	private Pair<String,String> inputKeys;
 	private int counter;
 	private long start;
+	private Store output;
 	
 	public ImageMath(Pair<String,String> ins){
 		inputKeys = ins;
@@ -33,16 +32,33 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	public void setOperator(operators op){
 		operator = op;
 	}
-
+	
+	@Override
+	protected void beforeRun(){ // check for equal number in the two input stores
+		output = outputs.values().iterator().next();
+		iterator = inputKeys.getB();
+		int length = 0;
+		boolean loop = true;
+		while(loop){
+			for ( String key : inputs.keySet()){
+				if (length == inputs.get(key).getLength())
+					loop = false;
+				length = inputs.get(key).getLength();
+			}
+			pause(10);
+		}
+		System.out.println("Image Math - Input ready");
+		start = System.currentTimeMillis();
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Map<String, Element> data) {
-		F frameB = (F) data.get(inputKeys.getB());
+	public void process(Element data) {
+		F frameB = (F) data;
 		if (frameB==null){ 
 			return;
 		}
-		F frameA = (F) data.get(inputKeys.getA());
+		F frameA = (F) inputs.get(inputKeys.getA());
 		if (frameA==null){ 
 			inputs.get(inputKeys.getB()).put(frameB);
 			return;
@@ -60,13 +76,13 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		if (frameA.isLast()){ // make the poison pill
 			ImgLib2Frame<T> lastFrame = process1(framePair);
 			lastFrame.setLast(true);
-			outputs.get(outputKey).put(lastFrame);
+			output.put(lastFrame);
 			cancel();
 			counter++;
 			return;
 		}
 
-		outputs.get(outputKey).put(process1(framePair));
+		output.put(process1(framePair));
 		counter++;		
 		
 		//if (counter % 100 == 0)
@@ -111,26 +127,6 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		}
 		
 		return new ImgLib2Frame<>(framePair.getA().getFrameNumber(), framePair.getA().getWidth(), framePair.getA().getHeight(), intervalA);
-	}
-	
-	@Override
-	protected void beforeRun(){ // check for equal number in the two input stores
-		outputKey = outputs.keySet().iterator().next();
-		for ( String key : inputs.keySet()){
-				while (inputs.get(key).isEmpty()) pause(10);
-			}
-		int length = 0;
-		boolean loop = true;
-		while(loop){
-			for ( String key : inputs.keySet()){
-				if (length == inputs.get(key).getLength())
-					loop = false;
-				length = inputs.get(key).getLength();
-			}
-			pause(10);
-		}
-		System.out.println("Image Math - Input ready");
-		start = System.currentTimeMillis();
 	}
 	
 	@Override
