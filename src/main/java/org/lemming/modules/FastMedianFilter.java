@@ -46,18 +46,16 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	@Override
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
-		// for this module there should be only one key
-		iterator = inputs.keySet().iterator().next(); 
 		// for this module there should be only one key											
 		output = outputs.values().iterator().next(); 											
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		final F frame = (F) data;
 		if (frame == null)
-			return;
+			return null;
 
 		frameList.add(frame);
 		counter++;
@@ -66,7 +64,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 			callables.add(new FrameCallable(frameList, true));
 			running = false;
 			lastListSize = frameList.size() - 1;
-			return;
+			return null;
 		}
 
 		if (counter % nFrames == 0) {// make a new list for each callable
@@ -75,6 +73,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 			callables.add(new FrameCallable(transferList, false));
 			frameList.clear();
 		}
+		return null;
 	}
 
 	class FrameCallable implements Callable<F> {

@@ -17,15 +17,14 @@ public class StoreSplitter extends SingleRunModule {
 	protected void beforeRun(){
 		start = System.currentTimeMillis();
 		store = inputs.values().iterator().next();
-		iterator = inputs.keySet().iterator().next();
 		if (store==null)
 			throw new NullPointerException("input is empty!");
 	}
 
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		Element el = data; 
-		if (el==null) return;
+		if (el==null) return null;
 		
 		if(el.isLast()){ //process the rest;
 			for (String key : outputs.keySet()) {
@@ -35,7 +34,7 @@ public class StoreSplitter extends SingleRunModule {
 			}
 			counter++;
 			cancel();
-			return;
+			return null;
 		}
 		
 		for (String key : outputs.keySet()) {
@@ -46,6 +45,7 @@ public class StoreSplitter extends SingleRunModule {
 		counter++;
 		//if (counter % 100 == 0)
 		//	System.out.println("Elements finished:"+counter);
+		return null;
 	}
 	
 	@Override

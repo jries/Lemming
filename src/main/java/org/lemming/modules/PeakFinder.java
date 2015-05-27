@@ -47,8 +47,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 	@Override
 	protected void beforeRun() {
 		// for this module there should be only one key
-		iterator = inputs.keySet().iterator().next(); 
-		// for this module there should be only one key
 		output = outputs.values().iterator().next(); 
 		start = System.currentTimeMillis();
 	}

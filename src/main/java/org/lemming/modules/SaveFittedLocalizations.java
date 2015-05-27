@@ -33,22 +33,21 @@ public class SaveFittedLocalizations extends SingleRunModule {
 			e.printStackTrace();
 		}
 
-		iterator = inputs.keySet().iterator().next();
 		start = System.currentTimeMillis();
 	}
 
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		FittedLocalization loc = (FittedLocalization) data;
 		if (loc == null)
-			return;
+			return null;
 		if (loc.isLast()) {
 			if (inputs.get(iterator).isEmpty()) {
 				cancel();
-				return;
+				return null;
 			}
 			inputs.get(iterator).put(loc);
-			return;
+			return null;
 		}
 
 		StringBuilder out = new StringBuilder();
@@ -74,6 +73,7 @@ public class SaveFittedLocalizations extends SingleRunModule {
 			e.printStackTrace();
 		}
 		counter++;
+		return null;
 	}
 
 	@Override

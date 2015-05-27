@@ -4,30 +4,35 @@ public abstract class SingleRunModule extends AbstractModule {
 
 	@Override
 	public void run() {
-		
-		if (!inputs.isEmpty()){
+
+		if (!inputs.isEmpty()) {
+			if (inputs.keySet().iterator().hasNext())
+				iterator = inputs.keySet().iterator().next();
 			beforeRun();
-			if (inputs.get(iterator)!=null)
-				while (inputs.get(iterator).isEmpty()) pause(10);
-			while (running) {
-				if (Thread.currentThread().isInterrupted()) break;
-				Element data = nextInput();
-				process(data);
+			if (inputs.get(iterator) != null) {
+				while (inputs.get(iterator).isEmpty())
+					pause(10);
+				while (running) {
+					if (Thread.currentThread().isInterrupted())
+						break;
+					Element data = nextInput();
+					process(data);
+				}
 			}
-			afterRun();	
+			afterRun();
 			return;
 		}
-		if (!outputs.isEmpty()){
+		if (!outputs.isEmpty()) {
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted()) break;
-				Element data = (Element) new Object();
-				process(data);
+				if (Thread.currentThread().isInterrupted())
+					break;
+				Element data = process(null);
 				newOutput(data);
 			}
-			afterRun();	
+			afterRun();
 			return;
-		}			
+		}
 	}
 
 	protected void afterRun() {
@@ -36,5 +41,10 @@ public abstract class SingleRunModule extends AbstractModule {
 	protected void beforeRun() {
 	}
 	
-	public abstract void process(Element data);
+	/**
+	 * Method to be overwritten by children of this class.
+	 * @param data - data to process
+	 * @return Element
+	 */
+	public abstract Element process(Element data);
 }

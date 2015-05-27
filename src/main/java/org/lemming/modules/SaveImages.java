@@ -23,21 +23,21 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void beforeRun(){
-		iterator = inputs.keySet().iterator().next();
 		F frame = (F) inputs.get(iterator).peek();
 		stack = ImageJFunctions.wrap(frame.getPixels(), "").createEmptyStack();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		F frame = (F) data;
-		if (frame == null) return;
+		if (frame == null) return null;
 		stack.addSlice(ImageJFunctions.wrap(frame.getPixels(), "" + frame.getFrameNumber()).getProcessor());
 		if (frame.isLast()){ // make the poison pill
 			System.out.println("Last Frame saved:" +  frame.getFrameNumber());
 			cancel();
 		}
+		return null;
 	}
 	
 	@Override

@@ -4,12 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
 import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.FittedLocalization;
 import org.lemming.pipeline.SingleRunModule;
 
 
-public class ReadLocalizations extends SingleRunModule {
+public class ReadFittedLocalizations extends SingleRunModule {
 	
 	private File file;
 	private BufferedReader br;
@@ -17,7 +18,7 @@ public class ReadLocalizations extends SingleRunModule {
 	private String sCurrentLine;
 	private long start;
 
-	public ReadLocalizations(File f, String d){
+	public ReadFittedLocalizations(File f, String d){
 		this.file = f;
 		this.delimiter = d;
 	}
@@ -42,9 +43,14 @@ public class ReadLocalizations extends SingleRunModule {
 		String[] s = sCurrentLine.split(delimiter);
 		for (int i = 0; i < s.length; i++)
 			s[i] = s[i].trim();
-		if (s.length > 3) {
-			Localization localization = new Localization(Long.parseLong(s[1]),
-					Double.parseDouble(s[2]), Double.parseDouble(s[3]));
+		if (s.length > 6) {
+			FittedLocalization localization = new FittedLocalization(
+					Long.parseLong(s[1]),
+					Double.parseDouble(s[2]), 
+					Double.parseDouble(s[3]),
+					Double.parseDouble(s[4]), 
+					Double.parseDouble(s[5]), 
+					Double.parseDouble(s[6]));
 			try {
 				sCurrentLine = br.readLine();
 			} catch (IOException e1) {

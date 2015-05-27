@@ -25,15 +25,14 @@ public class RoiSelector extends SingleRunModule {
 	
 	@Override
 	protected void beforeRun(){ 
-		iterator = inputs.keySet().iterator().next();
 		output = outputs.values().iterator().next();
 		start = System.currentTimeMillis();		
 	}
 	
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		Localization loc = (Localization) data;
-		if (loc==null) return;
+		if (loc==null) return null;
 		
 		if (roi.contains(new double[]{loc.getX(),loc.getY()})){
 			output.put(loc); // put ROI to output store
@@ -41,7 +40,8 @@ public class RoiSelector extends SingleRunModule {
 		}
 		
 		if(loc.isLast())
-			cancel();			
+			cancel();
+		return null;			
 	}
 	
 	@Override

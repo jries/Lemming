@@ -53,22 +53,22 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		F frameB = (F) data;
 		if (frameB==null){ 
-			return;
+			return null;
 		}
 		F frameA = (F) inputs.get(inputKeys.getA());
 		if (frameA==null){ 
 			inputs.get(inputKeys.getB()).put(frameB);
-			return;
+			return null;
 		}
 		
 		// if no match put it back to inputs
 		if (frameA.getFrameNumber() != frameB.getFrameNumber()){
 			inputs.get(inputKeys.getB()).put(frameB);
 			inputs.get(inputKeys.getA()).put(frameA);
-			return;
+			return null;
 		}		
 		
 		Pair<F,F> framePair= new ValuePair<>(frameA,frameB);
@@ -79,7 +79,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 			output.put(lastFrame);
 			cancel();
 			counter++;
-			return;
+			return null;
 		}
 
 		output.put(process1(framePair));
@@ -87,7 +87,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		
 		//if (counter % 100 == 0)
 		//	System.out.println("Frames calculated:" + counter);
-		
+		return null;
 	}
 
 	private ImgLib2Frame<T> process1(Pair<F, F> framePair) {

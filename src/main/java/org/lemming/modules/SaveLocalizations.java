@@ -31,22 +31,20 @@ public class SaveLocalizations extends SingleRunModule {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		iterator = inputs.keySet().iterator().next();
 		start = System.currentTimeMillis();
 	}
 
 	@Override
-	public void process(Element data) {
+	public Element process(Element data) {
 		Localization loc = (Localization) data;
-		if (loc==null) return;
+		if (loc==null) return null;
 		if(loc.isLast()){
 			if (inputs.get(iterator).isEmpty()){
 				cancel();
-				return;
+				return null;
 			}
 			inputs.get(iterator).put(loc);
-			return;
+			return null;
 		}
 		
 		StringBuilder out = new StringBuilder();
@@ -66,6 +64,7 @@ public class SaveLocalizations extends SingleRunModule {
 			e.printStackTrace();
 		}		
 		counter++;
+		return null;
 	}
 
 	@Override
