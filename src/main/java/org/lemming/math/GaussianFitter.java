@@ -1,32 +1,30 @@
 package org.lemming.math;
 
-import net.imglib2.Localizable;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealLocalizable;
 import net.imglib2.algorithm.localization.LevenbergMarquardtSolver;
 import net.imglib2.algorithm.localization.Observation;
 import net.imglib2.algorithm.region.localneighborhood.RectangleCursor;
 import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodGPL;
 import net.imglib2.type.numeric.RealType;
 
-public class GaussianFitter<T extends RealType<T>> {
+public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 
 	private RandomAccessibleInterval<T> image;
 	private int ndims;
-	private String errorMessage;
+	private RealLocalizable point;
+	private double[] typical_sigma;
 
-	public GaussianFitter(RandomAccessibleInterval<T> image_) {
+	public GaussianFitter(RandomAccessibleInterval<T> image_, final double[] sigma) {
 		image = image_;
 		ndims = image.numDimensions();
+		typical_sigma = sigma;
 	}
 	
-	//Ensure the image is not null.
-	public boolean checkInput() {
-		 if (null == image) {
-			 errorMessage = "Image is null.";
-			 return false;
-		 }
-		 return true;
+	public void setPoint(final RealLocalizable point_){
+		point = point_;
 	}
+	
 	
 	/**
 	 * <p>
@@ -46,20 +44,20 @@ public class GaussianFitter<T extends RealType<T>> {
 	 * @return a <code>2*ndims+1</code> elements double array containing fit
 	 *         estimates
 	 */
-	public double[] process(final Localizable point, final double[] typical_sigma) {
+	@Override
+	public double[] fit() {
 		// Determine the size of the data to gather
 		long[] pad_size = new long[ndims];
 		for (int i = 0; i < ndims; i++) {
 			pad_size[i] = (long) Math.ceil(2 * typical_sigma[i]);
 		}
 		// Gather data around peak
-		final Observation data = gatherObservationData(point, pad_size);
+		final Observation data = gatherObservationData(pad_size);
 		final double[][] X = data.X;
 		final double[] I = data.I;
 		// Make best guess
 		double[] start_param = makeBestGuess(X, I);
-		// Correct for too large sigmas: we drop estimate and replace it by user
-		// input
+		// Correct for too large sigmas: we drop estimate and replace it by user input
 		for (int j = 0; j < ndims; j++) {
 			if (start_param[j + ndims + 1] < 1 / (typical_sigma[j] * typical_sigma[j]))
 				start_param[j + ndims + 1] = 1 / (typical_sigma[j] * typical_sigma[j]);
@@ -78,7 +76,7 @@ public class GaussianFitter<T extends RealType<T>> {
 			e.printStackTrace();
 		}
 
-		// NaN protection: we prefer returning the crude estimate that NaN
+		// NaN protection: we prefer returning the crude estimate than NaN
 		for (int j = 0; j < a.length; j++) {
 			if (Double.isNaN(a[j]))
 				a[j] = start_param[j];
@@ -125,17 +123,20 @@ public class GaussianFitter<T extends RealType<T>> {
 		return start_param;
 	}
 
-	private Observation gatherObservationData(Localizable point, long[] pad_size) {
+	private Observation gatherObservationData(long[] pad_size) {
 		RectangleNeighborhoodGPL<T> neighborhood = new RectangleNeighborhoodGPL<>(image);
 		neighborhood.setSpan(pad_size);
-		neighborhood.setPosition(point);
+		long[] intPoint = new long[point.numDimensions()];
+		for (int i=0; i<point.numDimensions();i++)
+			intPoint[i]=Math.round(point.getDoublePosition(i));
+		neighborhood.setPosition(intPoint);
 
 		int n_pixels = (int) neighborhood.size();
 		double[] tmp_I = new double[n_pixels];
 		double[][] tmp_X = new double[n_pixels][ndims];
 
 		RectangleCursor<T> cursor = neighborhood.localizingCursor();
-		long[] pos = new long[image.numDimensions()];
+		long[] pos = new long[ndims];
 
 		int index = 0;
 		while (cursor.hasNext()) {
@@ -174,9 +175,5 @@ public class GaussianFitter<T extends RealType<T>> {
 		obs.I = I;
 		obs.X = X;
 		return obs;
-	}
-	
-	public String getErrorMessage() {
-		return errorMessage;
 	}
 }

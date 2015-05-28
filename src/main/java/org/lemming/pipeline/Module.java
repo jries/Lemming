@@ -15,7 +15,7 @@ public abstract class Module extends AbstractModule{
 	public void run() {
 
 		if (!inputs.isEmpty()) { // first check for existing inputs
-			if (inputs.keySet().iterator().hasNext())
+			if (inputs.keySet().iterator().hasNext() && iterator=="")
 				iterator = inputs.keySet().iterator().next();
 			beforeRun();
 			if (inputs.get(iterator) != null) {

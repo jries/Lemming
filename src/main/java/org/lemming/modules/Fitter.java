@@ -1,5 +1,8 @@
 package org.lemming.modules;
 
+import ij.gui.Roi;
+import ij.process.ImageProcessor;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,8 +10,10 @@ import java.util.stream.Collectors;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealPoint;
 import net.imglib2.histogram.Histogram1d;
 import net.imglib2.histogram.Integer1dBinMapper;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
 import net.imglib2.view.Views;
@@ -16,6 +21,8 @@ import net.imglib2.view.Views;
 import org.lemming.math.CentroidFitter;
 import org.lemming.math.FindThreshold;
 import org.lemming.math.FitterType;
+import org.lemming.math.GaussianFitter;
+import org.lemming.math.GaussianFitterAlternative;
 import org.lemming.math.SubpixelLocalization;
 import org.lemming.math.ThresholdingType;
 import org.lemming.pipeline.Element;
@@ -95,6 +102,8 @@ public class Fitter extends Module {
 
 	if (sliceLocs.isEmpty())
 		return;
+	
+	System.out.println("frame:" + frame.getFrameNumber() + " - localizations:" + sliceLocs.size() );
 
 	if (ftype == FitterType.CENTROID) {
 		for (Element el : sliceLocs) {
@@ -119,9 +128,34 @@ public class Fitter extends Module {
 		final List<FittedLocalization> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, (int) size, true, 0.01f, allowedToMoveInDim);
 		for ( final FittedLocalization loc : refined )
 			output.put(loc);
-		
-	} else	
-		return; // LSQ Fitter to be implemented
+	} else if (ftype == FitterType.ELLIPTICALGAUSSIANALTERNATIVE){ // Jorans Fitter
+		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
+		for (Element el : sliceLocs) {
+			final Localization loc = (Localization) el;
+			
+			final Roi origroi = new Roi(loc.getX() - size, loc.getY() - size, 2*size+1, 2*size+1);
+			final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+			
+			GaussianFitterAlternative gfa = new GaussianFitterAlternative(ip, roi, 3000);
+			double[] result = null;
+			result = gfa.fit();
+			if (result!= null)
+				output.put(new FittedLocalization(loc.getID(),loc.getFrame(), result[0], result[1], 0, result[2], result[3]));	
+		}		
+	} else if (ftype == FitterType.ELLIPTICALGAUSSIAN){ // Ronnys Fitter
+		final double[] sigmas = new double[ pixels.numDimensions() ];
+		Arrays.fill(sigmas,1.5);
+		GaussianFitter gf = new GaussianFitter(pixels, sigmas);
+		for (Element el : sliceLocs) {
+			final Localization loc = (Localization) el;
+			gf.setPoint(new RealPoint(new double[]{loc.getX(),loc.getY()}));
+			double[] result = null;
+			result = gf.fit();
+			if (result!= null)
+				output.put(new FittedLocalization(loc.getID(),loc.getFrame(), result[1], result[2], result[0], result[3], result[4]));	
+		}		
+	} else
+		return; 
 	}
 	
 

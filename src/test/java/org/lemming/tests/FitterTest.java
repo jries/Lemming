@@ -74,7 +74,7 @@ public class FitterTest {
 		pipe.add(splitter2);	
 		
 		fitlocs = new FastStore();
-		fitter = new Fitter(FitterType.QUADRATIC,5);
+		fitter = new Fitter(FitterType.ELLIPTICALGAUSSIAN,5);
 		fitter.setInput("frames", frames2);
 		fitter.setInput("locs", locs1);
 		fitter.setIterator("frames");
