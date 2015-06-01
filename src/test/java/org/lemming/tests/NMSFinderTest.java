@@ -7,19 +7,19 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.IJTiffLoader;
-import org.lemming.modules.PeakFinder;
+import org.lemming.modules.NMSFinder;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
 
 @SuppressWarnings("rawtypes")
-public class PeakFinderTest {
+public class NMSFinderTest {
 
 	private Pipeline pipe;
 	private FastStore frames;
 	private IJTiffLoader tif;
 	private FastStore localizations;
-	private PeakFinder peak;
+	private NMSFinder peak;
 	private SaveLocalizations saver;
 	
 	@Before
@@ -33,13 +33,13 @@ public class PeakFinderTest {
 		pipe.add(tif);
 		
 		localizations = new FastStore();
-		peak = new PeakFinder(400,4);
+		peak = new NMSFinder(400,4);
 		peak.setInput("frames", frames);
 		peak.setOutput("locs", localizations);
 		pipe.add(peak);
 		
 		//saver = new SaveLocalizations(new File("/home/ronny/Bilder/out.csv"));
-		saver = new SaveLocalizations(new File("/Users/ronny/Documents/storm/peakfinder.csv"));
+		saver = new SaveLocalizations(new File("/Users/ronny/Documents/storm/nmsfinder.csv"));
 		saver.setInput("locs", localizations);
 		pipe.add(saver);
 	}

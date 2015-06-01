@@ -34,10 +34,8 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 	 *            - input store
 	 */
 	public PeakFinder(final double threshold, final int size) {
-		System.currentTimeMillis();
 		setThreshold(threshold);
 		this.size = size;
-		setNumThreads();
 	}
 
 	private void setThreshold(double threshold) {
