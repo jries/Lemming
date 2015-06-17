@@ -1,5 +1,7 @@
 package org.lemming.math;
 
+import java.util.Arrays;
+
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.algorithm.localization.LevenbergMarquardtSolver;
@@ -14,6 +16,7 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 	private int ndims;
 	private RealLocalizable point;
 	private double[] typical_sigma;
+	//private static double defaultSigma = 1.5;
 
 	public GaussianFitter(RandomAccessibleInterval<T> image_, final double[] sigma) {
 		image = image_;
@@ -28,7 +31,7 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 	
 	/**
 	 * <p>
-	 * Fit an elliptical gaussian to a peak in the image, using the formula:
+	 * Fit an elliptical gaussian to a peak in the image.
 	 * First observation arrays are built by collecting pixel positions and
 	 * intensities around the given peak location. These arrays are then used to
 	 * guess a starting set of parameters, that is then fed to least-square
@@ -51,21 +54,22 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 		for (int i = 0; i < ndims; i++) {
 			pad_size[i] = (long) Math.ceil(2 * typical_sigma[i]);
 		}
-		// Gather data around peak
-		final Observation data = gatherObservationData(pad_size);
+		// Gather data around peak & start parameters
+		double[] start_param = new double[2 * ndims + 1];
+		final Observation data = gatherObservationData(pad_size, start_param);
 		final double[][] X = data.X;
 		final double[] I = data.I;
 		// Make best guess
-		double[] start_param = makeBestGuess(X, I);
+		//double[] start_param = makeBestGuess(X, I);
 		// Correct for too large sigmas: we drop estimate and replace it by user input
 		for (int j = 0; j < ndims; j++) {
 			if (start_param[j + ndims + 1] < 1 / (typical_sigma[j] * typical_sigma[j]))
 				start_param[j + ndims + 1] = 1 / (typical_sigma[j] * typical_sigma[j]);
 		}
 		// Prepare optimizer
-		int maxiter = 300;
+		int maxiter = 100;
 		double lambda = 1e-3;
-		double termepsilon = 1e-1;
+		double termepsilon = 0.1;
 
 		final double[] a = start_param.clone();
 
@@ -85,49 +89,11 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 		return a;
 	}
 
-	private double[] makeBestGuess(double[][] X, double[] I) {
-		double[] start_param = new double[2 * ndims + 1];
-
-		double[] X_sum = new double[ndims];
-		for (int j = 0; j < ndims; j++) {
-			X_sum[j] = 0;
-			for (int i = 0; i < X.length; i++) {
-				X_sum[j] += X[i][j] * I[i];
-			}
-		}
-
-		double I_sum = 0;
-		double max_I = Double.NEGATIVE_INFINITY;
-		for (int i = 0; i < X.length; i++) {
-			I_sum += I[i];
-			if (I[i] > max_I) 
-				max_I = I[i];
-		}
-
-		start_param[0] = max_I;
-
-		for (int j = 0; j < ndims; j++) {
-			start_param[j + 1] = X_sum[j] / I_sum;
-		}
-
-		for (int j = 0; j < ndims; j++) {
-			double C = 0;
-			double dx;
-			for (int i = 0; i < X.length; i++) {
-				dx = X[i][j] - start_param[j + 1];
-				C += I[i] * dx * dx;
-			}
-			C /= I_sum;
-			start_param[ndims + j + 1] = 1 / C;
-		}
-		return start_param;
-	}
-
-	private Observation gatherObservationData(long[] pad_size) {
+	private Observation gatherObservationData(long[] pad_size, double[] start_param) {
 		RectangleNeighborhoodGPL<T> neighborhood = new RectangleNeighborhoodGPL<>(image);
 		neighborhood.setSpan(pad_size);
-		long[] intPoint = new long[point.numDimensions()];
-		for (int i=0; i<point.numDimensions();i++)
+		long[] intPoint = new long[ndims];
+		for (int i=0; i<ndims;i++)
 			intPoint[i]=Math.round(point.getDoublePosition(i));
 		neighborhood.setPosition(intPoint);
 
@@ -137,8 +103,13 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 
 		RectangleCursor<T> cursor = neighborhood.localizingCursor();
 		long[] pos = new long[ndims];
-
+		double[] X_sum = new double[ndims];
+		Arrays.fill(X_sum, 0);
+		double I_sum = 0;
+		double max_I = Double.NEGATIVE_INFINITY;
+		double min_I = Double.POSITIVE_INFINITY;
 		int index = 0;
+		double val;
 		while (cursor.hasNext()) {
 
 			cursor.fwd();
@@ -146,15 +117,42 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 			if (cursor.isOutOfBounds()) {
 				continue;
 			}
-
+			
+			tmp_I[index] = val = cursor.get().getRealDouble();
+			max_I = Math.max(max_I, val);
+			min_I = Math.min(min_I, val);
+			I_sum += val;
+			
 			for (int i = 0; i < ndims; i++) {
 				tmp_X[index][i] = pos[i];
+				X_sum[i] += pos[i] * val;
 			}
-
-			tmp_I[index] = cursor.get().getRealDouble();
+			
 			index++;
 		}
-
+		
+		// start parameter
+		
+		start_param[0] = max_I;
+		for (int j = 0; j < ndims; j++) {
+			start_param[j + 1] = X_sum[j] / I_sum;
+		}
+		
+		/*for (int j = 0; j < ndims; j++) {
+			start_param[ndims + j + 1] = defaultSigma;
+		}*/
+		
+		for (int j = 0; j < ndims; j++) {
+			double C = 0;
+			double dx;
+			for (int i = 0; i < tmp_X.length; i++) {
+				dx = tmp_X[i][j] - start_param[j];
+				C += tmp_I[i] * dx * dx;
+			}
+			C /= I_sum;
+			start_param[ndims + j + 1] = 1 / C / 2;
+		}
+		
 		// Now we possibly resize the arrays, in case we have been too close to
 		// the image border.
 		double[][] X = null;
@@ -170,6 +168,10 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 			System.arraycopy(tmp_X, 0, X, 0, index);
 			System.arraycopy(tmp_I, 0, I, 0, index);
 		}
+		
+		// Subtract background
+		for (int j = 0; j < I.length; j++)
+			I[j] -= min_I;
 
 		Observation obs = new Observation();
 		obs.I = I;

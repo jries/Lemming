@@ -26,9 +26,9 @@ public interface GenericStore<E extends Element> {
 	 * The store is empty.	 * 
 	 * @return Checks if the store is empty.
 	 */
-	boolean isEmpty();
+	public boolean isEmpty();
 	
 	public int getLength();
 
-	Collection<Element> view();
+	public Collection<Element> view();
 }

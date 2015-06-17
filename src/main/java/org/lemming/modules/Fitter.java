@@ -136,7 +136,7 @@ public class Fitter extends Module {
 			final Roi origroi = new Roi(loc.getX() - size, loc.getY() - size, 2*size+1, 2*size+1);
 			final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
 			
-			GaussianFitterAlternative gfa = new GaussianFitterAlternative(ip, roi, 3000);
+			GaussianFitterAlternative gfa = new GaussianFitterAlternative(ip, roi, 3000, 1000);
 			double[] result = null;
 			result = gfa.fit();
 			if (result!= null)
@@ -144,7 +144,7 @@ public class Fitter extends Module {
 		}		
 	} else if (ftype == FitterType.ELLIPTICALGAUSSIAN){ // Ronnys Fitter
 		final double[] sigmas = new double[ pixels.numDimensions() ];
-		Arrays.fill(sigmas,1.5);
+		Arrays.fill(sigmas, size);
 		GaussianFitter gf = new GaussianFitter(pixels, sigmas);
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;

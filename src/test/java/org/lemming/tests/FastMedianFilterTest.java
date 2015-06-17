@@ -25,7 +25,7 @@ public class FastMedianFilterTest {
 		pipe = new Pipeline();
 		
 		frames = new FastStore();
-		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
+		tif = new IJTiffLoader("/home/ronny/Bilder/sequence.tif");
 		tif.setOutput("frames",frames);
 		pipe.add(tif);
 		

@@ -44,7 +44,7 @@ public class FitterTest {
 	public void setUp() throws Exception {
 		pipe = new Pipeline();
 		frames = new FastStore();
-		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
+		tif = new IJTiffLoader("/home/ronny/ownCloud/storm/p500ast.tif");
 		//tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif");
 		tif.setOutput("frames",frames);
 		pipe.add(tif);
@@ -74,7 +74,7 @@ public class FitterTest {
 		pipe.add(splitter2);	
 		
 		fitlocs = new FastStore();
-		fitter = new Fitter(FitterType.ELLIPTICALGAUSSIAN,5);
+		fitter = new Fitter(FitterType.ELLIPTICALGAUSSIANALTERNATIVE,5);
 		fitter.setInput("frames", frames2);
 		fitter.setInput("locs", locs1);
 		fitter.setIterator("frames");
@@ -85,7 +85,7 @@ public class FitterTest {
 		saver.setInput("fitlocs", fitlocs);
 		pipe.add(saver);
 		
-		saver2 = new SaveLocalizations(new File("/home/ronny/Bilder/out.csv"));
+		saver2 = new SaveLocalizations(new File("/home/ronny/Bilder/outOrig.csv"));
 		saver2.setInput("fitlocs", locs2);
 		pipe.add(saver2);
 	}

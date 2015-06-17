@@ -6,19 +6,19 @@ public abstract class SingleRunModule extends AbstractModule {
 	public void run() {
 
 		if (!inputs.isEmpty()) {
-			if (inputs.keySet().iterator().hasNext())
+			if (inputs.keySet().iterator().hasNext()){
 				iterator = inputs.keySet().iterator().next();
-			beforeRun();
-			if (inputs.get(iterator) != null) {
 				while (inputs.get(iterator).isEmpty())
 					pause(10);
-				while (running) {
-					if (Thread.currentThread().isInterrupted())
-						break;
-					Element data = nextInput();
-					process(data);
-				}
 			}
+			beforeRun();
+			while (running) {
+				if (Thread.currentThread().isInterrupted())
+					break;
+				Element data = nextInput();
+				process(data);
+			}
+			
 			afterRun();
 			return;
 		}

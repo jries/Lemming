@@ -97,9 +97,9 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	private F process1(final FastTable<F> list, final boolean isLast) {
 		if (list.isEmpty())
 			return null;
-		final int middle = nFrames / 2; // integer division
-		F firstFrame = list.peek();
-		RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
+		//final int middle = nFrames / 2; // integer division
+		final F firstFrame = list.peek();
+		final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
 
 		Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views
 				.iterable(firstInterval).firstElement());
@@ -119,10 +119,15 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 				values.add(currentCursor.get().getInteger());
 			}
 			// find the median
-			Integer median = QuickSelect.select(values, middle); 												
+
+			Integer median = QuickSelect.fastmedian(values, values.size());
+			//Integer median = QuickSelect.select(values, middle); 
+			if (median != null)
+				cursor.get().setInteger(median);
+
 			// values.sort();
 			// Integer media = values.get(middle);
-			cursor.get().setInteger(median);
+			
 		}
 		F newFrame = (F) new ImgLib2Frame<>(firstFrame.getFrameNumber(),
 				firstFrame.getWidth(), firstFrame.getHeight(), out);
