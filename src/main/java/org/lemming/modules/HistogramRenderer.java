@@ -3,7 +3,7 @@ package org.lemming.modules;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
@@ -75,6 +75,12 @@ public class HistogramRenderer extends SingleRunModule {
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
 		while(ip.isVisible()) pause(10);
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

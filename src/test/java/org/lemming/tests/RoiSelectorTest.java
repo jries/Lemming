@@ -21,7 +21,7 @@ public class RoiSelectorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline();
+		pipe = new Pipeline("test");
 		locs = new FastStore();
 		reader = new ReadLocalizations(new File("/home/ronny/Bilder/out.csv"),",");
 		reader.setOutput("locs", locs);

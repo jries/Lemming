@@ -1,5 +1,8 @@
 package org.lemming.pipeline;
 
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.NumericType;
 

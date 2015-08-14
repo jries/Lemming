@@ -1,6 +1,7 @@
-package org.lemming.pipeline;
+package org.lemming.interfaces;
 
 import java.util.Collection;
+
 
 public interface GenericStore<E extends Element> {
 	/**

@@ -11,6 +11,7 @@ import org.lemming.modules.PeakFinder;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
+import org.lemming.pipeline.Settings;
 
 @SuppressWarnings("rawtypes")
 public class PeakFinderTest {
@@ -21,11 +22,12 @@ public class PeakFinderTest {
 	private FastStore localizations;
 	private PeakFinder peak;
 	private SaveLocalizations saver;
+	private Settings settings;
 	
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline();	
-		
+		pipe = new Pipeline("test");	
+		settings = new Settings();
 		frames = new FastStore();
 		//tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
 		tif = new IJTiffLoader("/Users/ronny/Documents/storm/sequence.tif");
@@ -33,7 +35,7 @@ public class PeakFinderTest {
 		pipe.add(tif);
 		
 		localizations = new FastStore();
-		peak = new PeakFinder(400,4);
+		peak = new PeakFinder(settings,400,4);
 		peak.setInput("frames", frames);
 		peak.setOutput("locs", localizations);
 		pipe.add(peak);

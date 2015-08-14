@@ -2,10 +2,10 @@ package org.lemming.modules;
 
 import net.imglib2.roi.RectangleRegionOfInterest;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Store;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
-import org.lemming.pipeline.Store;
 
 @SuppressWarnings("deprecation")
 public class RoiSelector extends SingleRunModule {
@@ -47,6 +47,12 @@ public class RoiSelector extends SingleRunModule {
 	@Override
 	protected void afterRun(){
 		System.out.println("ROI done with " + counter + " elements in " + (System.currentTimeMillis()-start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

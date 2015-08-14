@@ -3,7 +3,7 @@ package org.lemming.math;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.FittedLocalization;
 import org.lemming.pipeline.Localization;
 

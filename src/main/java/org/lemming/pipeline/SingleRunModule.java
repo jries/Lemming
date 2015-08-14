@@ -1,5 +1,7 @@
 package org.lemming.pipeline;
 
+import org.lemming.interfaces.Element;
+
 public abstract class SingleRunModule extends AbstractModule {
 
 	@Override
@@ -33,6 +35,7 @@ public abstract class SingleRunModule extends AbstractModule {
 			afterRun();
 			return;
 		}
+		service.shutdown();
 	}
 
 	protected void afterRun() {

@@ -1,6 +1,7 @@
-package org.lemming.pipeline;
+package org.lemming.interfaces;
 
 import java.util.Map;
+
 
 /**
  * Interface for all modules, inspired by the org.scijava.module interface
@@ -27,5 +28,7 @@ public interface ModuleInterface extends Runnable{
 	public void setOutput(String key, Store store);
 	
 	public void setOutputs(Map<String, Store> storeMap);
+	
+	public boolean check();
 	
 }

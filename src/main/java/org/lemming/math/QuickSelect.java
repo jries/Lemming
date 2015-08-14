@@ -202,7 +202,7 @@ public class QuickSelect {
 		}
 	}
 	
-	public static <T extends Comparable<T>> int fastmedian(List<T> A, int dim){
+	public static <T extends Comparable<T>> T fastmedian(List<T> A, int dim){
 		
 		///////////////////////////////////////////
 		/// Size of the array
@@ -220,7 +220,7 @@ public class QuickSelect {
 		int rem = 0;            
 		int step = 1;
 		int i,j;
-		int median;
+		T median;
 		
 		/// Run
 		while(size > threshold){
@@ -253,7 +253,7 @@ public class QuickSelect {
 			size = size/3;
 		}
 		selectionSort(A,left,size,step);
-		median = (int) A.get(left + (step*(size-1)/2));	
+		median = A.get(left + (step*(size-1)/2));	
 		
 		// return median value
 		return median;

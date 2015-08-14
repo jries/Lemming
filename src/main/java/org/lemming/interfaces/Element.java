@@ -1,4 +1,4 @@
-package org.lemming.pipeline;
+package org.lemming.interfaces;
 
 public interface Element{
 	/**

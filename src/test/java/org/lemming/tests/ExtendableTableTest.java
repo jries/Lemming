@@ -1,12 +1,10 @@
-package org.lemming.pipeline;
+package org.lemming.tests;
 
-import ij.util.ArrayUtil;
-
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.lemming.pipeline.ExtendableTable;
 
 public class ExtendableTableTest {
 
@@ -15,7 +13,7 @@ public class ExtendableTableTest {
 	}
 
 	@Test
-	public void test() {
+	public static void test() {
 		int N = (int) 1e7;
 		ExtendableTable h = new ExtendableTable();
 		h.addNewMember("z");
@@ -30,8 +28,8 @@ public class ExtendableTableTest {
 		long max = 0;
 		long id = 0;			
 		
-		List<Object> colx = h.getColumn("xpix");
-		List<Object> coly = h.getColumn("ypix");
+		List<Object> colx = h.getColumn("x");
+		List<Object> coly = h.getColumn("y");
 		List<Object> colz = h.getColumn("z");
 		List<Object> colf = h.getColumn("frame");
 		List<Object> colr = h.getColumn("roi");

@@ -3,22 +3,21 @@ package org.lemming.tests;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.math.FitterType;
+import org.lemming.modules.AstigFitter;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.IJTiffLoader;
 import org.lemming.modules.PeakFinder;
 import org.lemming.modules.SaveFittedLocalizations;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.modules.StoreSplitter;
+import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
-import org.lemming.pipeline.Store;
+import org.lemming.pipeline.Settings;
 
 @SuppressWarnings("rawtypes")
 public class FitterTest {
@@ -30,40 +29,42 @@ public class FitterTest {
 	private FastStore localizations;
 	private PeakFinder peak;
 	private Fitter fitter;
-	private StoreSplitter splitter;
-	private FastStore frames1;
-	private FastStore frames2;
 	private SaveFittedLocalizations saver;
 	private StoreSplitter splitter2;
 	private FastStore locs1;
 	private FastStore locs2;
 	private SaveLocalizations saver2;
+	private FastStore frames1;
+	private Settings settings;
+	private StoreSplitter splitter1;
+	private FastStore frames2;
+	private UnpackElements unpacker;
+	private FastStore unpackedlocs;
 
 	
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline();
+		settings = new Settings();//  global settings
+		pipe = new Pipeline("test");
 		frames = new FastStore();
 		tif = new IJTiffLoader("/home/ronny/ownCloud/storm/p500ast.tif");
-		//tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif");
+		//tif = new IJTiffLoader("/Users/ronny/Documents/p500ast.tif");
 		tif.setOutput("frames",frames);
 		pipe.add(tif);
 		
-		frames1 = new FastStore();
-		frames2 = new FastStore();
-		splitter = new StoreSplitter();
-		Map<String,Store> storeMap = new HashMap<>();
-		splitter.setInput("frames", frames);
-		storeMap.put("frames1", frames1);
-		storeMap.put("frames2", frames2);
-		splitter.setOutputs(storeMap);
-		pipe.add(splitter);	
+		splitter1 = new StoreSplitter();
+		splitter1.setInput("frames",frames);
+		frames1= new FastStore();
+		frames2= new FastStore();
+		splitter1.setOutput("frames1",frames1);
+		splitter1.setOutput("frames2",frames2);
+		pipe.add(splitter1);
 		
 		localizations = new FastStore();
-		peak = new PeakFinder(700,4);
-		peak.setInput("frames", frames1);
+		peak = new PeakFinder(settings, 700,4);
+		peak.setInput("frames", frames2);
 		peak.setOutput("locs", localizations);
-		pipe.addSequential(peak);
+		pipe.add(peak);
 		
 		splitter2 = new StoreSplitter();
 		splitter2.setInput("locs",localizations);
@@ -74,27 +75,36 @@ public class FitterTest {
 		pipe.add(splitter2);	
 		
 		fitlocs = new FastStore();
-		fitter = new Fitter(FitterType.ELLIPTICALGAUSSIANALTERNATIVE,5);
-		fitter.setInput("frames", frames2);
-		fitter.setInput("locs", locs1);
-		fitter.setIterator("frames");
+		fitter = new AstigFitter(60,10, Settings.readCSV("/home/ronny/ownCloud/storm/calibNewer.csv"));
+		fitter.setInput("frames1", frames1);
+		fitter.setInput("locs1", locs1);
+		fitter.setIterator("frames1");
 		fitter.setOutput("fitLocs", fitlocs);
 		pipe.add(fitter);
 		
+		unpackedlocs = new FastStore();
+		unpacker = new UnpackElements();
+		unpacker.setInput("locs2", locs2);
+		unpacker.setOutput("unpacked", unpackedlocs);
+		pipe.add(unpacker);
+		
 		saver = new SaveFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"));
+		//saver = new SaveFittedLocalizations(new File("/Users/ronny/Documents/fitted.csv"));
+		
 		saver.setInput("fitlocs", fitlocs);
 		pipe.add(saver);
 		
 		saver2 = new SaveLocalizations(new File("/home/ronny/Bilder/outOrig.csv"));
-		saver2.setInput("fitlocs", locs2);
+		//saver2 = new SaveLocalizations(new File("/Users/ronny/Documents/outOrig.csv"));
+		saver2.setInput("fitlocs", unpackedlocs);
 		pipe.add(saver2);
 	}
 
 	@Test
 	public void test() {
 		pipe.run();
-		assertEquals(true,frames2.isEmpty());
-		assertEquals(true,frames1.isEmpty());
+		assertEquals(true,locs1.isEmpty());
+		assertEquals(true,frames.isEmpty());
 	}
 
 }

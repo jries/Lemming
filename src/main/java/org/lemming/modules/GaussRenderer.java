@@ -7,7 +7,7 @@ import ij.ImagePlus;
 import ij.process.FloatProcessor;
 import net.imglib2.Point;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
@@ -176,6 +176,12 @@ public class GaussRenderer extends SingleRunModule {
 			}
 		}
 		return X;
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

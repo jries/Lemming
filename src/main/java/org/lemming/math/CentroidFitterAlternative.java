@@ -4,6 +4,9 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 public class CentroidFitterAlternative {
+	
+	private static double defaultSigma = 1.5;
+	
 	public static double[] fitThreshold(ImageProcessor ip_, Roi roi){
 		double[] centroid = new double[2];
 		int rwidth = (int) roi.getFloatWidth();
@@ -60,7 +63,6 @@ public class CentroidFitterAlternative {
 		return centroid;
 	}
 	
-	@SuppressWarnings("unused")
 	public static double[] fitCentroidandWidth(ImageProcessor ip, Roi roi, int threshold){
 		double[] centroid = new double[4];
 		int rwidth = (int) roi.getFloatWidth();
@@ -85,62 +87,41 @@ public class CentroidFitterAlternative {
 		}
 		centroid[0] = centroid[0]/sum;
 		centroid[1] = centroid[1]/sum; 
+		
+		if(Double.isNaN(centroid[0]))
+			centroid[0] = xstart+rwidth/2;
+		
+		if(Double.isNaN(centroid[1]))
+			centroid[1] = ystart+rheight/2;
+		
+		double sumstd=0, stdx=0, stdy=0;
+		for(int i=0;i<rheight;i++){
+			for(int j=0;j<rwidth;j++){
+				if(ip.get(j, i)>thrsh){
+					sumstd += ip.get(j, i);
+					stdx += ip.get(j, i)*(xstart+j-centroid[0])*(xstart+j-centroid[0]);
+					stdy += ip.get(j, i)*(ystart+i-centroid[1])*(ystart+i-centroid[1]);
+				}
+			}
+		}
 
-		// From quickpalm
-        double xstd = 0; // stddev x
-        double ystd = 0; // stddev y
-        double xlstd = 0; // stddev left x
-        double xrstd = 0; // stddev right x
-        double ylstd = 0; // stddev left y
-        double yrstd = 0; // stddev right y
-        int xlsum = 0; // left pixel sum
-        int xrsum = 0; // right pixel sum
-        int ylsum = 0; // left pixel sum
-        int yrsum = 0; // right pixel sum
-        double sxdev = 0;
-        double sydev = 0;
-        // get the axial std    
-        for (int i=xstart;i<rwidth+xstart;i++){
-                for (int j=ystart;j<rheight+ystart;j++){
-                        s=ip.get(i, j); 
-                        if (s>thrsh){
-                                sxdev = (i-centroid[0])*s;
-                                sydev = (j-centroid[1])*s;
-                                if ((sxdev)<0)
-                                {
-                                        xlstd+=-sxdev;
-                                        xlsum+=s;
-                                }
-                                else
-                                {
-                                        xrstd+=sxdev;
-                                        xrsum+=s;
-                                }
-                                if ((sydev)<0)
-                                {
-                                        ylstd+=-sydev;
-                                        ylsum+=s;
-                                }
-                                else
-                                {
-                                        yrstd+=sydev;
-                                        yrsum+=s;
-                                }
-                                xstd+=Math.abs(sxdev);
-                                ystd+=Math.abs(sydev);
-                        }
-                }
-        }
-        xstd/=sum;
-        ystd/=sum;
-        xlstd/=xlsum;
-        xrstd/=xrsum;
-        ylstd/=ylsum;
-        yrstd/=yrsum;
+		stdx /= sumstd;
+		stdy /= sumstd;
+		stdx = Math.sqrt(stdx);
+		stdy = Math.sqrt(stdy);
+				
+		if(Double.isNaN(stdx)){
+			centroid[2] = defaultSigma ;
+		} else {
+			centroid[2] = stdx;
+		}
 
-		centroid[2] = Math.sqrt(xlstd+xrstd)*.5;
-		centroid[3] = Math.sqrt(ylstd+yrstd)*.5;
-
+		if(Double.isNaN(stdy)){
+			centroid[3] = defaultSigma;
+		} else {
+			centroid[3] = stdy;
+		}
+		
 		return centroid;
 	}
 

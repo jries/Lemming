@@ -57,7 +57,7 @@ public class CentroidFitter<T extends RealType<T>> implements FitterInterface  {
 		}
 		
 		for (int i = 0; i < n; i++) 
-			r[i+n] = dev[i]/sum;
+			r[i+n] = Math.sqrt(dev[i]/sum);
 		
 		return r;		
 	}

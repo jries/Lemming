@@ -9,13 +9,14 @@ import net.imglib2.util.ValuePair;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.lemming.interfaces.Store;
 import org.lemming.modules.FastMedianFilter;
 import org.lemming.modules.IJTiffLoader;
 import org.lemming.modules.ImageMath;
 import org.lemming.modules.StoreSplitter;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
-import org.lemming.pipeline.Store;
+import org.lemming.pipeline.Settings;
 
 @SuppressWarnings("rawtypes")
 public class ImageMathTest {
@@ -30,11 +31,12 @@ public class ImageMathTest {
 	private FastStore frames2 = new FastStore();
 	private FastStore filtered = new FastStore();
 	private FastMedianFilter fmf;
-
+	
 	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline();
+		pipe = new Pipeline("test");
+		new Settings();
 		
 		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
 		tif.setOutput("frames", frames);

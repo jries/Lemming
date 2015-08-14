@@ -4,13 +4,13 @@ import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
-import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Frame;
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.Store;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.Module;
-import org.lemming.pipeline.Store;
+import org.lemming.pipeline.MultiRunModule;
 
-public class NMSFinder<T extends RealType<T>, F extends Frame<T>> extends Module {
+public class NMSFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 	
 	private int size;
 	private double threshold;
@@ -113,6 +113,12 @@ public class NMSFinder<T extends RealType<T>, F extends Frame<T>> extends Module
 		System.out.println("NMSFinder found "
 				+ counter + " peaks in "
 				+ (System.currentTimeMillis() - start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

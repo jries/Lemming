@@ -7,15 +7,17 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
 import java.io.File;
+
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ImgLib2Frame;
-import org.lemming.pipeline.Module;
+import org.lemming.pipeline.MultiRunModule;
 
-public class IJTiffLoader<T extends NumericType<T>> extends Module{
+public class IJTiffLoader<T extends NumericType<T> & NativeType<T>> extends MultiRunModule{
 	
 	private int curSlice = 0;
 	private String filename; 
@@ -76,5 +78,11 @@ public class IJTiffLoader<T extends NumericType<T>> extends Module{
 	
 	public void show(){
 		img.show();
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

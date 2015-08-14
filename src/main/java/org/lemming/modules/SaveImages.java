@@ -7,8 +7,8 @@ import ij.ImageStack;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.NumericType;
 
-import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Frame;
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.pipeline.SingleRunModule;
 
 public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
@@ -46,6 +46,12 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 		out.setOpenAsHyperStack(true);
 		out.setStack(stack, 1, 1, stack.getSize());
 		IJ.save(out, filename);
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

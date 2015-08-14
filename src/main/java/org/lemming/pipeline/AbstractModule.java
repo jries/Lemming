@@ -5,6 +5,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.ModuleInterface;
+import org.lemming.interfaces.Store;
+
 import net.imglib2.algorithm.MultiThreaded;
 
 public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
@@ -26,7 +30,8 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 		Store store = outputs.get(iterator);
 		if (store==null)
 			throw new NullPointerException("wrong mapping!");
-		store.put(data);
+		if (data != null)
+			store.put(data);
 	}
 	
 	protected Element nextInput() {
@@ -56,7 +61,8 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 
 	@Override
 	public Element getInput(String key) {
-		return inputs.get(key).get();
+		Element el = inputs.get(key).get();
+		return el;
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class GaussRendererTest {
 
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline();
+		pipe = new Pipeline("test");
 		
 		localizations = new FastStore();
 		reader = new ReadFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"),",");

@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.FittedLocalization;
 import org.lemming.pipeline.SingleRunModule;
 
@@ -73,6 +73,12 @@ public class ReadFittedLocalizations extends SingleRunModule {
 			System.err.println(e.getMessage());
 		}
 		System.out.println("Reading of localizations done in " + (System.currentTimeMillis()-start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

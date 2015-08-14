@@ -22,14 +22,14 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Frame;
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.Store;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.Module;
-import org.lemming.pipeline.Store;
+import org.lemming.pipeline.MultiRunModule;
 
 
-public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Module {
+public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
 	private double radius;
 	private float threshold;
@@ -168,6 +168,12 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Module
 			
 			return new Point( center );
 		}
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

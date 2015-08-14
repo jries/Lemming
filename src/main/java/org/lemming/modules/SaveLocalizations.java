@@ -4,7 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
-import org.lemming.pipeline.Element;
+
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
@@ -40,6 +41,7 @@ public class SaveLocalizations extends SingleRunModule {
 		if (loc==null) return null;
 		if(loc.isLast()){
 			if (inputs.get(iterator).isEmpty()){
+				counter++;
 				cancel();
 				return null;
 			}
@@ -76,6 +78,12 @@ public class SaveLocalizations extends SingleRunModule {
 		}
 		Locale.setDefault(curLocale);
 		System.out.println("" + counter + " localizations saved in " + (System.currentTimeMillis()-start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

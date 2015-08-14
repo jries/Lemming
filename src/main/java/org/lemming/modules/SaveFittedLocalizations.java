@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Locale;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.FittedLocalization;
 import org.lemming.pipeline.SingleRunModule;
 
@@ -86,6 +86,12 @@ public class SaveFittedLocalizations extends SingleRunModule {
 		Locale.setDefault(curLocale);
 		System.out.println("" + counter + " fitted localizations saved in "
 				+ (System.currentTimeMillis() - start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

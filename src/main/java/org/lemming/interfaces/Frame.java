@@ -1,4 +1,5 @@
-package org.lemming.pipeline;
+package org.lemming.interfaces;
+
 
 import net.imglib2.RandomAccessibleInterval;
 

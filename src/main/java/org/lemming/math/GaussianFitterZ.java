@@ -1,35 +1,39 @@
 package org.lemming.math;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-
 import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
 
-public class GaussianFitterAlternative implements FitterInterface {
+import ij.gui.Roi;
+import ij.process.ImageProcessor;
 
-	int[] xgrid, ygrid;									// x and y positions of the pixels	
-	double[] Ival;										// intensity value of the pixels
+public class GaussianFitterZ implements FitterInterface {
+	
 	private ImageProcessor ip;
 	private Roi roi;
 	private int maxIter;
 	private int maxEval;
-	public static int PARAM_2D_LENGTH = 6;	
-	
-	public GaussianFitterAlternative(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
+	private int[] xgrid;
+	private int[] ygrid;
+	private double[] Ival;
+	private double[] params;
+
+	public GaussianFitterZ(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_, double[] params_) {
 		ip = ip_;
 		roi = roi_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
+		params = params_;
 	}
 	
-	private static LeastSquaresBuilder builder(EllipticalGaussian problem){
+	private static LeastSquaresBuilder builder(EllipticalGaussianZ problem){
     	LeastSquaresBuilder builder = new LeastSquaresBuilder();
     	 builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
 		return builder;
@@ -73,14 +77,15 @@ public class GaussianFitterAlternative implements FitterInterface {
 	@Override
 	public double[] fit() {
 		createGrids();
-		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
+		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		try {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
 	                .target(Ival)
-	                .checkerPair(new ConvChecker2DGauss())
+	                .checkerPair(new ConvChecker3DGauss())
+	                .parameterValidator(new ParamValidator3DGauss())
 	                .start(eg.getInitialGuess(ip,roi))
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
@@ -95,45 +100,60 @@ public class GaussianFitterAlternative implements FitterInterface {
 		//check bounds
 		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
 			return null;
-  
-        fittedEG[2] = Math.abs(fittedEG[2]);
-        fittedEG[3] = Math.abs(fittedEG[3]);
 
 		return fittedEG;
 	}
 	
-	private class ConvChecker2DGauss implements ConvergenceChecker<PointVectorValuePair> {
-	    
+	// Convergence Checker
+	private class ConvChecker3DGauss implements
+			ConvergenceChecker<PointVectorValuePair> {
+
 		int iteration_ = 0;
-	    boolean lastResult_ = false;
+		boolean lastResult_ = false;
 
 		public static final int INDEX_X0 = 0;
 		public static final int INDEX_Y0 = 1;
-		public static final int INDEX_SX = 2;
-		public static final int INDEX_SY = 3;
-		public static final int INDEX_I0 = 4;
-		public static final int INDEX_Bg = 5;
-		
+		public static final int INDEX_Z0 = 2;
+		public static final int INDEX_I0 = 3;
+		public static final int INDEX_Bg = 4;
+
 		@Override
-		public boolean converged(int i, PointVectorValuePair previous, PointVectorValuePair current) {
-	         if (i == iteration_)
-	             return lastResult_;
-	          
-	          iteration_ = i;
-	          double[] p = previous.getPoint();
-	          double[] c = current.getPoint();
-	          
-	          if ( Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 5  &&
-	                  Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 1 &&
-	                  Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.01 &&
-	                  Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.01 &&
-	                  Math.abs(p[INDEX_SX] - c[INDEX_SX]) < 0.05 &&
-	                  Math.abs(p[INDEX_SY] - c[INDEX_SY]) < 0.05 ) {
-	             lastResult_ = true;
-	             return true;
-	          }
-	        lastResult_ = false;
+		public boolean converged(int i, PointVectorValuePair previous,
+				PointVectorValuePair current) {
+			if (i == iteration_)
+				return lastResult_;
+
+			iteration_ = i;
+			double[] p = previous.getPoint();
+			double[] c = current.getPoint();
+
+			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.1
+					&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
+					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002
+					&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
+					&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
+				lastResult_ = true;
+				return true;
+			}
+
+			lastResult_ = false;
 			return false;
+		}
+	}
+
+	private class ParamValidator3DGauss implements ParameterValidator {
+		public static final int INDEX_I0 = 3;
+		public static final int INDEX_Bg = 4;
+
+		@Override
+		public RealVector validate(RealVector arg) {
+			if (arg.getEntry(INDEX_I0) < 0) {
+				arg.setEntry(INDEX_I0, 0);
+			}
+			if (arg.getEntry(INDEX_Bg) < 0) {
+				arg.setEntry(INDEX_Bg, 0);
+			}
+			return arg;
 		}
 	}
 

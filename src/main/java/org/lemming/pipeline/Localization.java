@@ -1,5 +1,8 @@
 package org.lemming.pipeline;
 
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.LocalizationInterface;
+
 public class Localization implements LocalizationInterface {
 
 	final private double X,Y;

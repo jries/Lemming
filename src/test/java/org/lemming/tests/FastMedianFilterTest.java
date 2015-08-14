@@ -22,7 +22,7 @@ public class FastMedianFilterTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline();
+		pipe = new Pipeline("test");
 		
 		frames = new FastStore();
 		tif = new IJTiffLoader("/home/ronny/Bilder/sequence.tif");

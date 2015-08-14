@@ -7,11 +7,11 @@ import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
 
-import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Frame;
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.Store;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
-import org.lemming.pipeline.Store;
 
 public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
@@ -132,6 +132,12 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	@Override
 	protected void afterRun(){
 		System.out.println("Math done with " + counter + " frames in " + (System.currentTimeMillis()-start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

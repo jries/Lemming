@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit;
 
 import javolution.util.FastTable;
 
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.Store;
 import org.lemming.math.QuickSelect;
-import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Frame;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
-import org.lemming.pipeline.Store;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
@@ -240,6 +240,12 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		}
 		System.out.println("Filtering of " + counter + " images done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

@@ -1,14 +1,13 @@
 package org.lemming.modules;
 
-import org.lemming.pipeline.Element;
+import org.lemming.interfaces.Element;
 import org.lemming.pipeline.SingleRunModule;
-import org.lemming.pipeline.Store;
 
 public class StoreSplitter extends SingleRunModule {
 
-	private Store store;
 	private Integer counter=0;
 	private long start;
+
 
 	public StoreSplitter() {
 	}
@@ -16,9 +15,6 @@ public class StoreSplitter extends SingleRunModule {
 	@Override
 	protected void beforeRun(){
 		start = System.currentTimeMillis();
-		store = inputs.values().iterator().next();
-		if (store==null)
-			throw new NullPointerException("input is empty!");
 	}
 
 	@Override
@@ -27,13 +23,14 @@ public class StoreSplitter extends SingleRunModule {
 		if (el==null) return null;
 		
 		if(el.isLast()){ //process the rest;
+			running = false;
 			for (String key : outputs.keySet()) {
 				Element cloned = el.deepClone();// make a deep copy
 				cloned.setLast(true);
 				outputs.get(key).put(cloned);
 			}
 			counter++;
-			cancel();
+			
 			return null;
 		}
 		
@@ -43,14 +40,18 @@ public class StoreSplitter extends SingleRunModule {
 		}
 		
 		counter++;
-		//if (counter % 100 == 0)
-		//	System.out.println("Elements finished:"+counter);
 		return null;
 	}
 	
 	@Override
 	protected void afterRun(){
 		System.out.println("Splitting of " + counter +" elements done in " + (System.currentTimeMillis()-start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

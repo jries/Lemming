@@ -4,6 +4,8 @@ import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Set;
 
+import org.lemming.interfaces.Element;
+
 public class ElementMap extends AbstractMap<String,Object> implements Element {
 	
 	private boolean isLast;

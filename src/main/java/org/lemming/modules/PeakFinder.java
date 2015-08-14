@@ -1,10 +1,15 @@
 package org.lemming.modules;
 
-import org.lemming.pipeline.Element;
-import org.lemming.pipeline.Frame;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.Store;
+import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.Module;
-import org.lemming.pipeline.Store;
+import org.lemming.pipeline.MultiRunModule;
+import org.lemming.pipeline.Settings;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -15,13 +20,15 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Module {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
 	private int size;
 	private double threshold;
 	private long start;
 	private int counter;
 	private Store output;
+	@SuppressWarnings("unused")
+	private Settings settings;
 
 	/**
 	 * @param threshold
@@ -33,9 +40,10 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 	 * @param in
 	 *            - input store
 	 */
-	public PeakFinder(final double threshold, final int size) {
+	public PeakFinder(Settings settings, final double threshold, final int size) {
 		setThreshold(threshold);
 		this.size = size;
+		this.settings = settings;
 	}
 
 	private void setThreshold(double threshold) {
@@ -56,22 +64,18 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 		F frame = (F) data;
 		if (frame == null)
 			return null;
-
-		process1(frame);
+		
 		if (frame.isLast()) { // make the poison pill
+			pause(10);
+			process1(frame,true);
 			cancel();
-			Localization lastloc = new Localization(frame.getFrameNumber(), -1, -1);
-			lastloc.setLast(true);
-			output.put(lastloc);
 			return null;
 		}
-		//if (frame.getFrameNumber() % 500 == 0)
-		//	System.out.println("Frames finished:" + frame.getFrameNumber());
+		process1(frame,false);
 		return null;
-
 	}
 
-	private void process1(final F frame) {
+	private void process1(final F frame, boolean b) {
 		Interval interval = Intervals.expand(frame.getPixels(), -size);
 
 		RandomAccessibleInterval<T> source = Views.interval(frame.getPixels(), interval);
@@ -79,6 +83,8 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 		final Cursor<T> center = Views.iterable(source).cursor();
 
 		final RectangleShape shape = new RectangleShape(size, true);
+		
+		List<Element> found = new ArrayList<>();
 
 		for (final Neighborhood<T> localNeighborhood : shape
 				.neighborhoods(source)) {
@@ -105,11 +111,22 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 			}
 
 			if (isMaximum){
-				output.put(new Localization(frame.getFrameNumber(), 
+				found.add(new Localization(frame.getFrameNumber(), 
 						center.getIntPosition(0), center.getIntPosition(1)));
-				counter++;
+				counter++; 
 			}
 		}
+		
+		if (found.isEmpty()) return;
+		
+		FrameElements fe = null;
+		if (b){
+			fe = new FrameElements(found, frame.getFrameNumber());
+			fe.setLast(true);
+		} else {
+			fe = new FrameElements(found, frame.getFrameNumber());
+		}
+		output.put(fe);
 	}
 
 	/**
@@ -124,6 +141,12 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Modul
 		System.out.println("PeakFinder found "
 				+ counter + " peaks in "
 				+ (System.currentTimeMillis() - start) + "ms.");
+	}
+
+	@Override
+	public boolean check() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

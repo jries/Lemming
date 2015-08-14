@@ -7,7 +7,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Store;
+
 import javolution.util.FastTable;
+import javolution.util.function.Predicate;
 
 /**
  * @author Ronny Sczech
@@ -17,12 +21,17 @@ public class ExtendableTable {
 	
 	private int nRows = 0;
 	private Map<String, List<Object>> table = new HashMap<>();
+	private Map<String, Predicate<Object>> filtersCollection = new HashMap<>();
 	
 	/**
 	 * 
 	 */
 	public ExtendableTable(){
 		addLocalizationMembers();
+	}
+	
+	public ExtendableTable(Map<String, List<Object>> table){
+		this.table = table;
 	}
 	
 	/**
@@ -37,13 +46,57 @@ public class ExtendableTable {
 	 */
 	public void addLocalizationMembers(){
 		//table.put("id",new FastTable<Object>());
-		addNewMember("xpix");
-		addNewMember("ypix");
+		addNewMember("x");
+		addNewMember("y");
 	}
 	
 	
 	public Set<String> columnNames(){
 		return table.keySet();
+	}
+	
+	public Map<String, List<Object>> filter(){
+		
+		if (filtersCollection.isEmpty()) return table;
+		
+		Map<String, List<Object>> filteredTable = new HashMap<>();
+		
+		for (int index = 0 ; index < getNumberOfRows(); index++){
+			Map<String, Object> row = getRow(index);
+			boolean filtered = false;
+			for (Entry<String, Predicate<Object>> entry : filtersCollection.entrySet())
+				filtered = filtered || entry.getValue().test(row.get(entry.getKey()));
+			if(filtered)
+				addRow(row);
+		}
+		
+		return filteredTable;
+	}
+	
+	public void addFilterMinMax(final String col, final double min, final double max){
+		Predicate<Object> p = new Predicate<Object>(){
+
+			@Override
+			public boolean test(Object t) {
+				Double d = (Double) t;
+				
+				return (d>=min) && (d<=max);
+			}
+			
+		};
+		filtersCollection.put(col, p);
+	}
+	
+	public void addFilterExact(final String col, final Object o){
+		Predicate<Object> p = new Predicate<Object>(){
+
+			@Override
+			public boolean test(Object t) {				
+				return t.equals(o);
+			}
+			
+		};
+		filtersCollection.put(col, p);
 	}
 	
 	/**
@@ -98,6 +151,7 @@ public class ExtendableTable {
 	public void add(String member, Object o){
 		List<Object> t = table.get(member);
 		if (t!=null){
+			if (t.size() == nRows) nRows++;
 			t.add(o);
 			return;
 		}

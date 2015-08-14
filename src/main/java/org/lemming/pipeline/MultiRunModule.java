@@ -6,9 +6,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public abstract class Module extends AbstractModule{
+import org.lemming.interfaces.Element;
+
+public abstract class MultiRunModule extends AbstractModule{
 	
-	public Module(){
+	public MultiRunModule(){
 	}
 	
 	@Override

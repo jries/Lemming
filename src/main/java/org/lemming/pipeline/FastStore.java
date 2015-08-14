@@ -3,6 +3,10 @@ package org.lemming.pipeline;
 import java.util.Collection;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Store;
+
 import javolution.util.FastTable;
 
 public class FastStore implements Store {
@@ -68,7 +72,8 @@ public class FastStore implements Store {
 
 	@Override
 	public boolean isEmpty() {
-		return q.isEmpty();
+		boolean b = q.isEmpty();
+		return b;
 	}
 	
 	@Override
