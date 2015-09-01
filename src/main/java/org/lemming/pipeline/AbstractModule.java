@@ -1,6 +1,8 @@
 package org.lemming.pipeline;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,11 +17,11 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	
 	private int numTasks;
 	protected final ExecutorService service;
-	protected Map<String, Store> inputs = new HashMap<>();
-	protected Map<String, Store> outputs = new HashMap<>();
+	protected Map<Integer, Store> inputs = new LinkedHashMap<>();
+	protected Map<Integer, Store> outputs = new LinkedHashMap<>();
 	
 	protected volatile boolean running = true;
-	protected String iterator="";
+	protected Integer iterator;
 	
 	public AbstractModule(){
 		setNumThreads();
@@ -27,11 +29,13 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	}
 	
 	protected void newOutput(final Element data) {
-		Store store = outputs.get(iterator);
-		if (store==null)
-			throw new NullPointerException("wrong mapping!");
-		if (data != null)
-			store.put(data);
+		if (outputs.isEmpty()) throw new NullPointerException("No Output Mappings!");
+		if (data == null) return;
+		Iterator<Integer> it = outputs.keySet().iterator();
+		while(it.hasNext()){
+			Integer key = it.next();
+			outputs.get(key).put(data);
+		}
 	}
 	
 	protected Element nextInput() {
@@ -60,49 +64,63 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	}
 
 	@Override
-	public Element getInput(String key) {
+	public Element getInput(Integer key) {
 		Element el = inputs.get(key).get();
 		return el;
 	}
 
 	@Override
-	public Map<String, Element> getInputs() {
-		Map<String, Element> outMap = new HashMap<>();
-		for (String key : inputs.keySet())
+	public Map<Integer, Element> getInputs() {
+		Map<Integer, Element> outMap = new HashMap<>();
+		Iterator<Integer> it = inputs.keySet().iterator();
+		while(it.hasNext()){
+			Integer key = it.next();
 			outMap.put(key, inputs.get(key).get());
+		}
 		return outMap;
 	}
 
 	@Override
-	public Element getOutput(String key) {
+	public Element getOutput(Integer key) {
 		return outputs.get(key).get();
 	}
 
 	@Override
-	public Map<String, Element> getOutputs() {
-		Map<String, Element> outMap = new HashMap<>();
-		for (String key : outputs.keySet())
+	public Map<Integer, Element> getOutputs() {
+		Map<Integer, Element> outMap = new HashMap<>();
+		Iterator<Integer> it = outputs.keySet().iterator();
+		while(it.hasNext()){
+			Integer key = it.next();
 			outMap.put(key, outputs.get(key).get());
+		}
 		return outMap;
 	}
 
 	@Override
-	public void setInput(String key, Store data) {
-		inputs.put(key, data);		
+	public void setInput(Integer key, Store store) {
+		inputs.put(key, store);		
+	}
+	
+	public void setInput(Store store) {
+		inputs.put(store.hashCode(), store);		
 	}
 
 	@Override
-	public void setInputs(Map<String, Store> storeMap) {
+	public void setInputs(Map<Integer, Store> storeMap) {
 		inputs = storeMap;		
 	}
 
 	@Override
-	public void setOutput(String key, Store store) {
+	public void setOutput(Integer key, Store store) {
 		outputs.put(key, store);		
+	}
+	
+	public void setOutput(Store store) {
+		outputs.put(store.hashCode(), store);		
 	}
 
 	@Override
-	public void setOutputs(Map<String, Store> storeMap) {
+	public void setOutputs(Map<Integer, Store> storeMap) {
 		outputs = storeMap;
 	}
 

@@ -3,13 +3,12 @@ package org.lemming.interfaces;
 import java.util.Collection;
 
 
-public interface GenericStore<E extends Element> {
+public interface StoreInterface<E extends Element> {
 	/**
 	 * Adds the element el to the store.
-	 * 
 	 * @param el is the element to be put
 	 */
-	public void put(E el);
+	public void put(E element);
 	
 	/**
 	 * Retrieves (and typically removes) an element from the store.
@@ -24,12 +23,20 @@ public interface GenericStore<E extends Element> {
 	public E peek();
 	
 	/**
-	 * The store is empty.	 * 
-	 * @return Checks if the store is empty.
+	 * Checks if the store is empty. 
+	 * @return The store is empty.
 	 */
 	public boolean isEmpty();
 	
+	/**
+	 * Length of the store.
+	 * @return length.
+	 */
 	public int getLength();
-
+	
+	/**
+	 * Current view of store.
+	 * @return view.
+	 */
 	public Collection<Element> view();
 }

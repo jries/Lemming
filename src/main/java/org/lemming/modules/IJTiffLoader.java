@@ -38,12 +38,7 @@ public class IJTiffLoader<T extends NumericType<T> & NativeType<T>> extends Mult
 		}
 		else 
 			System.err.println("File not exist!");
-		
 		iterator = outputs.keySet().iterator().next();
-	}
-
-	public boolean hasMoreOutputs() {
-		return curSlice < stackSize;
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -66,7 +61,7 @@ public class IJTiffLoader<T extends NumericType<T> & NativeType<T>> extends Mult
 		}
 		
 		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
-		if (!hasMoreOutputs())
+		if (curSlice >= stackSize)
 			frame.setLast(true);
 		return frame;
 	}
@@ -82,7 +77,6 @@ public class IJTiffLoader<T extends NumericType<T> & NativeType<T>> extends Mult
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return outputs.size()>=1;
 	}
 }

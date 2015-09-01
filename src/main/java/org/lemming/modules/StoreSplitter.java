@@ -24,7 +24,7 @@ public class StoreSplitter extends SingleRunModule {
 		
 		if(el.isLast()){ //process the rest;
 			running = false;
-			for (String key : outputs.keySet()) {
+			for (Integer key : outputs.keySet()) {
 				Element cloned = el.deepClone();// make a deep copy
 				cloned.setLast(true);
 				outputs.get(key).put(cloned);
@@ -34,7 +34,7 @@ public class StoreSplitter extends SingleRunModule {
 			return null;
 		}
 		
-		for (String key : outputs.keySet()) {
+		for (Integer key : outputs.keySet()) {
 			Element cloned = el.deepClone();// make a deep copy
 			outputs.get(key).put(cloned);
 		}

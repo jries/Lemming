@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -20,7 +21,6 @@ import org.lemming.pipeline.MultiRunModule;
 public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
 	private long start;
-	protected Store output;
 	protected long size;
 	private Store locInput;
 	private volatile CircularFifoQueue<Element> firstQueue;
@@ -34,22 +34,18 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 		secondQueue = new FastStore();
 	}
 
-	public void setIterator(String iterator) {
-		this.iterator = iterator;
-	}
 
 	@Override
 	protected void beforeRun() {
-		// this module has one output
-		output = outputs.values().iterator().next();
-		Iterator<String> it = inputs.keySet().iterator();
-		while (it.hasNext() ){
-			String key = it.next();
-			if ( key != iterator){
-				locInput = inputs.get(key);
-			}
+		Iterator<Integer> it = inputs.keySet().iterator();
+		try {
+			iterator = it.next(); 							// first input
+			locInput = inputs.get(it.next()); 				// second input
+		} catch (NoSuchElementException | NullPointerException ex){
+			System.err.println("Input provided not correct!");
+			Thread.currentThread().interrupt();
 		}
-		if (locInput == null) throw new NullPointerException("Input not provided!");
+		
 		start = System.currentTimeMillis();
 		while (locInput.getLength()<queueSize) pause(10);
 		fillQueue();
@@ -129,6 +125,8 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 		List<Element> sliceLocs = new ArrayList<>();
 		
+		int secondRun = secondQueue.getLength();
+		
 		while (!secondQueue.isEmpty()){
 			F frame = (F) secondQueue.get();
 			for (Element element : view){
@@ -147,13 +145,13 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 		}
 		FittedLocalization lastLoc = new FittedLocalization(0, -1, -1, 0, -1, -1) ;
 		lastLoc.setLast(true);
-		output.put(lastLoc);
-		System.out.println("Fitting done in " + (System.currentTimeMillis() - start) + "ms.");
+		newOutput(lastLoc);
+		System.out.println("Fitting done in " + (System.currentTimeMillis() - start) + "ms with elements in 2nd run:" + secondRun);
 	}
 
 	@Override
 	public boolean check() {
-		return false;
+		return inputs.size()==2 && outputs.size()>=1;
 	}
 
 }

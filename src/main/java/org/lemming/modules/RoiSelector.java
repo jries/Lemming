@@ -3,7 +3,6 @@ package org.lemming.modules;
 import net.imglib2.roi.RectangleRegionOfInterest;
 
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Store;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
@@ -13,7 +12,6 @@ public class RoiSelector extends SingleRunModule {
 	private RectangleRegionOfInterest roi;
 	private long start;
 	private int counter=0;
-	private Store output;
 
 	public RoiSelector(final double x,final double y,final double xLength,final double yLength){
 	 	roi = new RectangleRegionOfInterest(new double[]{x,y}, new double[]{xLength,yLength});
@@ -25,7 +23,6 @@ public class RoiSelector extends SingleRunModule {
 	
 	@Override
 	protected void beforeRun(){ 
-		output = outputs.values().iterator().next();
 		start = System.currentTimeMillis();		
 	}
 	
@@ -35,7 +32,7 @@ public class RoiSelector extends SingleRunModule {
 		if (loc==null) return null;
 		
 		if (roi.contains(new double[]{loc.getX(),loc.getY()})){
-			output.put(loc); // put ROI to output store
+			newOutput(loc); // put ROI to output store
 			counter++;
 		}
 		
@@ -51,8 +48,7 @@ public class RoiSelector extends SingleRunModule {
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1 && outputs.size()>=1;
 	}
 
 }

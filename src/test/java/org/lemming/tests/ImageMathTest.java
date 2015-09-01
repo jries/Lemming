@@ -5,8 +5,6 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.imglib2.util.ValuePair;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
@@ -32,33 +30,32 @@ public class ImageMathTest {
 	private FastStore filtered = new FastStore();
 	private FastMedianFilter fmf;
 	
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Pipeline("test");
 		new Settings();
 		
-		tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
-		tif.setOutput("frames", frames);
+		tif = new IJTiffLoader("/home/ronny/ownCloud/storm/TubulinAF647.tif");
+		tif.setOutput(frames);
 		pipe.add(tif);
 		
 		splitter = new StoreSplitter();
-		Map<String,Store> storeMap = new HashMap<>();
-		splitter.setInput("frames", frames);
-		storeMap.put("frames1", frames1);
-		storeMap.put("frames2", frames2);
+		Map<Integer,Store> storeMap = new HashMap<>();
+		splitter.setInput(frames);
+		storeMap.put(frames1.hashCode(), frames1);
+		storeMap.put(frames2.hashCode(), frames2);
 		splitter.setOutputs(storeMap);
 		pipe.add(splitter);	
 		
 		fmf = new FastMedianFilter(50, true);
-		fmf.setInput("frames1", frames1);
-		fmf.setOutput("filtered", filtered);
+		fmf.setInput(frames1);
+		fmf.setOutput(filtered);
 		pipe.add(fmf);
 		
-		im = new ImageMath(new ValuePair("frames2","filtered"));
-		im.setInput("frames2", frames2);
-		im.setInput("filtered", filtered);
-		im.setOutput("calculated", calculated);
+		im = new ImageMath();
+		im.setInput(frames2);
+		im.setInput(filtered);
+		im.setOutput(calculated);
 		im.setOperator(ImageMath.operators.SUBSTRACTION);
 		pipe.add(im);
 	}

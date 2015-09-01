@@ -24,11 +24,11 @@ public class HistogramRendererTest {
 		
 		localizations = new FastStore();
 		reader = new ReadLocalizations(new File("/home/ronny/Bilder/fitted.csv"),",");
-		reader.setOutput("locs", localizations);
+		reader.setOutput(localizations);
 		pipe.add(reader);
 		
 		histo = new HistogramRenderer(1024, 1024, 0, 127, 0, 127);
-		histo.setInput("locs", localizations);
+		histo.setInput(localizations);
 		pipe.add(histo);	
 		
 	}

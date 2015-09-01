@@ -72,8 +72,7 @@ public class ReadLocalizations extends SingleRunModule {
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return outputs.size()>=1;
 	}
 
 }

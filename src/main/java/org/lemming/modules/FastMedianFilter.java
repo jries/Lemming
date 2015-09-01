@@ -244,8 +244,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1 && outputs.size()>=1;
 	}
 
 }

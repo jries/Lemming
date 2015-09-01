@@ -24,7 +24,6 @@ import net.imglib2.view.Views;
 
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
-import org.lemming.interfaces.Store;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.MultiRunModule;
 
@@ -33,7 +32,6 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 
 	private double radius;
 	private float threshold;
-	private Store output;
 	private long start;
 	private double[] calibration;
 	private int counter = 0;
@@ -46,8 +44,6 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 	
 	@Override
 	protected void beforeRun() {
-		// for this module there should be only one key
-		output = outputs.values().iterator().next(); 
 		start = System.currentTimeMillis();
 	}
 
@@ -61,7 +57,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 			System.out.println("Last frame finished:"+frame.getFrameNumber());
 			Localization lastloc = new Localization(frame.getFrameNumber(), -1, -1);
 			lastloc.setLast(true);
-			output.put(lastloc);
+			newOutput(lastloc);
 			cancel();
 			return null;
 		}
@@ -112,7 +108,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 		for (Point p :peaks){
 			double x = p.getDoublePosition(0);
 			double y = p.getDoublePosition(1);
-			output.put(new Localization(frame.getFrameNumber(), x, y));
+			newOutput(new Localization(frame.getFrameNumber(), x, y));
 			counter++;
 		}
 	}
@@ -172,8 +168,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1 && outputs.size()>=1;
 	}
 
 }

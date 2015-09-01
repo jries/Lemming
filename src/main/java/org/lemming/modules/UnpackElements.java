@@ -3,7 +3,6 @@ package org.lemming.modules;
 import java.util.List;
 
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Store;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
@@ -12,7 +11,6 @@ public class UnpackElements extends SingleRunModule {
 
 	private long start;
 	private int counter;
-	private Store output;
 
 	public UnpackElements() {
 	}
@@ -20,7 +18,6 @@ public class UnpackElements extends SingleRunModule {
 	@Override
 	protected void beforeRun(){
 		start = System.currentTimeMillis();
-		output = outputs.values().iterator().next();
 	}
 
 	@Override
@@ -34,19 +31,19 @@ public class UnpackElements extends SingleRunModule {
 				Element last = list.remove(list.size()-1);
 				last.setLast(true);
 				for (Element l :list)
-					output.put(l);
-				output.put(last);
+					newOutput(l);
+				newOutput(last);
 			}
 			
 			for (Element l :list)
-				output.put(l);
+				newOutput(l);
 		} else if (data instanceof Localization){
 			counter++;
 			if (data.isLast()){
 				running = false;
 				data.setLast(true);
 			}
-			output.put(data);
+			newOutput(data);
 		}
 			
 		return data;
@@ -59,8 +56,7 @@ public class UnpackElements extends SingleRunModule {
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1;
 	}
 
 }

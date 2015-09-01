@@ -29,18 +29,18 @@ public class DoGFinderTest {
 		frames = new FastStore();
 		//tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
 		tif = new IJTiffLoader("/Users/ronny/Documents/storm/sequence.tif");
-		tif.setOutput("frames",frames);
+		tif.setOutput(frames);
 		pipe.add(tif);
 		
 		localizations = new FastStore();
 		peak = new DoGFinder(6,6);
-		peak.setInput("frames", frames);
-		peak.setOutput("locs", localizations);
+		peak.setInput( frames);
+		peak.setOutput(localizations);
 		pipe.add(peak);
 		
 		//saver = new SaveLocalizations(new File("/home/ronny/Bilder/out.csv"));
 		saver = new SaveLocalizations(new File("/Users/ronny/Documents/storm/dogfinder.csv"));
-		saver.setInput("locs", localizations);
+		saver.setInput(localizations);
 		pipe.add(saver);
 	}
 

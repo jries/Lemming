@@ -17,7 +17,7 @@ public abstract class MultiRunModule extends AbstractModule{
 	public void run() {
 
 		if (!inputs.isEmpty()) { // first check for existing inputs
-			if (inputs.keySet().iterator().hasNext() && iterator=="")
+			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
 			beforeRun();
 			if (inputs.get(iterator) != null) {

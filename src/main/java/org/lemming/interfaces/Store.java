@@ -1,6 +1,5 @@
 package org.lemming.interfaces;
 
-
-public interface Store extends GenericStore<Element> {
-
+public interface Store extends StoreInterface<Element> {
+	
 }

@@ -13,21 +13,21 @@ public interface ModuleInterface extends Runnable{
 	
 	public void cancel();
 	
-	public Object getInput(String key);
+	public Object getInput(Integer key);
 	
-	public Map<String, Element> getInputs();
+	public Map<Integer, Element> getInputs();
 	
-	public Object getOutput(String key);
+	public Object getOutput(Integer key);
 	
-	public Map<String, Element> getOutputs();
+	public Map<Integer, Element> getOutputs();
 	
-	public void setInput(String key, Store store);
+	public void setInput(Integer key, Store store);
 	
-	public void setInputs(Map<String, Store> storeMap);
+	public void setInputs(Map<Integer, Store> storeMap);
 	
-	public void setOutput(String key, Store store);
+	public void setOutput(Integer key, Store store);
 	
-	public void setOutputs(Map<String, Store> storeMap);
+	public void setOutputs(Map<Integer, Store> storeMap);
 	
 	public boolean check();
 	

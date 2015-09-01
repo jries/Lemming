@@ -19,7 +19,7 @@ public class IJTiffLoaderTest {
 		
 		tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif");
 		frames = new FastStore();
-		tif.setOutput("frames", frames);
+		tif.setOutput( frames);
 	}
 
 	@Test

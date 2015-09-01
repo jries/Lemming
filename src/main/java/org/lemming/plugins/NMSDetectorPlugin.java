@@ -1,35 +1,58 @@
-package org.lemming.modules;
+package org.lemming.plugins;
+
+import java.util.Map;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
+import org.lemming.factories.DetectorFactory;
+import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.NMSDetectorConfigurationPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.Store;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.MultiRunModule;
+import org.scijava.plugin.Plugin;
 
-public class NMSFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public class NMSDetectorPlugin<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+	
+	public static final String NAME = "NMS Detector Plugin";
+
+	public static final String KEY = "NMSDETECTOR";
+
+	public static final String INFO_TEXT = "<html>"
+			+ "NMS Detector Plugin"
+			+ "</html>";
+	
+	public static final String KEY_THRESHOLD = "THRESHOLD";
+	
+	public static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
+	
+	private double threshold;
 	
 	private int size;
-	private double threshold;
+
 	private long start;
-	private int counter;
+
 	private Store output;
 
-	public NMSFinder(final double threshold, final int size) {
+	private int counter=0;
+
+	public NMSDetectorPlugin(final double threshold, final int size) {
 		this.threshold = threshold;
 		this.size = size;
 	}
-
+	
 	@Override
 	protected void beforeRun() {
 		// for this module there should be only one key
 		output = outputs.values().iterator().next(); 
 		start = System.currentTimeMillis();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element process(Element data) {
@@ -45,11 +68,9 @@ public class NMSFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 			output.put(lastloc);
 			return null;
 		}
-		//if (frame.getFrameNumber() % 500 == 0)
-		//	System.out.println("Frames finished:" + frame.getFrameNumber());
 		return null;
 	}
-
+	
 	private void process1(F frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		RandomAccess<T> ra = interval.randomAccess();
@@ -117,7 +138,52 @@ public class NMSFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 
 	@Override
 	public boolean check() {
-		return inputs.size()==1 && outputs.size()>=1;
+		return outputs.entrySet().size()==1;
+	}
+
+	
+	@Plugin( type = DetectorFactory.class, visible = true )
+	public static class Factory implements DetectorFactory{
+
+		
+		private Map<String, Object> settings;
+		private NMSDetectorConfigurationPanel configPanel = new NMSDetectorConfigurationPanel();
+
+		@Override
+		public String getInfoText() {
+			return INFO_TEXT;
+		}
+
+		@Override
+		public String getKey() {
+			return KEY;
+		}
+
+		@Override
+		public String getName() {
+			return NAME;
+		}
+
+
+		@Override
+		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			this.settings = settings;
+			return true;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public AbstractModule getDetector() {
+			final double threshold = ( Double ) settings.get( KEY_THRESHOLD );
+			final int stepSize = ( Integer ) settings.get( KEY_NMS_STEPSIZE );
+			return new NMSDetectorPlugin(threshold, stepSize);
+		}
+
+		@Override
+		public ConfigurationPanel getDetectorConfigurationPanel() {
+			return configPanel;
+		}
+		
 	}
 
 }

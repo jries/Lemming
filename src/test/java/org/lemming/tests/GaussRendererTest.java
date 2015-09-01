@@ -24,11 +24,11 @@ public class GaussRendererTest {
 		
 		localizations = new FastStore();
 		reader = new ReadFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"),",");
-		reader.setOutput("locs", localizations);
+		reader.setOutput(localizations);
 		pipe.add(reader);
 		
 		gauss = new GaussRenderer(128,128);
-		gauss.setInput("locs", localizations);
+		gauss.setInput(localizations);
 		pipe.add(gauss);
 	}
 

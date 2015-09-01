@@ -1,5 +1,8 @@
 package org.lemming.modules;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.NumericType;
@@ -20,13 +23,13 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	}
 
 	private operators operator;
-	private Pair<String,String> inputKeys;
 	private int counter;
 	private long start;
+	private Store inputA;
+	private Store inputB;
 	private Store output;
 	
-	public ImageMath(Pair<String,String> ins){
-		inputKeys = ins;
+	public ImageMath(){
 	}
 	
 	public void setOperator(operators op){
@@ -34,13 +37,22 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	}
 	
 	@Override
-	protected void beforeRun(){ // check for equal number in the two input stores
-		output = outputs.values().iterator().next();
-		iterator = inputKeys.getB();
+	protected void beforeRun(){ 
+		Iterator<Integer> it = inputs.keySet().iterator();
+		try {
+			iterator = it.next();							// first input
+			inputB = inputs.get(iterator);
+			inputA = inputs.get(it.next());
+			output = outputs.values().iterator().next(); 	// output
+		} catch (NoSuchElementException | NullPointerException ex){
+			System.err.println("Input provided not correct!");
+			Thread.currentThread().interrupt();
+		}
+	
 		int length = 0;
 		boolean loop = true;
-		while(loop){
-			for ( String key : inputs.keySet()){
+		while(loop){									// check for equal number in the two input stores
+			for ( Integer key : inputs.keySet()){
 				if (length == inputs.get(key).getLength())
 					loop = false;
 				length = inputs.get(key).getLength();
@@ -58,16 +70,16 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		if (frameB==null){ 
 			return null;
 		}
-		F frameA = (F) inputs.get(inputKeys.getA());
+		F frameA = (F) inputA.get();
 		if (frameA==null){ 
-			inputs.get(inputKeys.getB()).put(frameB);
+			inputB.put(frameB);
 			return null;
 		}
 		
 		// if no match put it back to inputs
 		if (frameA.getFrameNumber() != frameB.getFrameNumber()){
-			inputs.get(inputKeys.getB()).put(frameB);
-			inputs.get(inputKeys.getA()).put(frameA);
+			inputB.put(frameB);
+			inputA.put(frameA);
 			return null;
 		}		
 		
@@ -136,8 +148,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1 && outputs.size()>=1;
 	}
 
 }

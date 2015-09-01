@@ -5,11 +5,9 @@ import java.util.List;
 
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
-import org.lemming.interfaces.Store;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.MultiRunModule;
-import org.lemming.pipeline.Settings;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -26,9 +24,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 	private double threshold;
 	private long start;
 	private int counter;
-	private Store output;
-	@SuppressWarnings("unused")
-	private Settings settings;
 
 	/**
 	 * @param threshold
@@ -40,10 +35,9 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 	 * @param in
 	 *            - input store
 	 */
-	public PeakFinder(Settings settings, final double threshold, final int size) {
+	public PeakFinder( final double threshold, final int size) {
 		setThreshold(threshold);
 		this.size = size;
-		this.settings = settings;
 	}
 
 	private void setThreshold(double threshold) {
@@ -52,8 +46,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 
 	@Override
 	protected void beforeRun() {
-		// for this module there should be only one key
-		output = outputs.values().iterator().next(); 
 		start = System.currentTimeMillis();
 	}
 
@@ -126,7 +118,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 		} else {
 			fe = new FrameElements(found, frame.getFrameNumber());
 		}
-		output.put(fe);
+		newOutput(fe);
 	}
 
 	/**
@@ -146,7 +138,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 	@Override
 	public boolean check() {
 		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1 && outputs.size()>=1;
 	}
 
 }

@@ -24,11 +24,11 @@ public class DataTableTest {
 		locs = new FastStore();
 		
 		ReadFittedLocalizations reader = new ReadFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"),",");
-		reader.setOutput("locs", locs);
+		reader.setOutput(locs);
 		pipe.add(reader);
 		
 		DataTable workspace = new DataTable();
-		workspace.setInput("locs", locs);
+		workspace.setInput(locs);
 		table = workspace.getTable();
 		pipe.add(workspace);
 	}

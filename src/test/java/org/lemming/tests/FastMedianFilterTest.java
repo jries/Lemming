@@ -26,17 +26,17 @@ public class FastMedianFilterTest {
 		
 		frames = new FastStore();
 		tif = new IJTiffLoader("/home/ronny/Bilder/sequence.tif");
-		tif.setOutput("frames",frames);
+		tif.setOutput(frames);
 		pipe.add(tif);
 		
 		filtered = new FastStore();
 		fmf = new FastMedianFilter(50,true);
-		fmf.setInput("frames", frames);
-		fmf.setOutput("filtered", filtered);
+		fmf.setInput(frames);
+		fmf.setOutput(filtered);
 		pipe.add(fmf);
 		
 		saver = new SaveImages("/home/ronny/Bilder/out.tif");
-		saver.setInput("filtered", filtered);
+		saver.setInput(filtered);
 		pipe.add(saver);
 	}
 
