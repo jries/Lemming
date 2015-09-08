@@ -7,17 +7,19 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.DoGFinder;
-import org.lemming.modules.IJTiffLoader;
+import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
+
+import ij.ImagePlus;
 
 @SuppressWarnings("rawtypes")
 public class DoGFinderTest {
 
 	private Pipeline pipe;
 	private FastStore frames;
-	private IJTiffLoader tif;
+	private ImageLoader tif;
 	private FastStore localizations;
 	private DoGFinder peak;
 	private SaveLocalizations saver;
@@ -28,7 +30,7 @@ public class DoGFinderTest {
 		
 		frames = new FastStore();
 		//tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
-		tif = new IJTiffLoader("/Users/ronny/Documents/storm/sequence.tif");
+		tif = new ImageLoader(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"));
 		tif.setOutput(frames);
 		pipe.add(tif);
 		

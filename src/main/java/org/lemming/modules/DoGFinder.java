@@ -2,6 +2,7 @@ package org.lemming.modules;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
@@ -22,14 +23,26 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
+import org.lemming.factories.DetectorFactory;
+import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.DoGFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.MultiRunModule;
+import org.scijava.plugin.Plugin;
 
 
 public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
+	public static final String NAME = "DoG Finder";
+
+	public static final String KEY = "DOGFINDER";
+
+	public static final String INFO_TEXT = "<html>"
+											+ "Difference of Gaussian Finder"
+											+ "</html>";
 	private double radius;
 	private float threshold;
 	private long start;
@@ -169,6 +182,50 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 	@Override
 	public boolean check() {
 		return inputs.size()==1 && outputs.size()>=1;
+	}
+	
+	@Plugin( type = DetectorFactory.class, visible = true )
+	public static class Factory implements DetectorFactory{
+
+		
+		private Map<String, Object> settings;
+		private DoGFinderPanel configPanel = new DoGFinderPanel();
+
+		@Override
+		public String getInfoText() {
+			return INFO_TEXT;
+		}
+
+		@Override
+		public String getKey() {
+			return KEY;
+		}
+
+		@Override
+		public String getName() {
+			return NAME;
+		}
+
+
+		@Override
+		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			this.settings = settings;
+			return true;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public AbstractModule getDetector() {
+			final double threshold = ( Double ) settings.get( DoGFinderPanel.KEY_THRESHOLD );
+			final int radius = ( Integer ) settings.get( DoGFinderPanel.KEY_RADIUS );
+			return new DoGFinder(threshold, radius);
+		}
+
+		@Override
+		public ConfigurationPanel getConfigurationPanel() {
+			return configPanel;
+		}
+		
 	}
 
 }

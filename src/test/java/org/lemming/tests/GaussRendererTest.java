@@ -6,10 +6,10 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.modules.GaussRenderer;
 import org.lemming.modules.ReadFittedLocalizations;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
+import org.lemming.plugins.GaussRenderer;
 
 public class GaussRendererTest {
 

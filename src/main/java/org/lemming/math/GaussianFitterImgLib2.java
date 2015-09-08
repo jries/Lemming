@@ -10,7 +10,7 @@ import net.imglib2.algorithm.region.localneighborhood.RectangleCursor;
 import net.imglib2.algorithm.region.localneighborhood.RectangleNeighborhoodGPL;
 import net.imglib2.type.numeric.RealType;
 
-public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
+public class GaussianFitterImgLib2<T extends RealType<T>> implements FitterInterface {
 
 	private RandomAccessibleInterval<T> image;
 	private int ndims;
@@ -18,7 +18,7 @@ public class GaussianFitter<T extends RealType<T>> implements FitterInterface {
 	private double[] typical_sigma;
 	//private static double defaultSigma = 1.5;
 
-	public GaussianFitter(RandomAccessibleInterval<T> image_, final double[] sigma) {
+	public GaussianFitterImgLib2(RandomAccessibleInterval<T> image_, final double[] sigma) {
 		image = image_;
 		ndims = image.numDimensions();
 		typical_sigma = sigma;

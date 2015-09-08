@@ -6,18 +6,20 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.modules.IJTiffLoader;
-import org.lemming.modules.PeakFinder;
+import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
+import org.lemming.plugins.PeakFinder;
+
+import ij.ImagePlus;
 
 @SuppressWarnings("rawtypes")
 public class PeakFinderTest {
 
 	private Pipeline pipe;
 	private FastStore frames;
-	private IJTiffLoader tif;
+	private ImageLoader tif;
 	private FastStore localizations;
 	private PeakFinder peak;
 	private SaveLocalizations saver;
@@ -27,7 +29,7 @@ public class PeakFinderTest {
 		pipe = new Pipeline("test");	
 		frames = new FastStore();
 		//tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
-		tif = new IJTiffLoader("/Users/ronny/Documents/storm/sequence.tif");
+		tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));
 		tif.setOutput(frames);
 		pipe.add(tif);
 		

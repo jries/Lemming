@@ -8,14 +8,16 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
-import org.lemming.modules.AstigFitter;
-import org.lemming.modules.IJTiffLoader;
-import org.lemming.modules.PeakFinder;
+import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveFittedLocalizations;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.Manager;
 import org.lemming.pipeline.Settings;
+import org.lemming.plugins.AstigFitter;
+import org.lemming.plugins.PeakFinder;
+
+import ij.ImagePlus;
 
 @SuppressWarnings("rawtypes")
 public class ManagerTest {
@@ -23,11 +25,12 @@ public class ManagerTest {
 	private Manager pipe;
 	private Map<Integer, Store> storeMap;
 	
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Manager();
 		
-		IJTiffLoader tif = new IJTiffLoader("/home/ronny/ownCloud/storm/p500ast.tif");
+		ImageLoader tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));
 		PeakFinder peak = new PeakFinder(700,4);
 		AstigFitter fitter = new AstigFitter(60,10, Settings.readProps("/home/ronny/ownCloud/storm/Settings.properties"));
 		UnpackElements unpacker = new UnpackElements();
@@ -50,7 +53,7 @@ public class ManagerTest {
 		pipe.linkModules(fitter,saver);
 		pipe.linkModules(peak,unpacker);
 		pipe.linkModules(unpacker,saver2);
-		storeMap =pipe.get();
+		storeMap = pipe.get();
 	}
 
 	@Test

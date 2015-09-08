@@ -4,18 +4,20 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.modules.FastMedianFilter;
-import org.lemming.modules.IJTiffLoader;
+import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveImages;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
+import org.lemming.plugins.FastMedianFilter;
+
+import ij.ImagePlus;
 
 @SuppressWarnings("rawtypes")
 public class FastMedianFilterTest {
 
 	private Pipeline pipe;
 	private FastStore frames;
-	private IJTiffLoader tif;
+	private ImageLoader tif;
 	private FastMedianFilter fmf;
 	private SaveImages saver;
 	private FastStore filtered;
@@ -25,7 +27,7 @@ public class FastMedianFilterTest {
 		pipe = new Pipeline("test");
 		
 		frames = new FastStore();
-		tif = new IJTiffLoader("/home/ronny/Bilder/sequence.tif");
+		tif = new ImageLoader(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"));
 		tif.setOutput(frames);
 		pipe.add(tif);
 		

@@ -50,8 +50,7 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1;
 	}
 
 }

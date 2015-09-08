@@ -1,13 +1,26 @@
-package org.lemming.modules;
+package org.lemming.plugins;
 
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 
+import java.util.Map;
+
+import org.lemming.factories.RendererFactory;
+import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.HistogramRendererPanel;
 import org.lemming.interfaces.Element;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
+import org.scijava.plugin.Plugin;
 
 public class HistogramRenderer extends SingleRunModule {
+	
+	public static final String NAME = "Histogram Renderer";
+	public static final String KEY = "HISTOGRAMRENDERER";
+	public static final String INFO_TEXT = "<html>"
+											+ "Histogram Renderer Plugin"
+											+ "</html>";
 	
 	private int xBins;
 	private int yBins;
@@ -80,6 +93,52 @@ public class HistogramRenderer extends SingleRunModule {
 	@Override
 	public boolean check() {
 		return inputs.size()==1;
+	}
+	
+	@Plugin( type = RendererFactory.class, visible = true )
+	public static class Factory implements RendererFactory{
+
+		private HistogramRendererPanel configPanel = new HistogramRendererPanel();
+		private Map<String, Object> settings;
+
+		@Override
+		public String getInfoText() {
+			return INFO_TEXT;
+		}
+
+		@Override
+		public String getKey() {
+			return KEY;
+		}
+
+		@Override
+		public String getName() {
+			return NAME;
+		}
+
+		@Override
+		public AbstractModule getRenderer() {
+			//Map<String, Object> settings = configPanel.getSettings();
+			final int xBins = (int) settings.get(HistogramRendererPanel.KEY_xBins);
+			final int yBins = (int) settings.get(HistogramRendererPanel.KEY_yBins);
+			final double xmin = (double) settings.get(HistogramRendererPanel.KEY_xmin);
+			final double xmax = (double) settings.get(HistogramRendererPanel.KEY_xmax);
+			final double ymin = (double) settings.get(HistogramRendererPanel.KEY_ymin);
+			final double ymax = (double) settings.get(HistogramRendererPanel.KEY_ymax);
+			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax);
+		}
+
+		@Override
+		public ConfigurationPanel getConfigurationPanel() {
+			return configPanel;
+		}
+
+		@Override
+		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			this.settings = settings;
+			return true;
+		}
+		
 	}
 
 }

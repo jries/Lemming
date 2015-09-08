@@ -13,11 +13,11 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 
-public class NMSDetectorConfigurationPanel extends ConfigurationPanel {
+public class NMSDetectorPanel extends ConfigurationPanel {
 	private JTextField jTextFieldThreshold;
 	private JSpinner spinnerStepSize;
 
-	public NMSDetectorConfigurationPanel() {
+	public NMSDetectorPanel() {
 		setBorder(null);
 		
 		JLabel lblWindowSize = new JLabel("Threshold");
@@ -64,8 +64,8 @@ public class NMSDetectorConfigurationPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -4601480448696314069L;
-	private static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
-	private static final String KEY_THRESHOLD = "THRESHOLD";
+	public static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
+	public static final String KEY_THRESHOLD = "THRESHOLD";
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {

@@ -4,20 +4,21 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.modules.IJTiffLoader;
+import org.lemming.modules.ImageLoader;
 import org.lemming.pipeline.FastStore;
 
-@SuppressWarnings("rawtypes")
-public class IJTiffLoaderTest {
+import ij.ImagePlus;
 
-	private IJTiffLoader tif;
+@SuppressWarnings("rawtypes")
+public class ImageLoaderTest {
+
+	private ImageLoader tif;
 	private FastStore frames;
 
 	
 	@Before
-	public void setUp() throws Exception {
-		
-		tif = new IJTiffLoader("/Users/ronny/Documents/TubulinAF647.tif");
+	public void setUp() throws Exception {		
+		tif = new ImageLoader(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"));
 		frames = new FastStore();
 		tif.setOutput( frames);
 	}

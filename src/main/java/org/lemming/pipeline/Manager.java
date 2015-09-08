@@ -75,6 +75,7 @@ public class Manager implements Runnable {
 
 	@Override
 	public void run() {
+		if (modules.isEmpty()) return;
 		
 		List<Thread> threads= new ArrayList<>();
 		for(AbstractModule starter:modules.values()){
@@ -91,6 +92,12 @@ public class Manager implements Runnable {
 				System.err.println(e.getMessage());
 			}
 		}
+	}
+
+	public void reset() {
+		modules.clear();
+		storeMap.clear();
+		counter=0;
 	}
 
 }

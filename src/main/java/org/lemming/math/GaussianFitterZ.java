@@ -78,20 +78,24 @@ public class GaussianFitterZ implements FitterInterface {
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);
+		double[] initialGuess = eg.getInitialGuess(ip,roi);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
+		double[] residuals;
 		try {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
 	                .target(Ival)
 	                .checkerPair(new ConvChecker3DGauss())
 	                .parameterValidator(new ParamValidator3DGauss())
-	                .start(eg.getInitialGuess(ip,roi))
+	                .start(initialGuess)
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
+			residuals = optimum.getSigma(1e-14).toArray();
+			//System.out.println("Too many evaluations:" + residuals.length);
 		} catch(TooManyEvaluationsException | ConvergenceException e){
 			//System.out.println("Too many evaluations" + e.getMessage());
         	return null;
@@ -100,8 +104,15 @@ public class GaussianFitterZ implements FitterInterface {
 		//check bounds
 		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
 			return null;
-
-		return fittedEG;
+		
+		double[] result = new double[5];
+		
+		result[0] = fittedEG[0];
+		result[1] = fittedEG[1];
+		result[2] = fittedEG[2];
+		result[3] = residuals[0];
+		result[4] = residuals[1];
+		return result;
 	}
 	
 	// Convergence Checker

@@ -1,9 +1,10 @@
-package org.lemming.modules;
+package org.lemming.plugins;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -12,12 +13,16 @@ import java.util.concurrent.TimeUnit;
 
 import javolution.util.FastTable;
 
+import org.lemming.factories.PreProcessingFactory;
+import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.FastMedianPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
-import org.lemming.interfaces.Store;
 import org.lemming.math.QuickSelect;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
+import org.scijava.plugin.Plugin;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
@@ -36,7 +41,13 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	private FastTable<Callable<F>> callables = new FastTable<>();
 	private int lastListSize = 0;
 	private boolean interpolating;
-	private Store output;
+	public static final String NAME = "Fast Median Filter";
+
+	public static final String KEY = "FASTMEDIAN";
+
+	public static final String INFO_TEXT = "<html>"
+			+ "Fast Median Filter with the option to interpolate between blocks"
+			+ "</html>";
 
 	public FastMedianFilter(final int numFrames, boolean interpolating) {
 		nFrames = numFrames;
@@ -46,8 +57,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	@Override
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
-		// for this module there should be only one key											
-		output = outputs.values().iterator().next(); 											
+											
 	}
 
 	@SuppressWarnings("unchecked")
@@ -124,10 +134,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 			//Integer median = QuickSelect.select(values, middle); 
 			if (median != null)
 				cursor.get().setInteger(median);
-
-			// values.sort();
-			// Integer media = values.get(middle);
-			
 		}
 		F newFrame = (F) new ImgLib2Frame<>(firstFrame.getFrameNumber(),
 				firstFrame.getWidth(), firstFrame.getHeight(), out);
@@ -191,7 +197,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 												* ((float) i + 1) / nFrames));
 					}
 
-					output.put(new ImgLib2Frame<>(
+					newOutput(new ImgLib2Frame<>(
 							frameA.getFrameNumber() + i, frameA.getWidth(),
 							frameA.getHeight(), outFrame));
 				}
@@ -200,7 +206,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
-				output.put(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
+				newOutput(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
 						frameB.getWidth(), frameB.getHeight(), frameB
 								.getPixels()));
 			}
@@ -210,18 +216,18 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 					frameB.getFrameNumber() + lastListSize, frameB.getWidth(),
 					frameB.getHeight(), frameB.getPixels());
 			lastFrame.setLast(true);
-			output.put(lastFrame);
+			newOutput(lastFrame);
 		} else {
 			F lastElements = results.remove(results.size()-1);
 			for (F element : results) {
 				for (int i = 0; i < nFrames; i++)
-					output.put(new ImgLib2Frame<>(element.getFrameNumber()
+					newOutput(new ImgLib2Frame<>(element.getFrameNumber()
 							+ i, element.getWidth(), element.getWidth(),
 							element.getPixels()));
 			}
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
-				output.put(new ImgLib2Frame<>(lastElements.getFrameNumber() + i,
+				newOutput(new ImgLib2Frame<>(lastElements.getFrameNumber() + i,
 						lastElements.getWidth(), lastElements.getHeight(), lastElements
 								.getPixels()));
 			}
@@ -230,7 +236,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 					lastElements.getFrameNumber() + lastListSize, lastElements.getWidth(),
 					lastElements.getHeight(), lastElements.getPixels());
 			lastFrame.setLast(true);
-			output.put(lastFrame);
+			newOutput(lastFrame);
 		}
 
 		try {
@@ -245,6 +251,48 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	@Override
 	public boolean check() {
 		return inputs.size()==1 && outputs.size()>=1;
+	}
+	
+	@Plugin( type = PreProcessingFactory.class, visible = true )
+	public static class Factory implements PreProcessingFactory{
+
+		private Map<String, Object> settings;
+		private FastMedianPanel configPanel = new FastMedianPanel();
+
+		@Override
+		public String getInfoText() {
+			return INFO_TEXT;
+		}
+
+		@Override
+		public String getKey() {
+			return KEY;
+		}
+
+		@Override
+		public String getName() {
+			return NAME;
+		}
+
+		@Override
+		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			this.settings = settings;
+			return true;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public AbstractModule getModule() {
+			boolean interpolating  = (boolean) settings.get(FastMedianPanel.KEY_INTERPOLATING);
+			int frames  = (int) settings.get(FastMedianPanel.KEY_FRAMES);
+			return new FastMedianFilter(frames, interpolating);
+		}
+
+		@Override
+		public ConfigurationPanel getConfigurationPanel() {
+			return configPanel;
+		}
+		
 	}
 
 }

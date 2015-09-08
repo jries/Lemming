@@ -6,8 +6,6 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
-import java.io.File;
-
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
@@ -17,27 +15,21 @@ import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.MultiRunModule;
 
-public class IJTiffLoader<T extends NumericType<T> & NativeType<T>> extends MultiRunModule{
+public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends MultiRunModule{
 	
 	private int curSlice = 0;
-	private String filename; 
 	private ImagePlus img;
 	private int stackSize;
 	private long start;
 	
-	public IJTiffLoader(String path) {
-		filename = path;
+	public ImageLoader(ImagePlus img) {
+		this.img = img;
+		stackSize = img.getStackSize();
 	}
 	
 	@Override
 	public void beforeRun() {
 		start = System.currentTimeMillis();
-		if (new File(filename).exists()){
-			img = new ImagePlus(filename);
-			stackSize = img.getStack().getSize();
-		}
-		else 
-			System.err.println("File not exist!");
 		iterator = outputs.keySet().iterator().next();
 	}
 

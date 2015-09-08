@@ -4,13 +4,13 @@ import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.type.numeric.RealType;
 
-public class CentroidFitter<T extends RealType<T>> implements FitterInterface  {
+public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface  {
 	
 	private IterableInterval<T> op;
 	private double thresh;
 	double[] center;
 
-	public CentroidFitter(IterableInterval<T> op_, double threshold_){
+	public CentroidFitterRA(IterableInterval<T> op_, double threshold_){
 		op = op_;
 		thresh = threshold_;
 		center = new double[op.numDimensions()];

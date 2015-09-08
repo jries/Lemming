@@ -2,7 +2,6 @@ package org.lemming.providers;
 
 import org.lemming.factories.DetectorFactory;
 
-
 public class DetectorProvider extends AbstractProvider<DetectorFactory> {
 
 	public DetectorProvider() {

@@ -1,13 +1,19 @@
-package org.lemming.modules;
+package org.lemming.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.lemming.factories.DetectorFactory;
+import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.PeakFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.MultiRunModule;
+import org.scijava.plugin.Plugin;
 
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
@@ -20,6 +26,13 @@ import net.imglib2.view.Views;
 
 public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
+	public static final String NAME = "Peak Finder";
+
+	public static final String KEY = "PEAKFINDER";
+
+	public static final String INFO_TEXT = "<html>"
+											+ "Peak Finder Plugin"
+											+ "</html>";
 	private int size;
 	private double threshold;
 	private long start;
@@ -111,13 +124,10 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 		
 		if (found.isEmpty()) return;
 		
-		FrameElements fe = null;
-		if (b){
-			fe = new FrameElements(found, frame.getFrameNumber());
+		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
+		if (b)			
 			fe.setLast(true);
-		} else {
-			fe = new FrameElements(found, frame.getFrameNumber());
-		}
+	
 		newOutput(fe);
 	}
 
@@ -137,8 +147,50 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
 		return inputs.size()==1 && outputs.size()>=1;
 	}
+	
+	@Plugin( type = DetectorFactory.class, visible = true )
+	public static class Factory implements DetectorFactory{
 
+		
+		private Map<String, Object> settings;
+		private PeakFinderPanel configPanel = new PeakFinderPanel();
+
+		@Override
+		public String getInfoText() {
+			return INFO_TEXT;
+		}
+
+		@Override
+		public String getKey() {
+			return KEY;
+		}
+
+		@Override
+		public String getName() {
+			return NAME;
+		}
+
+
+		@Override
+		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			this.settings = settings;
+			return true;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public AbstractModule getDetector() {
+			final double threshold = ( Double ) settings.get( PeakFinderPanel.KEY_THRESHOLD );
+			final int kernelSize = ( Integer ) settings.get( PeakFinderPanel.KEY_KERNEL_SIZE );
+			return new PeakFinder(threshold, kernelSize);
+		}
+
+		@Override
+		public ConfigurationPanel getConfigurationPanel() {
+			return configPanel;
+		}
+		
+	}
 }

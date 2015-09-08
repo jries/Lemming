@@ -2,6 +2,7 @@ package org.lemming.pipeline;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,14 +21,14 @@ import javolution.util.function.Predicate;
 public class ExtendableTable {
 	
 	private int nRows = 0;
-	private Map<String, List<Object>> table = new HashMap<>();
+	private Map<String, List<Object>> table = new LinkedHashMap<>();
 	private Map<String, Predicate<Object>> filtersCollection = new HashMap<>();
+	private Map<String, String> names = new LinkedHashMap<>();
 	
 	/**
 	 * 
 	 */
 	public ExtendableTable(){
-		addLocalizationMembers();
 	}
 	
 	public ExtendableTable(Map<String, List<Object>> table){
@@ -39,6 +40,7 @@ public class ExtendableTable {
 	 */
 	public void addNewMember(String member) {
 		table.put(member,new FastTable<>());
+		names.put(member,member);
 	}
 	
 	/**
@@ -164,6 +166,13 @@ public class ExtendableTable {
 	 */
 	public int getNumberOfRows() {
 		return nRows;
+	}
+	
+	/**
+	 * @return names
+	 */
+	public Map<String, String> getNames() {
+		return names;
 	}
 	
 	

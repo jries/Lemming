@@ -17,8 +17,7 @@ public interface DetectorFactory extends PluginInterface{
 	 */
 	public boolean setAndCheckSettings( final Map< String, Object > settings );
 	
-	
-	/*
+	/**
 	 *  @return  Module to process
 	 */
 	public AbstractModule getDetector();
@@ -27,7 +26,6 @@ public interface DetectorFactory extends PluginInterface{
 	 * Returns a new GUI panel able to configure the settings suitable for this
 	 * specific detector factory.
 	 */
-
-	public ConfigurationPanel getDetectorConfigurationPanel();
+	public ConfigurationPanel getConfigurationPanel();
 
 }

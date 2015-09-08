@@ -50,8 +50,7 @@ public class StoreSplitter extends SingleRunModule {
 
 	@Override
 	public boolean check() {
-		// TODO Auto-generated method stub
-		return false;
+		return inputs.size()==1;
 	}
 
 }

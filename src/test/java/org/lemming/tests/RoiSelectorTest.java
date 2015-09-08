@@ -28,7 +28,7 @@ public class RoiSelectorTest {
 		pipe.add(reader);
 		
 		selocs = new FastStore();
-		selector = new RoiSelector(10, 10, 20, 20);
+		selector = new RoiSelector(10, 10, 20, 20,0);
 		selector.setInput(locs);
 		selector.setOutput(selocs);
 		pipe.add(selector);

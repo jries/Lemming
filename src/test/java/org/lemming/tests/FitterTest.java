@@ -9,15 +9,17 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
-import org.lemming.modules.AstigFitter;
-import org.lemming.modules.IJTiffLoader;
-import org.lemming.modules.PeakFinder;
+import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveFittedLocalizations;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
 import org.lemming.pipeline.Settings;
+import org.lemming.plugins.AstigFitter;
+import org.lemming.plugins.PeakFinder;
+
+import ij.ImagePlus;
 
 @SuppressWarnings("rawtypes")
 public class FitterTest {
@@ -29,6 +31,7 @@ public class FitterTest {
 
 
 	
+	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Pipeline("test");
@@ -37,7 +40,7 @@ public class FitterTest {
 		hash1=frames1.hashCode();
 		hash2=frames2.hashCode();
 		
-		IJTiffLoader tif = new IJTiffLoader("/home/ronny/ownCloud/storm/p500ast.tif");
+		ImageLoader tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));
 		tif.setOutput(frames1);
 		tif.setOutput(frames2);
 		storeMap.put(hash1, frames1);

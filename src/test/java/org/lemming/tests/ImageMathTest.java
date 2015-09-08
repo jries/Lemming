@@ -8,13 +8,15 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
-import org.lemming.modules.FastMedianFilter;
-import org.lemming.modules.IJTiffLoader;
+import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
 import org.lemming.modules.StoreSplitter;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
 import org.lemming.pipeline.Settings;
+import org.lemming.plugins.FastMedianFilter;
+
+import ij.ImagePlus;
 
 @SuppressWarnings("rawtypes")
 public class ImageMathTest {
@@ -23,7 +25,7 @@ public class ImageMathTest {
 	private FastStore frames = new FastStore();
 	private FastStore calculated = new FastStore();
 	private Pipeline pipe;
-	private IJTiffLoader tif;
+	private ImageLoader tif;
 	private StoreSplitter splitter;
 	private FastStore frames1 = new FastStore();
 	private FastStore frames2 = new FastStore();
@@ -35,7 +37,7 @@ public class ImageMathTest {
 		pipe = new Pipeline("test");
 		new Settings();
 		
-		tif = new IJTiffLoader("/home/ronny/ownCloud/storm/TubulinAF647.tif");
+		tif = new ImageLoader(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"));
 		tif.setOutput(frames);
 		pipe.add(tif);
 		

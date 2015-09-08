@@ -3,7 +3,7 @@ package org.lemming.math;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
-public class CentroidFitterAlternative {
+public class CentroidFitterIP {
 	
 	private static double defaultSigma = 1.5;
 	

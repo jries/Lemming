@@ -1,18 +1,30 @@
-package org.lemming.modules;
+package org.lemming.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
 import net.imglib2.Point;
 
+import org.lemming.factories.RendererFactory;
+import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.GaussRendererPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.AbstractModule;
+import org.lemming.pipeline.FittedLocalization;
 import org.lemming.pipeline.SingleRunModule;
+import org.scijava.plugin.Plugin;
 
 public class GaussRenderer extends SingleRunModule {
-
+	
+	public static final String NAME = "GaussRenderer";
+	public static final String KEY = "GAUSSRENDERER";
+	public static final String INFO_TEXT = "<html>"
+											+ "Gauss Renderer Plugin"
+											+ "</html>";
 	private int width;
 	private int height;
 	protected String title = "LemMING!";
@@ -20,29 +32,14 @@ public class GaussRenderer extends SingleRunModule {
 	private ImagePlus ip;
 	private double area = 1000;
 	private double background = 0;
-	private double sigmaX = 2;
 	private double theta = 0;
-	private double sigmaY = 2;
-	private double maxVal=-Float.MAX_VALUE;
+	private double maxVal = -Float.MAX_VALUE;
 	private int counter = 0;
 	private long start;
 	private FloatProcessor fp;
 
 	public GaussRenderer() {
 		this(256, 256);
-	}
-	
-	public GaussRenderer(int width, int height, double area, double background, double sigmaX, double sigmaY, double theta){
-		this.width = width;
-		this.height = height;
-		this.area = area;
-		this.background = background;
-		this.sigmaX = sigmaX;
-		this.sigmaY = sigmaY;
-		this.theta = theta;
-		pixels = new float[width*height];
-		ip = new ImagePlus(title, new FloatProcessor(width, height, pixels));
-		ip.show();
 	}
 	
 	public GaussRenderer(int width, int height) {
@@ -62,7 +59,7 @@ public class GaussRenderer extends SingleRunModule {
 	@Override
 	public Element process(Element data) {
 		
-		Localization loc = (Localization) data;
+		FittedLocalization loc = (FittedLocalization) data;
 		if (loc==null) return null;
 		if (loc.isLast()) {
 			cancel();
@@ -72,6 +69,9 @@ public class GaussRenderer extends SingleRunModule {
 		
 		double x = loc.getX();
 		double y = loc.getY();
+		double sigmaX = loc.getsX();
+		double sigmaY = loc.getsY();		
+		
 		List<Point> X = getWindowPixels((int)x, (int)y, width, height, sigmaX, sigmaY);
 		if(X==null) return null;
 		double[] Params = {background, x, y, area, theta, sigmaX, sigmaY};
@@ -79,8 +79,7 @@ public class GaussRenderer extends SingleRunModule {
 		for (int i=0; i<X.size();i++){
 			int idx = X.get(i).getIntPosition(0) + X.get(i).getIntPosition(1) * width;
 			pixels[idx] += fcn.get(i);
-			if (pixels[idx] > maxVal)
-				maxVal = pixels[idx]; 
+			maxVal = Math.max(pixels[idx], maxVal); 
 			fp.setf(idx, pixels[idx]);				
 		}
 		
@@ -94,8 +93,7 @@ public class GaussRenderer extends SingleRunModule {
 	@Override
 	public void afterRun(){
 		ip.updateAndDraw();
-		System.out.println("Rendering done in "
-				+ (System.currentTimeMillis() - start) + "ms.");
+		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
 		while(ip.isVisible()) pause(10);
 	}
 	
@@ -145,7 +143,7 @@ public class GaussRenderer extends SingleRunModule {
 		
 		// Make sure that (x0, y0) is within the image
 		if(x0 > imageWidth || y0 > imageHeight) {
-			System.err.println(String.format("Warning, localization not within image. Got (%d,%d), image size is (%d,%d)", x0, y0, imageWidth, imageHeight));
+			IJ.error(String.format("Warning, localization not within image. Got (%d,%d), image size is (%d,%d)", x0, y0, imageWidth, imageHeight));
 			return null;
 		}
 		
@@ -182,5 +180,44 @@ public class GaussRenderer extends SingleRunModule {
 	public boolean check() {
 		return inputs.size()==1;
 	}
+	
+	@Plugin( type = RendererFactory.class, visible = true )
+	public static class Factory implements RendererFactory{
 
+		private Map<String, Object> settings;
+		private GaussRendererPanel configPanel = new GaussRendererPanel();
+
+		@Override
+		public String getInfoText() {
+			return INFO_TEXT;
+		}
+
+		@Override
+		public String getKey() {
+			return KEY;
+		}
+
+		@Override
+		public String getName() {
+			return NAME;
+		}
+		@Override
+		public boolean setAndCheckSettings(Map<String, Object> settings) {
+			this.settings = settings;
+			return true;
+		}
+
+		@Override
+		public AbstractModule getRenderer() {
+			int w = (int) settings.get("WIDTH");
+			int h = (int) settings.get("HEIGHT");
+			return new GaussRenderer(w,h);
+		}
+
+		@Override
+		public ConfigurationPanel getConfigurationPanel() {
+			return configPanel;
+		}
+		
+	}
 }

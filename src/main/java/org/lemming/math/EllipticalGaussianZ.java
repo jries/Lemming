@@ -88,7 +88,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 		initialGuess = new double[PARAM_LENGTH];
 	    Arrays.fill(initialGuess, 0);
 	    
-	    double[] centroid = CentroidFitterAlternative.fitCentroidandWidth(ip,roi, ip.getAutoThreshold());
+	    double[] centroid = CentroidFitterIP.fitCentroidandWidth(ip,roi, ip.getAutoThreshold());
 	    	    
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];

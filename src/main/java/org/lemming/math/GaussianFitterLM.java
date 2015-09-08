@@ -12,7 +12,7 @@ import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
 
-public class GaussianFitterAlternative implements FitterInterface {
+public class GaussianFitterLM implements FitterInterface {
 
 	int[] xgrid, ygrid;									// x and y positions of the pixels	
 	double[] Ival;										// intensity value of the pixels
@@ -22,7 +22,7 @@ public class GaussianFitterAlternative implements FitterInterface {
 	private int maxEval;
 	public static int PARAM_2D_LENGTH = 6;	
 	
-	public GaussianFitterAlternative(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
+	public GaussianFitterLM(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
 		ip = ip_;
 		roi = roi_;
 		maxIter = maxIter_;
