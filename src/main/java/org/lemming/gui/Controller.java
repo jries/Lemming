@@ -7,6 +7,8 @@ import ij.io.FileInfo;
 import ij.io.TiffDecoder;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,8 +50,12 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.factories.PreProcessingFactory;
 import org.lemming.factories.RendererFactory;
 import org.lemming.modules.ImageLoader;
+import org.lemming.modules.ImageMath;
+import org.lemming.modules.ImageMath.operators;
+import org.lemming.modules.SaveFittedLocalizations;
 import org.lemming.modules.StoreLoader;
 import org.lemming.modules.TableLoader;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.pipeline.Manager;
 import org.lemming.providers.ActionProvider;
@@ -64,12 +70,15 @@ import java.io.IOException;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.awt.Component;
 
 import javax.swing.SpinnerNumberModel;
 import java.awt.Dimension;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 
-public class Controller extends JFrame implements ActionListener,PropertyChangeListener,ListCheckListener {
+public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame implements ActionListener,PropertyChangeListener,ListCheckListener,ContainerListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;
 
@@ -138,6 +147,14 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 
 	private ExtendableTable table;
 
+	private ImageLoader<T> tif;
+
+	private StoreLoader storeLoader;
+	
+	private Map<String,Object> settings;
+
+	private File saveFile; 
+
 	/**
 	 * Create the frame.
 	 * @param imp 
@@ -146,7 +163,7 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e1) {
-			e1.printStackTrace();
+			IJ.error(e1.getMessage());
 		}
 		setTitle("Lemming");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -170,6 +187,7 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 		contentPane.add(tabbedPane, gbc_tabbedPane);
 		
 		panelLoc = new JPanel();
+		panelLoc.addContainerListener(this);
 		panelLoc.setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
 		tabbedPane.addTab("Localize", null, panelLoc, null);
 		GridBagLayout gbl_panelLoc = new GridBagLayout();
@@ -362,10 +380,17 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 		createFitterProvider();
 		createRendererProvider();
 		createActionProvider();
+		try {
+			saveFile = File.createTempFile("Lemming", ".tmp");
+		} catch (IOException e) {
+			IJ.error(e.getMessage());
+		}
 		manager = new Manager();
 	}
 
-
+////Overrides
+	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object s = e.getSource();
@@ -401,19 +426,79 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 		if (s == this.btnProcess){ // Manager
 			// TODO sanity checks
 			
-			
-			if (panelDown != null){
-				detectorFactory.setAndCheckSettings(panelDown.getSettings());
-				detectorFactory.getDetector();
-				System.out.println("Detector " + detectorFactory.getDetector().getClass().getSimpleName());
+			if (tabbedPane.getSelectedIndex()==0){
+				if (panelDown != null){
+					Map<String, Object> curSet = panelDown.getSettings();
+					for (String key : curSet.keySet())
+						settings.put(key, curSet.get(key));
+			} else if (tabbedPane.getSelectedIndex()==1){
+				if (panelReconDown != null){
+					Map<String, Object> curSet = panelReconDown.getSettings();
+					for (String key : curSet.keySet())
+						settings.put(key, curSet.get(key));
+				}
 			}
+				
+			if (tif==null) {
+				IJ.error("Please load images first!");
+				return;
+			}
+			detectorFactory.setAndCheckSettings(settings);
+			AbstractModule detector = detectorFactory.getDetector();
+			manager.add(detector);
+			
+			if (!checksPreprocessing.isEmpty()){
+				AbstractModule pp = preProcessingFactory.getModule();
+				manager.add(pp);
+				manager.linkModules(tif, pp);
+				operators op = preProcessingFactory.getOperator();
+				ImageMath math = new ImageMath();
+				math.setOperator(op);
+				manager.add(math);
+				manager.linkModules(tif, math);
+				manager.linkModules(pp, math);
+				manager.linkModules(math, detector);
+			} else {
+				manager.linkModules(tif, detector, true);
+			}			
+			/*UnpackElements unpacker = new UnpackElements();
+			manager.add(unpacker);
+			manager.linkModules(detector, unpacker);*/
+			fitterFactory.setAndCheckSettings(settings);
+			AbstractModule fitter = fitterFactory.getFitter();
+			manager.add(fitter);
+			manager.linkModules(tif, fitter);
+			manager.linkModules(detector, fitter);				
+			rendererFactory.setAndCheckSettings(settings);
+			AbstractModule renderer = rendererFactory.getRenderer();
+			manager.add(renderer);
+			manager.linkModules(fitter, renderer, false);
+			SaveFittedLocalizations saver = new SaveFittedLocalizations(saveFile);
+			manager.add(saver);
+			manager.linkModules(fitter, saver, false);
+			}			
 		}
 		
 		if (s == this.btnLoad){
-			if (this.tabbedPane.getSelectedIndex()==0)
+			if (tabbedPane.getSelectedIndex()==0)
 				loadImages();
 			else
 				loadLocalizations();
+		}
+		
+		if (s == this.btnSave){
+			if (chkboxFilter.isSelected()){
+				
+			} else {
+				JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
+		    	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		    	fc.setDialogTitle("Save Data");
+		    	 
+		        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+		        	return;
+		        fc.getSelectedFile();
+				
+			}
 		}
 	}
 
@@ -478,7 +563,26 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@Override
+	public void componentAdded(ContainerEvent e) {
+		
+	}
+
+	@Override
+	public void componentRemoved(ContainerEvent e) {
+		if (tabbedPane.getSelectedIndex()==0){
+			Map<String, Object> curSet = panelDown.getSettings();
+			for (String key : curSet.keySet())
+				settings.put(key, curSet.get(key));
+		} else if (tabbedPane.getSelectedIndex()==1){
+			Map<String, Object> curSet = panelReconDown.getSettings();
+			for (String key : curSet.keySet())
+				settings.put(key, curSet.get(key));
+		}		
+	}
+	
+	//// Private Methods
+	
 	private void loadImages() {
 	    manager.reset();
 		ImagePlus loc_im = WindowManager.getCurrentImage();
@@ -525,7 +629,7 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
         	loc_im = new ImagePlus("",fivs);
         }
         
-        ImageLoader tif = new ImageLoader(loc_im);
+        tif = new ImageLoader<>(loc_im);
         
         manager.add(tif);
         
@@ -551,8 +655,8 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
         	table = tl.getTable();
 		}
         else {
-        	StoreLoader sl = new StoreLoader(file,",");
-        	manager.add(sl);
+        	storeLoader = new StoreLoader(file,",");
+        	manager.add(storeLoader);
         }
 		
 		this.lblFile.setText(file.getName());
@@ -706,4 +810,5 @@ public class Controller extends JFrame implements ActionListener,PropertyChangeL
 	    }
 		
 	}
+
 }

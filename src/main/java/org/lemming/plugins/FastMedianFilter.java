@@ -19,6 +19,7 @@ import org.lemming.gui.FastMedianPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.math.QuickSelect;
+import org.lemming.modules.ImageMath.operators;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
@@ -291,6 +292,11 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
 			return configPanel;
+		}
+
+		@Override
+		public operators getOperator() {
+			return operators.SUBSTRACTION;
 		}
 		
 	}

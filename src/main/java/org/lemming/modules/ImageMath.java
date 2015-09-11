@@ -19,7 +19,7 @@ import org.lemming.pipeline.SingleRunModule;
 public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
 	public enum operators {
-		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION
+		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION, NONE
 	}
 
 	private operators operator;

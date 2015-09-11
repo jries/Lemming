@@ -4,11 +4,10 @@ import java.util.Map;
 
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.PluginInterface;
-import org.lemming.modules.ImageMath.operators;
 import org.lemming.pipeline.AbstractModule;
 
-public interface PreProcessingFactory extends PluginInterface {
-	
+public interface FitterFactory extends PluginInterface{
+
 	/**
 	 * Check that the given settings map is suitable for target detector.
 	 *
@@ -21,14 +20,13 @@ public interface PreProcessingFactory extends PluginInterface {
 	/**
 	 *  @return  Module to process
 	 */
-	public AbstractModule getModule();
+	public AbstractModule getFitter();
 	
 	/**
 	 * Returns a new GUI panel able to configure the settings suitable for this
 	 * specific detector factory.
 	 */
+
 	public ConfigurationPanel getConfigurationPanel();
-	
-	public operators getOperator();
 
 }
