@@ -27,7 +27,7 @@ public class DummyManagerTest {
 	public void setUp() throws Exception {
 		pipe = new Manager();
 
-		DummyImageLoader tif = new DummyImageLoader(100, 128, 128);
+		DummyImageLoader tif = new DummyImageLoader(10, 100, 128, 128);
 		//ImageLoader tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));
 		PeakFinder peak = new PeakFinder(700,4);
 		AstigFitter fitter = new AstigFitter(60,10, Settings.readProps("/home/ronny/ownCloud/storm/Settings.properties"));
@@ -36,7 +36,6 @@ public class DummyManagerTest {
 		//saver = new SaveFittedLocalizations(new File("/Users/ronny/Documents/fitted.csv"));
 		SaveLocalizations saver2 = new SaveLocalizations(new File("/home/ronny/Bilder/outOrig.csv"));
 		//saver2 = new SaveLocalizations(new File("/Users/ronny/Documents/outOrig.csv"));
-		
 		
 		pipe.add(tif);
 		pipe.add(peak);

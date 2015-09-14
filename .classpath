@@ -23,5 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/Applications/Fiji.app/jars/aparapi.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
