@@ -2,62 +2,36 @@ package org.lemming.tests;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.util.Map;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.lemming.interfaces.Store;
 import org.lemming.modules.*;
-import org.lemming.pipeline.Manager;
-import org.lemming.pipeline.Settings;
-import org.lemming.plugins.AstigFitter;
-import org.lemming.plugins.PeakFinder;
+import org.lemming.pipeline.FastStore;
+import org.lemming.pipeline.Pipeline;
 
-import ij.ImagePlus;
-
-@SuppressWarnings("rawtypes")
 public class DummyManagerTest {
 
-	private Manager pipe;
-	private Map<Integer, Store> storeMap;
+	private Pipeline pipe;
+	private FastStore images;
 	
-	@SuppressWarnings("unchecked")
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Manager();
+		pipe = new Pipeline("");
 
-		DummyImageLoader tif = new DummyImageLoader(10, 100, 128, 128);
+		images = new FastStore();
+		
+		DummyImageLoader tif = new DummyImageLoader(10, 5, 128, 128);
 		//ImageLoader tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));
-		PeakFinder peak = new PeakFinder(700,4);
-		AstigFitter fitter = new AstigFitter(60,10, Settings.readProps("/home/ronny/ownCloud/storm/Settings.properties"));
-		UnpackElements unpacker = new UnpackElements();
-		SaveFittedLocalizations saver = new SaveFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"));
-		//saver = new SaveFittedLocalizations(new File("/Users/ronny/Documents/fitted.csv"));
-		SaveLocalizations saver2 = new SaveLocalizations(new File("/home/ronny/Bilder/outOrig.csv"));
-		//saver2 = new SaveLocalizations(new File("/Users/ronny/Documents/outOrig.csv"));
+		tif.setOutput(images);
 		
 		pipe.add(tif);
-		pipe.add(peak);
-		pipe.add(fitter);
-		pipe.add(unpacker);
-		pipe.add(saver);
-		pipe.add(saver2);
 		
-		pipe.linkModules(tif, peak, true);
-		pipe.linkModules(tif,fitter); // first images
-		pipe.linkModules(peak,fitter);
-		pipe.linkModules(fitter,saver);
-		pipe.linkModules(peak,unpacker);
-		pipe.linkModules(unpacker,saver2);
-		storeMap = pipe.get();
+	
 	}
 
 	@Test
 	public void test() {
 		pipe.run();
-		assertEquals(true,storeMap.values().iterator().next().isEmpty());
-		assertEquals(true,storeMap.values().iterator().next().isEmpty());
+		assertEquals(true,images.isEmpty());
 	}
 
 }

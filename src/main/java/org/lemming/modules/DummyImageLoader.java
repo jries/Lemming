@@ -1,23 +1,11 @@
 package org.lemming.modules;
 
 import com.amd.aparapi.Kernel;
+
 import ij.ImagePlus;
-import ij.ImageStack;
-import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
-
-import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.FloatArray;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.NumericType;
-
 import net.imglib2.type.numeric.real.FloatType;
 import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ImgLib2Frame;
@@ -35,24 +23,23 @@ public class DummyImageLoader extends MultiRunModule{
 
 	static Kernel_subPixelGaussianRendering myAddParticles = new Kernel_subPixelGaussianRendering();
 
-	private final ImageStack ims;
-	private ImagePlus imp;
-	private Img< FloatType > img;
 
 	public DummyImageLoader(int particlesPerFrame, int stackSize, int width, int height) {
 		this.stackSize = stackSize;
 		this.width = width;
 		this.height = height;
 		this.particlesPerFrame = particlesPerFrame;
-
-		this.ims = new ImageStack(width, height);
-		this.imp = new ImagePlus("Dummy", ims);
 	}
 	
 	@Override
 	public void beforeRun() {
 		start = System.currentTimeMillis();
 		iterator = outputs.keySet().iterator().next();
+	}
+
+	@Override
+	public Element process(Element data) {
+		
 
 		float[] intensity = new float[particlesPerFrame];
 		float[] sigmaX = new float[particlesPerFrame];
@@ -60,32 +47,24 @@ public class DummyImageLoader extends MultiRunModule{
 		float[] x = new float[particlesPerFrame];
 		float[] y = new float[particlesPerFrame];
 
-		for (int f=0; f<stackSize; f++) {
-			FloatProcessor fp = new FloatProcessor(width, height);
-			for (int n=0; n<particlesPerFrame; n++) {
-				intensity[n] = 1000;
-				sigmaX[n] = 1.5f;
-				sigmaY[n] = 1.5f;
-				x[n] = random.nextFloat()*(width-1);
-				y[n] = random.nextFloat()*(height-1);
-			}
-			fp = myAddParticles.drawParticles(fp, intensity, sigmaX, sigmaY, x, y, 10);
-			ims.addSlice(fp);
+		FloatProcessor fp = new FloatProcessor(width, height);
+		for (int n=0; n<particlesPerFrame; n++) {
+			intensity[n] = 1000;
+			sigmaX[n] = 1.5f;
+			sigmaY[n] = 1.5f;
+			x[n] = random.nextFloat()*(width-1);
+			y[n] = random.nextFloat()*(height-1);
 		}
-		imp = new ImagePlus("Dummy", ims);
-		img = ImagePlusAdapter.wrapFloat( imp );
-	}
-
-	@SuppressWarnings({ "unchecked" })
-	@Override
-	public Element process(Element data) {
-
+		fp = myAddParticles.drawParticles(fp, intensity, sigmaX, sigmaY, x, y, 10);
+		Img<FloatType> img = ArrayImgs.floats((float[])fp.getPixels(), new long[]{width, height});
 		curSlice++;
-		final Img< FloatType > img = ImagePlusAdapter.wrap( imp );
 
 		ImgLib2Frame<FloatType> frame = new ImgLib2Frame<>(curSlice, width, height, img);
-		if (curSlice >= stackSize)
+		if (curSlice >= stackSize){
 			frame.setLast(true);
+			cancel();
+		}
+		new ImagePlus("",fp).show();
 		return frame;
 	}
 	
@@ -94,9 +73,6 @@ public class DummyImageLoader extends MultiRunModule{
 		System.out.println("Loading done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 	
-	public void show(){
-		//img.show();
-	}
 
 	@Override
 	public boolean check() {
