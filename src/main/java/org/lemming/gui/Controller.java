@@ -21,6 +21,7 @@ import javax.swing.JTabbedPane;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+
 import javax.swing.JButton;
 
 import java.awt.FlowLayout;
@@ -69,11 +70,13 @@ import java.io.File;
 import java.io.IOException;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.awt.Component;
 
 import javax.swing.SpinnerNumberModel;
+
 import java.awt.Dimension;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
@@ -223,13 +226,14 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		comboBoxFitter.addActionListener(this);
 		
 		lblFile = new JLabel("File");
+		
+		JLabel lblDataSource = new JLabel("Data source");
 		GroupLayout gl_panelUpper = new GroupLayout(panelUpper);
 		gl_panelUpper.setHorizontalGroup(
 			gl_panelUpper.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelUpper.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblFile, GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
 						.addGroup(gl_panelUpper.createSequentialGroup()
 							.addComponent(lblPreprocessing)
 							.addPreferredGap(ComponentPlacement.UNRELATED)
@@ -241,13 +245,20 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(gl_panelUpper.createParallelGroup(Alignment.TRAILING)
 								.addComponent(comboBoxFitter, 0, 177, Short.MAX_VALUE)
-								.addComponent(comboBoxPeakDet, Alignment.LEADING, 0, 177, Short.MAX_VALUE))))
+								.addComponent(comboBoxPeakDet, Alignment.LEADING, 0, 177, Short.MAX_VALUE)))
+						.addGroup(gl_panelUpper.createSequentialGroup()
+							.addComponent(lblDataSource)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(lblFile, GroupLayout.PREFERRED_SIZE, 187, GroupLayout.PREFERRED_SIZE)))
 					.addContainerGap())
 		);
 		gl_panelUpper.setVerticalGroup(
 			gl_panelUpper.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelUpper.createSequentialGroup()
-					.addComponent(lblFile)
+					.addContainerGap()
+					.addGroup(gl_panelUpper.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblDataSource)
+						.addComponent(lblFile))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_panelUpper.createParallelGroup(Alignment.BASELINE)
 						.addComponent(jComboBoxPreprocessing, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -289,7 +300,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		panelRecon.setBorder(UIManager.getBorder("List.focusCellHighlightBorder"));
 		tabbedPane.addTab("Reconstruct", null, panelRecon, null);
 		GridBagLayout gbl_panelRecon = new GridBagLayout();
-		gbl_panelRecon.columnWidths = new int[] {300, 0};
+		gbl_panelRecon.columnWidths = new int[] {300};
 		gbl_panelRecon.rowHeights = new int[] {70, 280};
 		gbl_panelRecon.columnWeights = new double[]{1.0};
 		gbl_panelRecon.rowWeights = new double[]{1.0, 0.0};
@@ -309,6 +320,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		comboBoxRenderer.addActionListener(this);
 		
 		chkboxFilter = new JCheckBox("Filter");
+		chkboxFilter.addActionListener(this);
 		GroupLayout gl_panel = new GroupLayout(panel);
 		gl_panel.setHorizontalGroup(
 			gl_panel.createParallelGroup(Alignment.LEADING)
@@ -375,6 +387,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	}
 	
 	private void init(){
+		settings = new HashMap<>();
+		manager = new Manager();
 		createDetectorProvider();
 		createPreProcessingProvider();
 		createFitterProvider();
@@ -385,7 +399,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		} catch (IOException e) {
 			IJ.error(e.getMessage());
 		}
-		manager = new Manager();
+		
 	}
 
 ////Overrides
@@ -421,6 +435,11 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			if (panelReconDown != null)				// remove panel if one exists
 				panelRecon.remove(panelReconDown);
 			chooseRenderer();
+		}
+		
+		if (s == this.chkboxFilter){
+			if (panelReconDown != null)				// remove panel if one exists
+				panelRecon.remove(panelReconDown);
 		}
 		
 		if (s == this.btnProcess){ // Manager
@@ -572,12 +591,14 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	public void componentRemoved(ContainerEvent e) {
 		if (tabbedPane.getSelectedIndex()==0){
 			Map<String, Object> curSet = panelDown.getSettings();
-			for (String key : curSet.keySet())
-				settings.put(key, curSet.get(key));
+			if (curSet != null)
+				for (String key : curSet.keySet())
+					settings.put(key, curSet.get(key));
 		} else if (tabbedPane.getSelectedIndex()==1){
 			Map<String, Object> curSet = panelReconDown.getSettings();
-			for (String key : curSet.keySet())
-				settings.put(key, curSet.get(key));
+			if (curSet != null)
+				for (String key : curSet.keySet())
+					settings.put(key, curSet.get(key));
 		}		
 	}
 	
@@ -810,5 +831,4 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	    }
 		
 	}
-
 }

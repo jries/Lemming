@@ -127,10 +127,7 @@ public class ExtendableTable {
 	 * @return column
 	 */
 	public List<Object> getColumn(String col){
-		List<Object> c = table.get(col);
-		if(c==null)
-			System.err.println("unknown column");
-		return c;
+		return table.get(col);
 	}
 	
 	/**

@@ -1,14 +1,16 @@
 package org.lemming.gui;
 
+import ij.IJ;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
-
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
@@ -145,9 +147,17 @@ public class FitterPanel extends ConfigurationPanel {
 
 	@Override
 	public Map<String, Object> getSettings() {
-		final Map< String, Object > settings = new HashMap<>( 2 );
+		final Map< String, Object > settings = new HashMap<>( 4 );
 		settings.put(KEY_WINDOW_SIZE, spinnerWindowSize.getValue());
 		settings.put(KEY_QUEUE_SIZE, spinnerQueueSize.getValue());
+		if (calibFile == null){
+			IJ.error("Please provide a Calibration File!");
+			return settings;
+		}
+		if (camFile == null){
+			IJ.error("Please provide a Camera File!");
+			return settings;
+		}
 		settings.put(KEY_CALIBRATION_FILE, calibFile.getAbsolutePath());
 		settings.put(KEY_CAMERA_FILE, camFile.getAbsolutePath());
 		return settings;
