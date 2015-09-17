@@ -16,6 +16,53 @@ public abstract class MultiRunModule extends AbstractModule{
 	@Override
 	public void run() {
 
+		if (!inputs.isEmpty() && !outputs.isEmpty()) { // first check for existing inputs
+			if (inputs.keySet().iterator().hasNext() && iterator==null)
+				iterator = inputs.keySet().iterator().next();
+			beforeRun();
+			if (inputs.get(iterator) != null) {
+				while (inputs.get(iterator).isEmpty())
+					pause(10);
+
+				final ArrayList<Future<Void>> futures = new ArrayList<>();
+
+				for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
+
+					final Callable<Void> r = new Callable<Void>() {
+
+						@Override
+						public Void call() {
+							while (running) {
+								if (Thread.currentThread().isInterrupted())
+									break;
+								Element data = nextInput();
+								if (data != null) 
+									newOutput(process(data));
+							}
+							return null;
+						}
+
+					};
+					futures.add(service.submit(r));
+				}
+
+				for (final Future<Void> f : futures) {
+					try {
+						f.get();
+					} catch (final InterruptedException | ExecutionException e) {
+						System.err.println(e.getMessage());
+					}
+				}
+
+				try {
+					service.awaitTermination(5, TimeUnit.MINUTES);
+				} catch (InterruptedException e) {
+					System.err.println(e.getMessage());
+				}
+			}
+			afterRun();
+			return;
+		}
 		if (!inputs.isEmpty()) { // first check for existing inputs
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
@@ -36,7 +83,8 @@ public abstract class MultiRunModule extends AbstractModule{
 								if (Thread.currentThread().isInterrupted())
 									break;
 								Element data = nextInput();
-								process(data);
+								if (data != null) 
+									process(data);
 							}
 							return null;
 						}
@@ -80,12 +128,4 @@ public abstract class MultiRunModule extends AbstractModule{
 
 	protected void beforeRun() {		
 	}
-	
-	/**
-	 * Method to be overwritten by children of this class.
-	 * @param data - data to process
-	 * @return 
-	 */
-	public abstract Element process(Element data);
-
 }

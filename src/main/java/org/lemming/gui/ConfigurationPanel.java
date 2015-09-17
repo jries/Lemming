@@ -11,6 +11,8 @@ public abstract class ConfigurationPanel extends JPanel {
 	 */
 	private static final long serialVersionUID = 3160662804934210143L;
 	
+	public static final String propertyName = "CONFIG_PANEL";
+	
 	/**
 	 * Echo the parameters of the given settings on this panel.  
 	 */
@@ -21,5 +23,10 @@ public abstract class ConfigurationPanel extends JPanel {
 	 * by this panel.
 	 */
 	public abstract Map<String, Object> getSettings();
+	
+	protected void fireChanged() {
+		firePropertyChange(propertyName, null, getSettings());
+	}
+
 
 }

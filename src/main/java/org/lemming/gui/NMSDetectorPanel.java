@@ -11,6 +11,10 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+
+import org.lemming.tools.WaitForKeyListener;
 
 
 public class NMSDetectorPanel extends ConfigurationPanel {
@@ -23,13 +27,23 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Threshold");
 		
 		jTextFieldThreshold = new JTextField();
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged();
+			}
+		}));
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
-		jTextFieldThreshold.setText("0");
+		jTextFieldThreshold.setText("100");
 		
 		JLabel lblStepsize = new JLabel("StepSize");
 		
 		spinnerStepSize = new JSpinner();
-		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		spinnerStepSize.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				fireChanged();			}
+		});
+		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -65,7 +79,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 	 */
 	private static final long serialVersionUID = -4601480448696314069L;
 	public static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
-	public static final String KEY_THRESHOLD = "THRESHOLD";
+	public static final String KEY_THRESHOLD = "NMS_THRESHOLD";
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {

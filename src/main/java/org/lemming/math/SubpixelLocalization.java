@@ -58,13 +58,13 @@ import net.imglib2.util.Intervals;
  * @return r
  */
 public class SubpixelLocalization {
-	public static <T extends RealType<T>> List<FittedLocalization> refinePeaks(
+	public static <T extends RealType<T>> List<Element> refinePeaks(
 			final List<Element> sliceLocs, final RandomAccessible<T> img,
 			final Interval validInterval, final boolean returnInvalidPeaks,
 			final int maxNumMoves, final boolean allowMaximaTolerance,
 			final float maximaTolerance, final boolean[] allowedToMoveInDim) {
 		
-		final List<FittedLocalization> refinedPeaks = new ArrayList<>();
+		final List<Element> refinedPeaks = new ArrayList<>();
 
 		final int n = img.numDimensions();
 

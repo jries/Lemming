@@ -31,4 +31,9 @@ public class FittedLocalization extends Localization{
 	public double getsY(){
 		return sY;
 	}
+	
+	@Override
+	public String toString(){
+		return "" + getID() + "," + getFrame() + "," + getX() + "," + getY() + "," + getZ() + "," + getsX() + "," + getsY();
+	}
 }

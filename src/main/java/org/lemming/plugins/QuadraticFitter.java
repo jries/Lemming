@@ -11,8 +11,7 @@ import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.math.SubpixelLocalization;
 import org.lemming.modules.Fitter;
-import org.lemming.pipeline.AbstractModule;
-import org.lemming.pipeline.FittedLocalization;
+import org.lemming.pipeline.FrameElements;
 import org.scijava.plugin.Plugin;
 
 import net.imglib2.RandomAccessible;
@@ -31,19 +30,19 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 			+ "</html>";
 
 
-	public QuadraticFitter(int queueSize, long windowSize) {
+	public QuadraticFitter(int queueSize, int windowSize) {
 		super(queueSize, windowSize);
 	}
 
 	@Override
-	public void fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize) {
+	public FrameElements fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
 		final RandomAccessible<T> ra = Views.extendBorder(pixels);
 		final boolean[] allowedToMoveInDim = new boolean[ ra.numDimensions() ];
 		Arrays.fill( allowedToMoveInDim, true );
 		
-		final List<FittedLocalization> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, (int) size, true, 0.01f, allowedToMoveInDim);
-		for ( final FittedLocalization loc : refined )
-			newOutput(loc);
+		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, size, true, 0.01f, allowedToMoveInDim);
+
+		return new FrameElements(refined, frameNumber);
 	}
 	
 	@Plugin( type = FitterFactory.class, visible = true )
@@ -75,11 +74,11 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 			return true;
 		}
 
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
-		public AbstractModule getFitter() {
+		public Fitter getFitter() {
 			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
-			final long windowSize = (long) settings.get( FitterPanel.KEY_WINDOW_SIZE );
+			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			return new QuadraticFitter(queueSize, windowSize);
 		}
 

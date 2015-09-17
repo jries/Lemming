@@ -12,6 +12,11 @@ import javax.swing.SwingConstants;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
+import org.lemming.tools.WaitForKeyListener;
+
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+
 public class PeakFinderPanel extends ConfigurationPanel {
 
 	/**
@@ -21,7 +26,7 @@ public class PeakFinderPanel extends ConfigurationPanel {
 	private JTextField jTextFieldThreshold;
 	private JSpinner spinnerKernelSize;
 	public static final String KEY_KERNEL_SIZE = "KERNEL_SIZE";
-	public static final String KEY_THRESHOLD = "THRESHOLD";
+	public static final String KEY_THRESHOLD = "PEAK_THRESHOLD";
 
 	public PeakFinderPanel() {
 		setBorder(null);
@@ -30,12 +35,24 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		
 		jTextFieldThreshold = new JTextField();
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
-		jTextFieldThreshold.setText("0");
+		jTextFieldThreshold.setText("100");
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1, new Runnable(){
+
+			@Override
+			public void run() {
+				fireChanged();
+			}
+		}));
 		
 		JLabel lblKernelSize = new JLabel("KernelSize");
 		
 		spinnerKernelSize = new JSpinner();
-		spinnerKernelSize.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		spinnerKernelSize.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				fireChanged();
+			}
+		});
+		spinnerKernelSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -66,22 +83,23 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		setLayout(groupLayout);
 	}
 
+
 	@Override
-	public void setSettings(Map<String, Object> settings) {
-		spinnerKernelSize.setValue(settings.get(KEY_KERNEL_SIZE));
-		jTextFieldThreshold.setText(""+settings.get(KEY_THRESHOLD)); 
+	public void setSettings(Map<String, Object> map) {
+		spinnerKernelSize.setValue(map.get(KEY_KERNEL_SIZE));
+		jTextFieldThreshold.setText(""+map.get(KEY_THRESHOLD)); 
 
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
-		final Map< String, Object > settings = new HashMap<>( 2 );
+		final Map< String, Object > map = new HashMap<>( 2 );
 		final int stepsize = (int) spinnerKernelSize.getValue();
 		final double threshold = Double.parseDouble( jTextFieldThreshold.getText() );
-		settings.put( KEY_KERNEL_SIZE, stepsize );
-		settings.put( KEY_THRESHOLD, threshold );
+		map.put( KEY_KERNEL_SIZE, stepsize );
+		map.put( KEY_THRESHOLD, threshold );
 		
-		return settings;
+		return map;
 	}
 
 }

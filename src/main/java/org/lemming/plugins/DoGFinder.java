@@ -1,4 +1,4 @@
-package org.lemming.modules;
+package org.lemming.plugins;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,7 @@ import org.lemming.gui.DoGFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.pipeline.AbstractModule;
+import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.MultiRunModule;
 import org.scijava.plugin.Plugin;
@@ -65,21 +66,18 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 	public Element process(Element data) {
 		F frame = (F) data;
 		if (frame==null) return null;
-		process1(frame);
+		
 		if (frame.isLast()){
 			System.out.println("Last frame finished:"+frame.getFrameNumber());
-			Localization lastloc = new Localization(frame.getFrameNumber(), -1, -1);
-			lastloc.setLast(true);
-			newOutput(lastloc);
 			cancel();
-			return null;
+			return process1(frame, true);
 		}
-		if (frame.getFrameNumber()%50==0)
+		if (frame.getFrameNumber()%100==0)
 			System.out.println("frames: " + frame.getFrameNumber());
-		return null;
+		return process1(frame, false);
 	}
 
-	private void process1(F frame) {
+	private FrameElements process1(F frame, boolean b) {
 		final RandomAccessibleInterval< T > interval = frame.getPixels();
 		final ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> extended = Views.extendMirrorSingle(interval);
 		
@@ -117,13 +115,18 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 		final MaximumCheck< FloatType > localNeighborhoodCheck = new MaximumCheck<>( val );
 		final IntervalView< FloatType > dogWithBorder = Views.interval( Views.extendMirrorSingle( dog ), Intervals.expand( dog, 1 ) );
 		final List< Point > peaks = findLocalExtrema( dogWithBorder, localNeighborhoodCheck,1);
+		List<Element> found = new ArrayList<>();
 		
 		for (Point p :peaks){
 			double x = p.getDoublePosition(0);
 			double y = p.getDoublePosition(1);
-			newOutput(new Localization(frame.getFrameNumber(), x, y));
+			found.add(new Localization(frame.getFrameNumber(), x, y));
 			counter++;
 		}
+		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
+		if (b)			
+			fe.setLast(true);
+		return fe;
 	}
 	
 	@Override

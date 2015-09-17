@@ -3,13 +3,15 @@ package org.lemming.tests;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizations;
-import org.lemming.pipeline.FastStore;
-import org.lemming.pipeline.Pipeline;
+import org.lemming.modules.UnpackElements;
+import org.lemming.pipeline.Manager;
 import org.lemming.plugins.NMSDetector;
 
 import ij.ImagePlus;
@@ -17,40 +19,43 @@ import ij.ImagePlus;
 @SuppressWarnings("rawtypes")
 public class NMSFinderTest {
 
-	private Pipeline pipe;
-	private FastStore frames;
+	private Manager pipe;
 	private ImageLoader tif;
-	private FastStore localizations;
 	private SaveLocalizations saver;
 	private NMSDetector peak;
+	private UnpackElements unpacker;
+	private Map<Integer, Store> map;
 	
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline("test");	
+		pipe = new Manager();	
 		
-		frames = new FastStore();
 		//tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
-		tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));
-		tif.setOutput(frames);
+		tif = new ImageLoader(new ImagePlus("/Users/ronny/ownCloud/storm/TubulinAF647.tif"));
 		pipe.add(tif);
 		
-		localizations = new FastStore();
-		peak = new NMSDetector(400,4);
-		peak.setInput(frames);
-		peak.setOutput(localizations);
+		peak = new NMSDetector(500,9);
 		pipe.add(peak);
 		
+		unpacker = new UnpackElements();
+		pipe.add(unpacker);
+		
 		//saver = new SaveLocalizations(new File("/home/ronny/Bilder/out.csv"));
-		saver = new SaveLocalizations(new File("/Users/ronny/Documents/storm/nmsfinder.csv"));
-		saver.setInput(localizations);
+		saver = new SaveLocalizations(new File("/Users/ronny/ownCloud/storm/nmsfinder.csv"));
 		pipe.add(saver);
+		
+		pipe.linkModules(tif, peak, true);
+		pipe.linkModules(peak, unpacker);
+		pipe.linkModules(unpacker, saver);
+		map = pipe.get();
+		
 	}
 
 	@Test
 	public void test() {
 		pipe.run();
 		System.out.println("");		
-		assertEquals(true,frames.isEmpty());
+		assertEquals(true,map.values().iterator().next().isEmpty());
 	}
 
 }

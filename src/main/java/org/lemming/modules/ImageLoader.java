@@ -1,19 +1,15 @@
 package org.lemming.modules;
 
 import ij.ImagePlus;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
-
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
 import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.MultiRunModule;
+import org.lemming.tools.LemmingUtils;
 
 public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends MultiRunModule{
 	
@@ -33,7 +29,6 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Multi
 		iterator = outputs.keySet().iterator().next();
 	}
 
-	@SuppressWarnings({ "unchecked" })
 	@Override
 	public Element process(Element data) {
 		
@@ -41,16 +36,7 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Multi
 		
 		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
 		
-		long[] dims = new long[]{ip.getWidth(), ip.getHeight()};
-		
-		Img<T> theImage = null;
-		if (ip instanceof ShortProcessor) {
-			theImage = (Img<T>) ArrayImgs.unsignedShorts((short[]) ip.getPixels(), dims);
-		} else if (ip instanceof FloatProcessor) {
-			theImage = (Img<T>) ArrayImgs.floats((float[])ip.getPixels(), dims);
-		} else if (ip instanceof ByteProcessor) {
-			theImage = (Img<T>) ArrayImgs.unsignedBytes((byte[])ip.getPixels(), dims);
-		}
+		Img<T> theImage = LemmingUtils.wrap(ip);
 		
 		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
 		if (curSlice >= stackSize)

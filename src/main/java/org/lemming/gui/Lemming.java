@@ -1,10 +1,12 @@
 package org.lemming.gui;
 
 import javax.swing.SwingUtilities;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.PlugIn;
 
+@SuppressWarnings("rawtypes")
 public class Lemming implements PlugIn {
 
 	@Override

@@ -1,5 +1,6 @@
 package org.lemming.plugins;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +11,8 @@ import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.math.GaussianFitterLM;
 import org.lemming.modules.Fitter;
-import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FittedLocalization;
+import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
@@ -48,7 +49,7 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 	private static int INDEX_D = 7;
 	private static int INDEX_Mp = 8;
 
-	public GaussianFitter(int queueSize, long windowSize, final Map<String,List<Double>> cal) {
+	public GaussianFitter(int queueSize, int windowSize, final Map<String,List<Double>> cal) {
 		super(queueSize, windowSize);
 		param = cal.get("param");
 		zgrid = cal.get("zgrid");
@@ -57,8 +58,9 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 	}
 
 	@Override
-	public void fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize) {
+	public FrameElements fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
 		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
+		List<Element> found = new ArrayList<>();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			final Roi origroi = new Roi(loc.getX() - size, loc.getY() - size, 2*size+1, 2*size+1);
@@ -68,9 +70,10 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 			result = gf.fit();
 			if (result!= null){
 				double SxSy = result[2]*result[2] - result[3]*result[3];
-				newOutput(new FittedLocalization(loc.getID(),loc.getFrame(), result[0], result[1], calculateZ(SxSy), result[2], result[3]));	
+				found.add(new FittedLocalization(loc.getID(),loc.getFrame(), result[0], result[1], calculateZ(SxSy), result[2], result[3]));	
 			}
 		}
+		return new FrameElements(found, frameNumber);
 	}
 	
 	private double calculateZ(final double SxSy){
@@ -158,9 +161,9 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
-		public AbstractModule getFitter() {
+		public Fitter getFitter() {
 			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
-			final long windowSize = (long) settings.get( FitterPanel.KEY_WINDOW_SIZE );
+			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILE );
 			Map<String, List<Double>> cal = Settings.readCSV(calibFileName);
 			return new GaussianFitter(queueSize, windowSize, cal);

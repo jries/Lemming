@@ -28,11 +28,16 @@ public class UnpackElements extends SingleRunModule {
 			List<Element> list = el.getList();
 			if(el.isLast()){
 				running = false;
-				Element last = list.remove(list.size()-1);
-				last.setLast(true);
-				for (Element l :list)
-					newOutput(l);
-				newOutput(last);
+				if (!list.isEmpty()){
+					Element last = list.remove(list.size()-1);
+					last.setLast(true);
+					for (Element l :list)
+						newOutput(l);
+					newOutput(last);
+				} else {
+					newOutput(el);
+				}
+				return data;
 			}
 			
 			for (Element l :list)
@@ -45,7 +50,6 @@ public class UnpackElements extends SingleRunModule {
 			}
 			newOutput(data);
 		}
-			
 		return data;
 	}
 	

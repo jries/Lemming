@@ -56,5 +56,10 @@ public class Localization implements LocalizationInterface {
 	public Element deepClone() {
 		return new Localization(ID, frame, X, Y);
 	}
+	
+	@Override
+	public String toString(){
+		return "" + getID() + "," + getFrame() + "," + getX() + "," + getY();
+	}
 
 }

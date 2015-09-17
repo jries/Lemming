@@ -2,9 +2,12 @@ package org.lemming.factories;
 
 import java.util.Map;
 
+import net.imglib2.type.numeric.RealType;
+
 import org.lemming.gui.ConfigurationPanel;
+import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.PluginInterface;
-import org.lemming.pipeline.AbstractModule;
+import org.lemming.modules.Fitter;
 
 public interface FitterFactory extends PluginInterface{
 
@@ -20,7 +23,7 @@ public interface FitterFactory extends PluginInterface{
 	/**
 	 *  @return  Module to process
 	 */
-	public AbstractModule getFitter();
+	public <T extends RealType<T>, F extends Frame<T>> Fitter<T,F> getFitter();
 	
 	/**
 	 * Returns a new GUI panel able to configure the settings suitable for this

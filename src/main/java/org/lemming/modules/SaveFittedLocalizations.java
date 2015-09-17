@@ -41,6 +41,7 @@ public class SaveFittedLocalizations extends SingleRunModule {
 		FittedLocalization loc = (FittedLocalization) data;
 		if (loc == null)
 			return null;
+
 		if (loc.isLast()) {
 			if (inputs.get(iterator).isEmpty()) {
 				cancel();

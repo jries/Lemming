@@ -31,7 +31,7 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 	
 	private double threshold;
 	
-	private int size;
+	private int n_;
 
 	private long start;
 
@@ -39,7 +39,7 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 
 	public NMSDetector(final double threshold, final int size) {
 		this.threshold = threshold;
-		this.size = size;
+		this.n_ = size;
 	}
 	
 	@Override
@@ -54,38 +54,35 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 		if (frame == null)
 			return null;
 
-		process1(frame, false);
 		if (frame.isLast()) { // make the poison pill
 			pause(10);
-			process1(frame, true);
 			cancel();
-			return null;
+			return process1(frame, true);
 		}
-		return null;
+		return process1(frame, false);
 	}
 	
-	private void process1(F frame, boolean b) {
+	private FrameElements process1(F frame, boolean b) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		RandomAccess<T> ra = interval.randomAccess();
 		
 		int i,j,ii,jj,ll,kk;
 		int mi,mj;
 		boolean failed=false;
-		int n_=size;
 		long width_= interval.dimension(0);
 		long height_ = interval.dimension(1);
 		List<Element> found = new ArrayList<>();
 	
-		for(i=n_;i<=width_-1-n_;i+=n_+1){	// Loop over (n+1)x(n+1)
-			for(j=n_;j<=height_-1-n_;j+=n_+1){
+		for(i=0;i<=width_-1-n_;i+=n_+1){	// Loop over (n+1)x(n+1)
+			for(j=0;j<=height_-1-n_;j+=n_+1){
 				mi = i;
 				mj = j;
 				for(ii=i;ii<=i+n_;ii++){	
 					for(jj=j;jj<=j+n_;jj++){
 						ra.setPosition(new int[]{ii,jj});
-						T first = ra.get();
+						final T first = ra.get().copy();
 						ra.setPosition(new int[]{mi,mj});
-						T second = ra.get();
+						final T second = ra.get();
 						if (first.compareTo(second) > 0){	
 							mi = ii;
 							mj = jj;
@@ -100,7 +97,7 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 						if((ll<i || ll>i+n_) || (kk<j || kk>j+n_)){
 							if(ll<width_ && ll>0 && kk<height_ && kk>0){
 								ra.setPosition(new int[]{ll,kk});
-								T first = ra.get();
+								T first = ra.get().copy();
 								ra.setPosition(new int[]{mi,mj});
 								T second = ra.get();
 								if(first.compareTo(second) > 0){
@@ -121,13 +118,15 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 				}
 			}			
 		}
-		
-		if (found.isEmpty()) return;
+				
 		
 		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
-		if (b)			
+		if (b){			
 			fe.setLast(true);
-		newOutput(fe);
+			return fe;
+		}
+		if (found.isEmpty()) return null;
+		return fe;
 	}
 	
 	@Override

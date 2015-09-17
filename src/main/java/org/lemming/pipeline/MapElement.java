@@ -28,5 +28,9 @@ public class MapElement implements Element {
 	public Element deepClone() {
 		return new MapElement(map);
 	}
+	
+	public Map<String,Object> get(){
+		return map;
+	}
 
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.ModuleInterface;
 import org.lemming.interfaces.Store;
 
@@ -135,4 +136,20 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 			System.err.println(e.getMessage());
 		}
 	}
+	
+	public Element preview(Element el){
+		return process(el);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public Element preview(Frame el){
+		return process(el);
+	}	
+	
+	/**
+	 * Method to be overwritten by children of this class.
+	 * @param data - data to process
+	 * @return Element
+	 */
+	public abstract Element process(Element data);
 }

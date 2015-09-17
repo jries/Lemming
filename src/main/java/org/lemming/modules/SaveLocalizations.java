@@ -1,5 +1,7 @@
 package org.lemming.modules;
 
+import ij.IJ;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -37,35 +39,42 @@ public class SaveLocalizations extends SingleRunModule {
 
 	@Override
 	public Element process(Element data) {
-		Localization loc = (Localization) data;
-		if (loc==null) return null;
-		if(loc.isLast()){
-			if (inputs.get(iterator).isEmpty()){
-				counter++;
-				cancel();
+		
+		if (data.isLast()) {
+			if (data instanceof Localization) {
+				if (inputs.get(iterator).isEmpty()) {
+					counter++;
+					cancel();
+					return null;
+				}
+				inputs.get(iterator).put(data);
 				return null;
 			}
-			inputs.get(iterator).put(loc);
+			cancel();
 			return null;
 		}
 		
-		StringBuilder out = new StringBuilder();
+		if (data instanceof Localization) {
+			Localization loc = (Localization) data;
+			StringBuilder out = new StringBuilder();
 
-		out.append(loc.getID());
-		out.append(", ");
-		out.append(loc.getFrame());
-		out.append(", ");
-		out.append(loc.getX());
-		out.append(", ");
-		out.append(loc.getY());
-		out.append("\n");
+			out.append(loc.getID());
+			out.append(", ");
+			out.append(loc.getFrame());
+			out.append(", ");
+			out.append(loc.getX());
+			out.append(", ");
+			out.append(loc.getY());
+			out.append("\n");
+			
+			try {
+				w.write(out.toString());
+			} catch (IOException e) {
+				IJ.error("SaveLocalization:"+e.getMessage());;
+			}
+			counter++;
 		
-		try {
-			w.write(out.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
-		counter++;
+		}
 		return null;
 	}
 

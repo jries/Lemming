@@ -21,19 +21,22 @@ import org.lemming.pipeline.MultiRunModule;
 public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
 	private long start;
-	protected long size;
+	protected int size;
 	private Store locInput;
 	private volatile CircularFifoQueue<Element> firstQueue;
 	private Store secondQueue;
 	private int queueSize;
 
-	public Fitter(int queueSize, long windowSize) {
+	public Fitter(int queueSize, int windowSize) {
 		this.size = windowSize;
 		this.queueSize = queueSize;
 		firstQueue = queueSize == 0 ? new CircularFifoQueue<Element>(128) : new CircularFifoQueue<Element>(queueSize);
 		secondQueue = new FastStore();
 	}
 
+	public long getWindowSize(){
+		return size;
+	}
 
 	@Override
 	protected void beforeRun() {
@@ -102,10 +105,10 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 			return;
 		}	
 		
-		fit( sliceLocs, frame.getPixels(), size);
+		fit( sliceLocs, frame.getPixels(), size, frame.getFrameNumber());
 	}
 	
-	public abstract void fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize);
+	public abstract FrameElements fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber);
 		
 
 	@SuppressWarnings({ "unchecked" })
@@ -139,7 +142,7 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 				}
 			}
 			if (!sliceLocs.isEmpty()){
-				fit(sliceLocs,frame.getPixels(), size);
+				fit(sliceLocs,frame.getPixels(), size, frame.getFrameNumber());
 				sliceLocs.clear();
 			}
 		}

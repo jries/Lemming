@@ -43,10 +43,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 	 *            - threshold for subtracting background
 	 * @param size
 	 *            - kernel size
-	 * @param out
-	 *            - output store
-	 * @param in
-	 *            - input store
 	 */
 	public PeakFinder( final double threshold, final int size) {
 		setThreshold(threshold);
@@ -72,15 +68,13 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 		
 		if (frame.isLast()) { // make the poison pill
 			pause(10);
-			process1(frame,true);
 			cancel();
-			return null;
+			return process1(frame,true);
 		}
-		process1(frame,false);
-		return null;
+		return process1(frame,false);
 	}
 
-	private void process1(final F frame, boolean b) {
+	private FrameElements process1(final F frame, boolean b) {
 		Interval interval = Intervals.expand(frame.getPixels(), -size);
 
 		RandomAccessibleInterval<T> source = Views.interval(frame.getPixels(), interval);
@@ -121,14 +115,12 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 				counter++; 
 			}
 		}
-		
-		if (found.isEmpty()) return;
-		
+				
 		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
 		if (b)			
 			fe.setLast(true);
 	
-		newOutput(fe);
+		return fe;
 	}
 
 	/**
