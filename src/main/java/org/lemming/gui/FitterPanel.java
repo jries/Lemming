@@ -1,6 +1,10 @@
 package org.lemming.gui;
 
 import ij.IJ;
+import ij.ImagePlus;
+import ij.gui.Roi;
+import ij.gui.StackWindow;
+import ij.plugin.FolderOpener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +19,8 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
 
@@ -36,6 +42,8 @@ public class FitterPanel extends ConfigurationPanel {
 	private JLabel lblCalibration;
 	protected File calibFile;
 	protected File camFile;
+	private ImagePlus cal_im;
+	private StackWindow calWindow;
 
 	public FitterPanel() {
 		setBorder(null);
@@ -86,28 +94,40 @@ public class FitterPanel extends ConfigurationPanel {
 			}
 		});
 		
+		JButton btnNewCalibration = new JButton("New Calibration");
+		btnNewCalibration.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				calibrate();				
+			}
+		});
+		
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblWindowSize)
-								.addComponent(lblQueueSize))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-								.addComponent(spinnerQueueSize)
-								.addComponent(spinnerWindowSize, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addComponent(lblWindowSize)
+										.addComponent(lblQueueSize))
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
+										.addComponent(spinnerQueueSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+										.addComponent(spinnerWindowSize, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(btnCamera, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+									.addGap(12)
+									.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(btnCalibration, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+									.addGap(12)
+									.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(btnCamera, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
-							.addGap(12)
-							.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(btnCalibration, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
-							.addGap(12)
-							.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)))
+							.addGap(13)
+							.addComponent(btnNewCalibration)))
 					.addContainerGap(136, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
@@ -122,7 +142,6 @@ public class FitterPanel extends ConfigurationPanel {
 						.addComponent(lblQueueSize)
 						.addComponent(spinnerQueueSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGap(18)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(btnCamera)
 						.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
@@ -130,9 +149,80 @@ public class FitterPanel extends ConfigurationPanel {
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(btnCalibration)
 						.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(153, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(btnNewCalibration)
+					.addContainerGap(122, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
+	}
+
+	protected void calibrate() {
+		JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
+    	fc.setDialogTitle("Import Calibration Images");
+    	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+    	
+    	int returnVal = fc.showOpenDialog(this);
+    	 
+        if (returnVal != JFileChooser.APPROVE_OPTION)
+        	return;
+        
+        File file = fc.getSelectedFile();
+        
+        if (file.isDirectory()){
+        	cal_im = FolderOpener.open(file.getAbsolutePath());
+        }
+        
+        if (file.isFile()){
+        	cal_im = new ImagePlus(file.getAbsolutePath());
+        }
+        
+        cal_im.getNSlices();
+		calWindow = new StackWindow(cal_im);
+		Roi roitemp = new Roi(cal_im.getWidth()/2 - 10, cal_im.getHeight()/2 - 10, 20, 20);
+		cal_im.setRoi(roitemp);	
+		
+		calWindow.addMouseListener(new MouseListener(){
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2 && !e.isConsumed()) {
+				     e.consume();
+				     System.out.println("Double Click!");
+				     //handle double click event.
+				}
+		
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent arg0) {
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent arg0) {
+				
+			}
+
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				
+			}});
+		
+		
+		double w = roitemp.getFloatWidth();
+		double h = roitemp.getFloatHeight();
+		if (w!=h) {
+			IJ.showMessage("Needs a quadratic ROI /n(hint: press Shift).");
+			return;
+		}
+
+		
+		
 	}
 
 	@Override
@@ -151,7 +241,8 @@ public class FitterPanel extends ConfigurationPanel {
 		settings.put(KEY_WINDOW_SIZE, spinnerWindowSize.getValue());
 		settings.put(KEY_QUEUE_SIZE, spinnerQueueSize.getValue());
 		if (calibFile == null){
-			IJ.error("Please provide a Calibration File!");
+			calibrate();
+			settings.put(KEY_CALIBRATION_FILE, calibFile.getAbsolutePath());
 			return settings;
 		}
 		if (camFile == null){

@@ -1,20 +1,21 @@
 package org.lemming.plugins;
 
 import ij.ImagePlus;
-import ij.process.FloatProcessor;
+import ij.process.ShortProcessor;
 
+import java.awt.image.IndexColorModel;
 import java.util.Map;
 
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.HistogramRendererPanel;
+import org.lemming.gui.RendererSettingsPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.AbstractModule;
+import org.lemming.modules.Renderer;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.SingleRunModule;
 import org.scijava.plugin.Plugin;
 
-public class HistogramRenderer extends SingleRunModule {
+public class HistogramRenderer extends Renderer {
 	
 	public static final String NAME = "Histogram Renderer";
 	public static final String KEY = "HISTOGRAMRENDERER";
@@ -23,32 +24,29 @@ public class HistogramRenderer extends SingleRunModule {
 											+ "</html>";
 	
 	private int xBins;
-	private int yBins;
-	private double xmin;
-	private double xmax;
-	private double ymin;
-	private double ymax;
-	private float[] values;
-	private ImagePlus ip;
-	protected String title = "LemMING!"; // title of the image
-	private long counter = 0;
+	private int xmin;
+	private int xmax;
+	private int ymin;
+	private int ymax;
+	private short[] values;
 	private long start;
+	private float xwidth;
+	private float ywidth;
 
 	public HistogramRenderer(){
 		this(256,256,0,256,0,256);
 	}
 
-	public HistogramRenderer(int xBins, int yBins, double xmin, double xmax, double ymin, double ymax) {
+	public HistogramRenderer(final int xBins, final int yBins, final int xmin, final int xmax, final int ymin, final int ymax) {
 		this.xBins = xBins;
-		this.yBins = yBins;
 		this.xmin = xmin;
 		this.xmax = xmax;
 		this.ymin = ymin;
 		this.ymax = ymax;
-		values = new float[xBins*yBins];
-		ip = new ImagePlus(title, new FloatProcessor(xBins, yBins,values));
-		ip.setDisplayRange(0, 5);
-		ip.show();		
+		this.xwidth = (float)(xmax - xmin) / xBins;
+    	this.ywidth = (float)(ymax - ymin) / yBins;
+		values = new short[xBins*yBins];
+		ip = new ImagePlus(title, new ShortProcessor(xBins, yBins,values, getDefaultColorModel()));
 	}
 	
 	@Override
@@ -61,39 +59,31 @@ public class HistogramRenderer extends SingleRunModule {
 		Localization loc = (Localization) data;
 		if(loc==null) return null;
 		
-		counter ++;
-		
 		if(loc.isLast())
 			cancel();
 		
-		double x = loc.getX();
-		double y = loc.getY();
+		float x = (float) loc.getX();
+		float y = (float) loc.getY();
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	double xwidth = (xmax - xmin) / xBins;
-        	double ywidth = (ymax - ymin) / yBins;
-        	long xindex = Math.round((x - xmin) / xwidth);
-        	long yindex = Math.round((y - ymin) / ywidth);
-        	values[(int) (xindex+yindex*xBins)]++;
+        	int xindex = Math.round((x - xmin) / xwidth);
+        	int yindex = Math.round((y - ymin) / ywidth);
+        	values[xindex+yindex*xBins]++;
         }		
 		
-        if (counter%100==0)
-        	ip.updateAndDraw();
+//        if (counter%100==0)
+//        	window.repaint();
         
 		return null;
 	}
 	
 	@Override
 	public void afterRun(){
-		ip.updateAndDraw();
+		ip.updateImage();
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
-		while(ip.isVisible()) pause(10);
+		//while(ip.isVisible()) pause(10);
 	}
-
-	@Override
-	public boolean check() {
-		return inputs.size()==1;
-	}
+	
 	
 	@Plugin( type = RendererFactory.class, visible = true )
 	public static class Factory implements RendererFactory{
@@ -117,14 +107,17 @@ public class HistogramRenderer extends SingleRunModule {
 		}
 
 		@Override
-		public AbstractModule getRenderer() {
-			//Map<String, Object> settings = configPanel.getSettings();
+		public Renderer getRenderer() {
 			final int xBins = (int) settings.get(HistogramRendererPanel.KEY_xBins);
 			final int yBins = (int) settings.get(HistogramRendererPanel.KEY_yBins);
-			final double xmin = (double) settings.get(HistogramRendererPanel.KEY_xmin);
-			final double xmax = (double) settings.get(HistogramRendererPanel.KEY_xmax);
-			final double ymin = (double) settings.get(HistogramRendererPanel.KEY_ymin);
-			final double ymax = (double) settings.get(HistogramRendererPanel.KEY_ymax);
+			final int xmin = (int) settings.get(HistogramRendererPanel.KEY_xmin);
+			final int xmax = (int) settings.get(HistogramRendererPanel.KEY_xmax);
+			final int ymin = (int) settings.get(HistogramRendererPanel.KEY_ymin);
+			final int ymax = (int) settings.get(HistogramRendererPanel.KEY_ymax);
+			final Integer width = (Integer) settings.get(RendererSettingsPanel.KEY_RENDERER_WIDTH);
+			final Integer height = (Integer) settings.get(RendererSettingsPanel.KEY_RENDERER_HEIGHT);
+			if (width != null && height != null)
+				return new HistogramRenderer(width.intValue(), height.intValue(), xmin, width.intValue(), ymin, height.intValue());
 			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax);
 		}
 
@@ -136,9 +129,21 @@ public class HistogramRenderer extends SingleRunModule {
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			return true;
+			return settings != null;
 		}
 		
+	}
+	
+	private static IndexColorModel getDefaultColorModel() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		for(int i=0; i<256; i++) {
+			r[i]=(byte)i;
+			g[i]=(byte)i;
+			b[i]=(byte)i;
+		}
+		return new IndexColorModel(8, 256, r, g, b);
 	}
 
 }

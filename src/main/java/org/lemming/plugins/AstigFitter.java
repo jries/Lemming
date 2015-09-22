@@ -1,5 +1,6 @@
 package org.lemming.plugins;
 
+import ij.IJ;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
@@ -95,6 +96,10 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
 			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILE );
+			if (calibFileName == null){ 
+				IJ.error("No Calibration File!");
+				return null;
+			}
 			return new AstigFitter(queueSize, windowSize, Settings.readCSV(calibFileName).get("param"));
 		}
 

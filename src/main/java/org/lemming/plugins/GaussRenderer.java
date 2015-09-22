@@ -12,13 +12,13 @@ import net.imglib2.Point;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.GaussRendererPanel;
+import org.lemming.gui.RendererSettingsPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.AbstractModule;
+import org.lemming.modules.Renderer;
 import org.lemming.pipeline.FittedLocalization;
-import org.lemming.pipeline.SingleRunModule;
 import org.scijava.plugin.Plugin;
 
-public class GaussRenderer extends SingleRunModule {
+public class GaussRenderer extends Renderer {
 	
 	public static final String NAME = "GaussRenderer";
 	public static final String KEY = "GAUSSRENDERER";
@@ -27,9 +27,7 @@ public class GaussRenderer extends SingleRunModule {
 											+ "</html>";
 	private int width;
 	private int height;
-	protected String title = "LemMING!";
 	private float[] pixels;
-	private ImagePlus ip;
 	private double area = 1000;
 	private double background = 0;
 	private double theta = 0;
@@ -47,8 +45,7 @@ public class GaussRenderer extends SingleRunModule {
 		this.height = height;
 		pixels = new float[width*height];
 		fp = new FloatProcessor(width, height, pixels);
-		ip = new ImagePlus(title, fp );
-		ip.show();
+		ip = new ImagePlus(title,fp);
 	}
 	
 	@Override
@@ -85,16 +82,15 @@ public class GaussRenderer extends SingleRunModule {
 		
 		if (counter%100==0){
 			ip.setDisplayRange(0, maxVal);
-        	ip.updateAndDraw();
+//			window.repaint();
 		}
 		return null;
 	}
 	
 	@Override
 	public void afterRun(){
-		ip.updateAndDraw();
+		ip.updateImage();;
 		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
-		while(ip.isVisible()) pause(10);
 	}
 	
 	/** A 2-dimensional, elliptical, Gaussian function.
@@ -204,13 +200,13 @@ public class GaussRenderer extends SingleRunModule {
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			return true;
+			return settings!= null;
 		}
 
 		@Override
-		public AbstractModule getRenderer() {
-			int w = (int) settings.get("WIDTH");
-			int h = (int) settings.get("HEIGHT");
+		public Renderer getRenderer() {
+			int w = (int) settings.get(RendererSettingsPanel.KEY_RENDERER_WIDTH);
+			int h = (int) settings.get(RendererSettingsPanel.KEY_RENDERER_HEIGHT);
 			return new GaussRenderer(w,h);
 		}
 

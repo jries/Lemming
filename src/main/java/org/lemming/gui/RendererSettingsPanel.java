@@ -15,6 +15,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
+
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +27,9 @@ public class RendererSettingsPanel extends JDialog {
 	 * 
 	 */
 	private static final long serialVersionUID = -47265215899943480L;
+	public static final String KEY_RENDERER_WIDTH = "RENDERER_WIDTH";
+	public static final String KEY_RENDERER_HEIGHT = "RENDERER_HEIGHT";
 	private final JPanel contentPanel = new JPanel();
-	private Map<String, Object> settings;
 	private JSpinner spinnerWidth;
 	private JSpinner spinnerHeight;
 
@@ -109,13 +111,14 @@ public class RendererSettingsPanel extends JDialog {
 	}
 	
 	public Map<String, Object> getSettings() {
-		setVisible(true);
+		Map<String, Object> settings = new HashMap<>( 2 );
+		settings.put(KEY_RENDERER_HEIGHT, spinnerHeight.getValue());
+		settings.put(KEY_RENDERER_WIDTH, spinnerWidth.getValue());
 		return settings;
 	}
 	
-	private void setSettings() {
-		settings = new HashMap<>( 2 );
-		settings.put("HEIGHT", spinnerHeight.getValue());
-		settings.put("WIDTH", spinnerWidth.getValue());
+	void setSettings() {
+		setVisible(true);
 	}
+
 }

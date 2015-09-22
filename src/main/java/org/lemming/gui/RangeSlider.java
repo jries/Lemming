@@ -38,6 +38,8 @@ public class RangeSlider extends JSlider {
 
 	public RangeSlider(int min, int max) {
 		super(min, max);
+		setValue(min);
+		setUpperValue(max);
 	}
 
 	public RangeSlider(int min, int max, int value) {

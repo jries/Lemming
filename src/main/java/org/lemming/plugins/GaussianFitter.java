@@ -17,6 +17,7 @@ import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
+import ij.IJ;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import net.imglib2.RandomAccessibleInterval;
@@ -165,6 +166,10 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
 			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILE );
+			if (calibFileName == null){ 
+				IJ.error("No Calibration File!");
+				return null;
+			}
 			Map<String, List<Double>> cal = Settings.readCSV(calibFileName);
 			return new GaussianFitter(queueSize, windowSize, cal);
 		}

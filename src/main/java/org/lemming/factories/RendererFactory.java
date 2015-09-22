@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.PluginInterface;
-import org.lemming.pipeline.AbstractModule;
+import org.lemming.modules.Renderer;
 
 public interface RendererFactory extends PluginInterface {
 	
@@ -20,11 +20,12 @@ public interface RendererFactory extends PluginInterface {
 	/**
 	 *  @return  Renderer to process
 	 */
-	public AbstractModule getRenderer();
+	public Renderer getRenderer();
 	
 	/**
 	 * Returns a new GUI panel able to configure the settings suitable for this
 	 * specific factory.
 	 */
 	public ConfigurationPanel getConfigurationPanel();
+	
 }

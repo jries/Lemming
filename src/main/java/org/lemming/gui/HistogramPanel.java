@@ -19,6 +19,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.lemming.pipeline.ExtendableTable;
+import org.lemming.tools.LogHistogramDataset;
+import org.lemming.tools.XYTextSimpleAnnotation;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

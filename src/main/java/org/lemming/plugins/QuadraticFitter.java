@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.lemming.factories.FitterFactory;
-import org.lemming.gui.FitterPanel;
 import org.lemming.gui.ConfigurationPanel;
+import org.lemming.gui.QuadraticFitterPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.math.SubpixelLocalization;
@@ -50,7 +50,7 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 		
 		private Map<String, Object> settings;
-		private FitterPanel configPanel = new FitterPanel();
+		private QuadraticFitterPanel configPanel = new QuadraticFitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -77,8 +77,8 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
-			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
-			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
+			final int queueSize = (int) settings.get( QuadraticFitterPanel.KEY_QUAD_QUEUE_SIZE );
+			final int windowSize = (int) settings.get( QuadraticFitterPanel.KEY_QUAD_WINDOW_SIZE );
 			return new QuadraticFitter(queueSize, windowSize);
 		}
 

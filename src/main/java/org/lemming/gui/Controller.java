@@ -1,8 +1,10 @@
 package org.lemming.gui;
 
 import ij.IJ;
+import ij.ImageListener;
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.gui.ImageWindow;
 import ij.gui.PointRoi;
 import ij.gui.StackWindow;
 import ij.io.FileInfo;
@@ -19,9 +21,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -54,19 +53,24 @@ import org.japura.gui.CheckComboBox;
 import org.japura.gui.event.ListCheckListener;
 import org.japura.gui.event.ListEvent;
 import org.japura.gui.model.ListCheckModel;
+import org.japura.gui.renderer.CheckListRenderer;
 import org.lemming.factories.DetectorFactory;
 import org.lemming.factories.FitterFactory;
 import org.lemming.factories.PreProcessingFactory;
 import org.lemming.factories.RendererFactory;
+import org.lemming.interfaces.Element;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
 import org.lemming.modules.ImageMath.operators;
-import org.lemming.modules.SaveFittedLocalizations;
+import org.lemming.modules.LocalizationMapper;
+import org.lemming.modules.Renderer;
 import org.lemming.modules.StoreLoader;
 import org.lemming.modules.TableLoader;
+import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ExtendableTable;
+import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.Manager;
@@ -185,6 +189,20 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 
 	protected ContrastAdjuster contrastAdjuster;
 
+	private Renderer renderer;
+
+	private FrameElements detResults;
+
+	private FrameElements fitResults;
+
+	private ImageWindow rendererWindow;
+
+	protected int widgetSelection = 0;
+
+	protected static int DETECTOR = 1;
+
+	protected static int FITTER = 2;
+
 	/**
 	 * Create the frame.
 	 * @param imp 
@@ -197,6 +215,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 					previewerWindow.close();
 				if (contrastAdjuster !=null)
 					contrastAdjuster.close();
+				if (rendererWindow != null)
+					rendererWindow.close();
 			}
 		});
 		try {
@@ -322,7 +342,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			}
 		});
 		spinnerSkipFrames.setPreferredSize(new Dimension(40, 28));
-		spinnerSkipFrames.setModel(new SpinnerNumberModel(new Integer(0), null, null, new Integer(1)));
+		spinnerSkipFrames.setModel(new SpinnerNumberModel(new Integer(0), new Integer(0), null, new Integer(1)));
 		GroupLayout gl_panelMiddle = new GroupLayout(panelMiddle);
 		gl_panelMiddle.setHorizontalGroup(
 			gl_panelMiddle.createParallelGroup(Alignment.LEADING)
@@ -484,13 +504,14 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		}
 		
 		if (s == this.btnProcess){ // Manager
-			// TODO sanity checks
+			
 			
 			if (tabbedPane.getSelectedIndex()==0){
 				if (panelDown != null){
 					Map<String, Object> curSet = panelDown.getSettings();
 					for (String key : curSet.keySet())
 						settings.put(key, curSet.get(key));
+				}
 			} else if (tabbedPane.getSelectedIndex()==1){
 				if (panelReconDown != null){
 					Map<String, Object> curSet = panelReconDown.getSettings();
@@ -498,41 +519,68 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 						settings.put(key, curSet.get(key));
 				}
 			}
-				
 			if (tif==null) {
 				IJ.error("Please load images first!");
 				return;
 			}
 			
+			if (storeLoader != null){
+				LocalizationMapper mapper = new LocalizationMapper();
+				manager.add(mapper);
+				manager.linkModules(storeLoader, mapper);
+				
+				if (fitter != null){
+					manager.add(fitter);
+					manager.linkModules(tif, fitter);
+					manager.linkModules(mapper, fitter);
+				}
+				if (renderer != null){
+					manager.add(renderer);
+					manager.linkModules(fitter, renderer, false);
+				}	
+				manager.run();
+				return;
+			}
 			
+			if (detector==null) {
+				IJ.error("Please choose detector first!");
+				return;
+			}
+			
+			manager.add(detector);
+			
+			ImageMath math = null;
 			if (!checksPreprocessing.isEmpty()){
 				AbstractModule pp = preProcessingFactory.getModule();
 				manager.add(pp);
 				manager.linkModules(tif, pp);
 				operators op = preProcessingFactory.getOperator();
-				ImageMath math = new ImageMath();
+				math = new ImageMath();
 				math.setOperator(op);
 				manager.add(math);
 				manager.linkModules(tif, math);
 				manager.linkModules(pp, math);
-				//manager.linkModules(math, detector);
+				manager.linkModules(math, detector);
 			} else {
-				
+				manager.linkModules(tif, detector);
 			}			
-			/*UnpackElements unpacker = new UnpackElements();
+			UnpackElements unpacker = new UnpackElements();
 			manager.add(unpacker);
-			manager.linkModules(detector, unpacker);*/
-
-			manager.linkModules(tif, fitter);
-			//manager.linkModules(detector, fitter);				
-			rendererFactory.setAndCheckSettings(settings);
-			AbstractModule renderer = rendererFactory.getRenderer();
-			manager.add(renderer);
-			manager.linkModules(fitter, renderer, false);
-			SaveFittedLocalizations saver = new SaveFittedLocalizations(saveFile);
-			manager.add(saver);
-			manager.linkModules(fitter, saver, false);
-			}			
+			manager.linkModules(detector, unpacker);
+			
+			if (fitter != null){
+				manager.add(fitter);
+				if (math != null)
+					manager.linkModules(math, fitter);
+				else
+					manager.linkModules(tif, fitter);
+				manager.linkModules(detector, fitter);				
+			}
+			if (renderer != null){
+				manager.add(renderer);
+				manager.linkModules(fitter, renderer, false);
+			}
+			manager.run();
 		}
 		
 		if (s == this.btnLoad){
@@ -684,18 +732,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		    manager.add(tif);
 		    
 		    previewerWindow = new StackWindow(loc_im,loc_im.getCanvas());
-		    previewerWindow.addMouseWheelListener(new MouseWheelListener(){
-
-				@Override
-				public void mouseWheelMoved(MouseWheelEvent event) {
-					synchronized(this) { 
-                        int zoom = event.getWheelRotation(); 
-                        if (zoom<0) IJ.run("In"); 
-                        else IJ.run("Out"); 
-					} 
-				}
-		    	
-		    });
 		    previewerWindow.addKeyListener(new KeyListener(){
 
 				@Override
@@ -707,16 +743,12 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 				}
 
 				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
+				public void keyReleased(KeyEvent e) {}
 				@Override
-				public void keyTyped(KeyEvent e) {					
-				}
+				public void keyTyped(KeyEvent e) {}
 			});
 		    previewerWindow.setVisible(true);
-	
-		    this.lblFile.setText(loc_im.getTitle());
+		    lblFile.setText(loc_im.getTitle());
 		    validate();
 		    repaint();
         }
@@ -751,11 +783,33 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	private void chooseDetector(){
 		final int index = comboBoxPeakDet.getSelectedIndex() - 1;
 		if (index<0 || tif == null){
+			if (previewerWindow != null)
+				previewerWindow.getImagePlus().killRoi();
 			detector = null;
+			widgetSelection = 0;
 			return;
 		}
-		final String key = detectorProvider.getVisibleKeys().get( index );
+		widgetSelection = DETECTOR;
 		
+		ImagePlus.addImageListener(new ImageListener(){
+
+			@Override
+			public void imageClosed(ImagePlus ip) {	}
+
+			@Override
+			public void imageOpened(ImagePlus ip) {	}
+
+			@Override
+			public void imageUpdated(ImagePlus ip) {
+				if (ip == previewerWindow.getImagePlus() && widgetSelection==DETECTOR && panelDown!=null)
+					detectorPreview(panelDown.getSettings());
+				if (ip == previewerWindow.getImagePlus() && widgetSelection==FITTER && panelDown!=null)
+					fitterPreview(panelDown.getSettings());
+			}
+		});
+		
+		
+		final String key = detectorProvider.getVisibleKeys().get( index );
 		detectorFactory = detectorProvider.getFactory( key );
 		panelDown = detectorFactory.getConfigurationPanel();
 		System.out.println("Detector_"+index+" : "+key);
@@ -765,9 +819,54 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
-				detectorFactory.setAndCheckSettings(value);
-				detector = detectorFactory.getDetector();
-				detectorPreview();
+				detectorPreview(value);
+			}
+		});
+		
+		GridBagConstraints gbc_panelDown = new GridBagConstraints();
+		gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
+		gbc_panelDown.gridx = 0;
+		gbc_panelDown.gridy = 2;
+		
+		panelLoc.add(panelDown, gbc_panelDown);
+		detectorPreview(panelDown.getSettings());
+		this.validate();
+		this.repaint();
+	}
+	
+	private void detectorPreview(Map<String, Object> map){
+		detectorFactory.setAndCheckSettings(map);
+		detector = detectorFactory.getDetector();
+		int frameNumber = previewerWindow.getImagePlus().getSlice();
+		Img<T> curImage = LemmingUtils.wrap(previewerWindow.getImagePlus().getStack().getProcessor(frameNumber));
+		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
+		
+		detResults = (FrameElements) detector.preview(curFrame);
+		FloatPolygon points = LemmingUtils.convertToPoints(detResults);
+		PointRoi roi = new PointRoi(points);
+		previewerWindow.getImagePlus().setRoi(roi);
+	}
+	
+	private void chooseFitter() {
+		final int index = comboBoxFitter.getSelectedIndex() - 1;
+		if (index<0 || tif == null || detector == null){ 
+			fitter = null;
+			return;
+		}
+		widgetSelection = FITTER;
+		
+		final String key = fitterProvider.getVisibleKeys().get( index );
+		
+		fitterFactory = fitterProvider.getFactory( key );
+		panelDown = fitterFactory.getConfigurationPanel();
+		System.out.println("Fitter_"+index+" : "+key);
+		panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
+				fitterPreview(value);
 			}
 		});
 		
@@ -777,76 +876,105 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		gbc_panelDown.gridy = 2;
 		panelLoc.add(panelDown, gbc_panelDown);
 		
-		detectorFactory.setAndCheckSettings(panelDown.getSettings());
-		detector = detectorFactory.getDetector();
-		detectorPreview();
-		
+		if (panelDown.getSettings() == null) return;
+		fitterPreview(panelDown.getSettings());
 		this.validate();
 		this.repaint();
 	}
 	
-	private void detectorPreview(){
+	@SuppressWarnings("unchecked")
+	private void fitterPreview(Map<String, Object> map){
+		fitterFactory.setAndCheckSettings(map);
+		fitter = fitterFactory.getFitter();
+		
+		previewerWindow.getImagePlus().killRoi();
 		int frameNumber = previewerWindow.getImagePlus().getSlice();
 		Img<T> curImage = LemmingUtils.wrap(previewerWindow.getImagePlus().getStack().getProcessor(frameNumber));
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
 		
-		FrameElements results = (FrameElements) detector.preview(curFrame);
-		FloatPolygon points = LemmingUtils.convertToPoints(results);
+		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber);
+		FloatPolygon points = LemmingUtils.convertToPoints(fitResults);
 		PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
-//		previewerWindow.repaint();
+		previewerWindow.repaint();
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void chooseFitter() {
-		final int index = comboBoxFitter.getSelectedIndex() - 1;
-		if (index<0 || tif == null) return;
-		final String key = fitterProvider.getVisibleKeys().get( index );
-		
-		fitterFactory = fitterProvider.getFactory( key );
-		panelDown = fitterFactory.getConfigurationPanel();
-		System.out.println("Fitter_"+index+" : "+key);
-		
-		GridBagConstraints gbc_panelDown = new GridBagConstraints();
-		gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
-		gbc_panelDown.gridx = 0;
-		gbc_panelDown.gridy = 2;
-		panelLoc.add(panelDown, gbc_panelDown);
-		this.validate();
-		this.repaint();
-		
-		fitterFactory.setAndCheckSettings(panelDown.getSettings());
-		fitter = fitterFactory.getFitter();
-		
-		if (detector != null){
-			previewerWindow.getImagePlus().killRoi();
-			int frameNumber = previewerWindow.getImagePlus().getSlice();
-			Img<T> curImage = LemmingUtils.wrap(previewerWindow.getImagePlus().getStack().getProcessor(frameNumber));
-			ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
-			FrameElements detResults = (FrameElements) detector.preview(curFrame);
-			FrameElements fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber);
-			FloatPolygon points = LemmingUtils.convertToPoints(fitResults);
-			PointRoi roi = new PointRoi(points);
-			previewerWindow.getImagePlus().setRoi(roi);
-			previewerWindow.repaint();
-		}
-	}
-	
-	private void chooseRenderer() {
+	private void chooseRenderer() { 
 		final int index = comboBoxRenderer.getSelectedIndex() - 1;
-		if (index<0) return;
+		if (index<0 || fitter == null ) return;
 		final String key = rendererProvider.getVisibleKeys().get( index );
 		rendererFactory = rendererProvider.getFactory( key );
 		System.out.println("Renderer_"+index+" : "+key);
 		panelReconDown = rendererFactory.getConfigurationPanel();
+		panelReconDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
+				rendererPreview(value);
+			}
+		});
 		
 		GridBagConstraints gbc_panelDown = new GridBagConstraints();
 		gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
 		gbc_panelDown.gridx = 0;
 		gbc_panelDown.gridy = 1;
 		panelRecon.add(panelReconDown, gbc_panelDown);
+		
+		Map<String, Object> initMap = panelReconDown.getSettings();
+		if (previewerWindow != null){ // Settings overwrite
+			initMap.put(RendererSettingsPanel.KEY_RENDERER_WIDTH, previewerWindow.getImagePlus().getWidth());
+			initMap.put(RendererSettingsPanel.KEY_RENDERER_HEIGHT, previewerWindow.getImagePlus().getHeight());
+		}
+		
+		rendererPreview(initMap);
 		this.validate();
 		this.repaint();		
+	}
+	
+	private void rendererPreview(Map<String, Object> map){
+		rendererFactory.setAndCheckSettings(map);
+		renderer = rendererFactory.getRenderer();
+		rendererWindow = new ImageWindow(renderer.getImage());
+		rendererWindow.addKeyListener(new KeyListener(){
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyChar() == 'C'){
+					contrastAdjuster = new ContrastAdjuster();
+					contrastAdjuster.run("B&C");
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+
+			@Override
+			public void keyTyped(KeyEvent e) {					
+			}
+		});
+		rendererWindow.setVisible(true);
+	
+		List<Element> list = fitResults.getList();
+		if (!list.isEmpty()){
+			FastStore previewStore = new FastStore();
+	 		Element last = list.remove(list.size()-1);
+			for (Element entry : list)	
+				previewStore.put(entry);
+			last.setLast(true);
+			previewStore.put(last);
+			renderer.setInput(previewStore);
+			Thread rendererThread = new Thread(renderer,renderer.getClass().getSimpleName());
+			rendererThread.start();
+			try {
+				rendererThread.join();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		rendererWindow.repaint();
 	}
 	
 	private void createDetectorProvider(){
@@ -878,6 +1006,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			infoTexts.add( preProcessingProvider.getFactory( key ).getInfoText() );
 			model.addElement(currentName);
 		}
+		jComboBoxPreprocessing.setRenderer(new ToolTipCheckListRenderer(infoTexts));
 	}
 	
 	private void createFitterProvider() {
@@ -922,6 +1051,26 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		String[] names = actionNames.toArray(new String[] {});
 	}
 	
+	private class ToolTipCheckListRenderer extends CheckListRenderer{
+		private static final long serialVersionUID = 1L;
+		
+		List<String> tooltips;
+		
+		public ToolTipCheckListRenderer(List<String> tooltips){
+			 this.tooltips = tooltips;
+		}
+		
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus){
+			
+			JComponent comp = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+	        if (0 < index && null != value && null != tooltips) 
+	                    list.setToolTipText(tooltips.get(index-1));
+	        return comp;
+		}
+	}
 	
 	private class ToolTipRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 1L;
@@ -938,9 +1087,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 
 	        JComponent comp = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-	        if (0 < index && null != value && null != tooltips) {
+	        if (0 < index && null != value && null != tooltips) 
 	                    list.setToolTipText(tooltips.get(index-1));
-	                }
 	        return comp;
 	    }
 		

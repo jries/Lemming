@@ -1,4 +1,4 @@
-package org.lemming.gui;
+package org.lemming.tools;
 
 import org.jfree.data.statistics.HistogramDataset;
 

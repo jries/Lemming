@@ -7,36 +7,32 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.ReadLocalizations;
-import org.lemming.pipeline.FastStore;
-import org.lemming.pipeline.Pipeline;
+import org.lemming.pipeline.Manager;
 import org.lemming.plugins.HistogramRenderer;
 
 public class HistogramRendererTest {
 
-	private Pipeline pipe;
-	private FastStore localizations;
+	private Manager pipe;
 	private ReadLocalizations reader;
 	private HistogramRenderer histo;
 
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline("test");
+		pipe = new Manager();
 		
-		localizations = new FastStore();
-		reader = new ReadLocalizations(new File("/home/ronny/Bilder/fitted.csv"),",");
-		reader.setOutput(localizations);
+		reader = new ReadLocalizations(new File("/Users/ronny/ownCloud/storm/nmsfinder.csv"),",");
 		pipe.add(reader);
 		
 		histo = new HistogramRenderer(1024, 1024, 0, 127, 0, 127);
-		histo.setInput(localizations);
-		pipe.add(histo);	
+		pipe.add(histo);
+		pipe.linkModules(reader, histo, true);
 		
 	}
 
 	@Test
 	public void test() {
 		pipe.run();
-		assertEquals(true,localizations.isEmpty());
+		assertEquals(true,pipe.get().values().iterator().next().isEmpty());
 	}
 
 }

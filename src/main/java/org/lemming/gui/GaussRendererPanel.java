@@ -17,6 +17,7 @@ public class GaussRendererPanel extends ConfigurationPanel {
 	 */
 	private static final long serialVersionUID = 3986312897446569301L;
 	protected Map<String, Object> settings;
+	private RendererSettingsPanel dlg;
 
 	public GaussRendererPanel() {
 		setBorder(null);
@@ -38,14 +39,15 @@ public class GaussRendererPanel extends ConfigurationPanel {
 					.addContainerGap(273, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
+		dlg = new RendererSettingsPanel();
 		JPopupMenu popup = new JPopupMenu();
 		JMenuItem menuItem = new JMenuItem("Settings");
 		menuItem.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				RendererSettingsPanel dlg = new RendererSettingsPanel();
-				settings = dlg.getSettings();
+				dlg.setSettings();
+				fireChanged();
 			}
 			
 		});
@@ -60,6 +62,6 @@ public class GaussRendererPanel extends ConfigurationPanel {
 
 	@Override
 	public Map<String, Object> getSettings() {
-		return settings;
+		return dlg.getSettings();
 	}
 }
