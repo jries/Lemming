@@ -35,6 +35,7 @@ public class Settings {
 			BufferedReader br = new BufferedReader(new FileReader(path));
 
 			String line;
+			br.readLine();
 			while ((line=br.readLine())!=null){
 				if (line.contains("--")) break;
 				list.add(line);

@@ -1,11 +1,6 @@
 package org.lemming.gui;
 
 import ij.IJ;
-import ij.ImagePlus;
-import ij.gui.Roi;
-import ij.gui.StackWindow;
-import ij.plugin.FolderOpener;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,15 +9,18 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
+
+import org.lemming.math.Calibrator;
+
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class FitterPanel extends ConfigurationPanel {
 
@@ -32,8 +30,8 @@ public class FitterPanel extends ConfigurationPanel {
 	private static final long serialVersionUID = 3081886846323191618L;
 	public static final String KEY_WINDOW_SIZE = "WINDOW_SIZE";
 	public static final String KEY_QUEUE_SIZE = "QUEUE_SIZE";
-	public static final String KEY_CALIBRATION_FILE = "CALIBRATION_FILE";
-	public static final String KEY_CAMERA_FILE = "CAMERA_FILE";
+	public static final String KEY_CALIBRATION_FILENAME = "CALIBRATION_FILENAME";
+	public static final String KEY_CAMERA_FILENAME = "CAMERA_FILENAME";
 	private JSpinner spinnerWindowSize;
 	private JSpinner spinnerQueueSize;
 	private JButton btnCamera;
@@ -42,8 +40,10 @@ public class FitterPanel extends ConfigurationPanel {
 	private JLabel lblCalibration;
 	protected File calibFile;
 	protected File camFile;
-	private ImagePlus cal_im;
-	private StackWindow calWindow;
+	protected boolean doubleClicked = false;
+	protected int default_step = 10;
+	protected Calibrator calibrator;
+	private JButton btnNewCalibration;
 
 	public FitterPanel() {
 		setBorder(null);
@@ -51,6 +51,11 @@ public class FitterPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Window Size");
 		
 		spinnerWindowSize = new JSpinner();
+		spinnerWindowSize.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				fireChanged();
+			}
+		});
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
 		
 		JLabel lblQueueSize = new JLabel("Queue Size");
@@ -73,6 +78,7 @@ public class FitterPanel extends ConfigurationPanel {
 		        	return;
 		        calibFile = fc.getSelectedFile();
 		        lblCalibration.setText(calibFile.getName());
+		        fireChanged();
 			}
 		});
 		
@@ -94,10 +100,10 @@ public class FitterPanel extends ConfigurationPanel {
 			}
 		});
 		
-		JButton btnNewCalibration = new JButton("New Calibration");
+		btnNewCalibration = new JButton("New Calibration");
 		btnNewCalibration.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				calibrate();				
+				calibrate();
 			}
 		});
 		
@@ -114,9 +120,9 @@ public class FitterPanel extends ConfigurationPanel {
 										.addComponent(lblWindowSize)
 										.addComponent(lblQueueSize))
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING, false)
-										.addComponent(spinnerQueueSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(spinnerWindowSize, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)))
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+										.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
+										.addComponent(spinnerQueueSize, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)))
 								.addGroup(groupLayout.createSequentialGroup()
 									.addComponent(btnCamera, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
 									.addGap(12)
@@ -151,88 +157,35 @@ public class FitterPanel extends ConfigurationPanel {
 						.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnNewCalibration)
-					.addContainerGap(122, Short.MAX_VALUE))
+					.addContainerGap(128, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
 	}
 
 	protected void calibrate() {
-		JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
-    	fc.setDialogTitle("Import Calibration Images");
-    	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-    	
-    	int returnVal = fc.showOpenDialog(this);
-    	 
-        if (returnVal != JFileChooser.APPROVE_OPTION)
-        	return;
-        
-        File file = fc.getSelectedFile();
-        
-        if (file.isDirectory()){
-        	cal_im = FolderOpener.open(file.getAbsolutePath());
-        }
-        
-        if (file.isFile()){
-        	cal_im = new ImagePlus(file.getAbsolutePath());
-        }
-        
-        cal_im.getNSlices();
-		calWindow = new StackWindow(cal_im);
-		Roi roitemp = new Roi(cal_im.getWidth()/2 - 10, cal_im.getHeight()/2 - 10, 20, 20);
-		cal_im.setRoi(roitemp);	
-		
-		calWindow.addMouseListener(new MouseListener(){
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2 && !e.isConsumed()) {
-				     e.consume();
-				     System.out.println("Double Click!");
-				     //handle double click event.
-				}
-		
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent arg0) {
-				
-			}
-
-			@Override
-			public void mouseExited(MouseEvent arg0) {
-				
-			}
-
-			@Override
-			public void mousePressed(MouseEvent arg0) {
-				
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent arg0) {
-				
-			}});
-		
-		
-		double w = roitemp.getFloatWidth();
-		double h = roitemp.getFloatHeight();
-		if (w!=h) {
-			IJ.showMessage("Needs a quadratic ROI /n(hint: press Shift).");
-			return;
-		}
-
-		
-		
+        CalibrationDialog dlg = new CalibrationDialog(getFocusCycleRootAncestor());
+        dlg.setLocationRelativeTo(getFocusCycleRootAncestor());
+        dlg.setVisible(true);
+		Map<String, Object> settings = dlg.getSettings();
+		dlg.dispose();
+		calibFile = (File) settings.get(CalibrationDialog.KEY_CALIBRATION_FILE);
+		if (calibFile!=null)
+			lblCalibration.setText(calibFile.getName());
+		validate();
+		repaint();
+		fireChanged();
 	}
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		spinnerWindowSize.setValue(settings.get(KEY_WINDOW_SIZE));
 		spinnerQueueSize.setValue(settings.get(KEY_QUEUE_SIZE));
-		camFile = (File) settings.get(KEY_CAMERA_FILE);
+		camFile = (File) settings.get(KEY_CAMERA_FILENAME);
 		lblCamera.setText(camFile.getName());
-		calibFile = (File) settings.get(KEY_CALIBRATION_FILE);
+		calibFile = (File) settings.get(KEY_CALIBRATION_FILENAME);
 		lblCalibration.setText(calibFile.getName());
+		validate();
+		repaint();
 	}
 
 	@Override
@@ -241,16 +194,14 @@ public class FitterPanel extends ConfigurationPanel {
 		settings.put(KEY_WINDOW_SIZE, spinnerWindowSize.getValue());
 		settings.put(KEY_QUEUE_SIZE, spinnerQueueSize.getValue());
 		if (calibFile == null){
-			calibrate();
-			settings.put(KEY_CALIBRATION_FILE, calibFile.getAbsolutePath());
 			return settings;
 		}
+		settings.put(KEY_CALIBRATION_FILENAME, calibFile.getAbsolutePath());
 		if (camFile == null){
-			IJ.error("Please provide a Camera File!");
+			//IJ.error("Please provide a Camera File!");
 			return settings;
 		}
-		settings.put(KEY_CALIBRATION_FILE, calibFile.getAbsolutePath());
-		settings.put(KEY_CAMERA_FILE, camFile.getAbsolutePath());
+		settings.put(KEY_CAMERA_FILENAME, camFile.getAbsolutePath());
 		return settings;
 	}
 }

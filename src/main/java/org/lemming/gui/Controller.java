@@ -20,7 +20,6 @@ import net.imglib2.type.numeric.NumericType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -94,6 +93,7 @@ import javax.swing.SpinnerNumberModel;
 import java.awt.Dimension;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.event.KeyAdapter;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -202,6 +202,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	protected static int DETECTOR = 1;
 
 	protected static int FITTER = 2;
+	
+	protected static int RENDERER = 3;
 
 	/**
 	 * Create the frame.
@@ -689,8 +691,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	    manager.reset();
 		ImagePlus loc_im = WindowManager.getCurrentImage();
 		
-		if (loc_im==null) {
-		
+		if (loc_im==null) {	
 			JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
 	    	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 	    	fc.setDialogTitle("Import Images");
@@ -732,7 +733,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		    manager.add(tif);
 		    
 		    previewerWindow = new StackWindow(loc_im,loc_im.getCanvas());
-		    previewerWindow.addKeyListener(new KeyListener(){
+		    previewerWindow.addKeyListener(new KeyAdapter(){
 
 				@Override
 				public void keyPressed(KeyEvent e) {
@@ -741,11 +742,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 						contrastAdjuster.run("B&C");
 					}
 				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {}
-				@Override
-				public void keyTyped(KeyEvent e) {}
 			});
 		    previewerWindow.setVisible(true);
 		    lblFile.setText(loc_im.getTitle());
@@ -806,8 +802,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 				if (ip == previewerWindow.getImagePlus() && widgetSelection==FITTER && panelDown!=null)
 					fitterPreview(panelDown.getSettings());
 			}
-		});
-		
+		});		
 		
 		final String key = detectorProvider.getVisibleKeys().get( index );
 		detectorFactory = detectorProvider.getFactory( key );
@@ -830,8 +825,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		
 		panelLoc.add(panelDown, gbc_panelDown);
 		detectorPreview(panelDown.getSettings());
-		this.validate();
-		this.repaint();
+		validate();
+		repaint();
 	}
 	
 	private void detectorPreview(Map<String, Object> map){
@@ -876,15 +871,16 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		gbc_panelDown.gridy = 2;
 		panelLoc.add(panelDown, gbc_panelDown);
 		
-		if (panelDown.getSettings() == null) return;
-		fitterPreview(panelDown.getSettings());
-		this.validate();
-		this.repaint();
+		if (panelDown.getSettings() != null) 
+			fitterPreview(panelDown.getSettings());
+		validate();
+		repaint();
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void fitterPreview(Map<String, Object> map){
-		fitterFactory.setAndCheckSettings(map);
+		if (!fitterFactory.setAndCheckSettings(map))
+			return;
 		fitter = fitterFactory.getFitter();
 		
 		previewerWindow.getImagePlus().killRoi();
@@ -902,6 +898,9 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	private void chooseRenderer() { 
 		final int index = comboBoxRenderer.getSelectedIndex() - 1;
 		if (index<0 || fitter == null ) return;
+		
+		widgetSelection = RENDERER;
+		
 		final String key = rendererProvider.getVisibleKeys().get( index );
 		rendererFactory = rendererProvider.getFactory( key );
 		System.out.println("Renderer_"+index+" : "+key);
@@ -911,8 +910,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			@SuppressWarnings("unchecked")
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
-				rendererPreview(value);
+				Map<String, Object> map = (Map<String, Object>) evt.getNewValue();
+				rendererPreview(map);
 			}
 		});
 		
@@ -929,15 +928,15 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		}
 		
 		rendererPreview(initMap);
-		this.validate();
-		this.repaint();		
+		validate();
+		repaint();		
 	}
 	
 	private void rendererPreview(Map<String, Object> map){
 		rendererFactory.setAndCheckSettings(map);
 		renderer = rendererFactory.getRenderer();
 		rendererWindow = new ImageWindow(renderer.getImage());
-		rendererWindow.addKeyListener(new KeyListener(){
+		rendererWindow.addKeyListener(new KeyAdapter(){
 
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -945,14 +944,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 					contrastAdjuster = new ContrastAdjuster();
 					contrastAdjuster.run("B&C");
 				}
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {					
 			}
 		});
 		rendererWindow.setVisible(true);

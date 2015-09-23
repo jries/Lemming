@@ -92,7 +92,6 @@ public class RendererSettingsPanel extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						setSettings();
 						setVisible(false);
 						dispose();
 					}
@@ -115,10 +114,6 @@ public class RendererSettingsPanel extends JDialog {
 		settings.put(KEY_RENDERER_HEIGHT, spinnerHeight.getValue());
 		settings.put(KEY_RENDERER_WIDTH, spinnerWidth.getValue());
 		return settings;
-	}
-	
-	void setSettings() {
-		setVisible(true);
 	}
 
 }

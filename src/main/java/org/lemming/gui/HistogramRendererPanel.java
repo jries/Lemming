@@ -165,6 +165,8 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		rangeSliderY.setUpperValue((int) settings.get(KEY_ymax));
 		spinnerXBins.setValue(settings.get(KEY_xBins));
 		spinnerYBins.setValue(settings.get(KEY_yBins));
+		validate();
+		repaint();
 	}
 
 	@Override

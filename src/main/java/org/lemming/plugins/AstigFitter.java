@@ -87,7 +87,9 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			return true;
+			if(settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null)
+				return true;
+			return false;
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -95,7 +97,7 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		public Fitter getFitter() {
 			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
 			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
-			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILE );
+			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILENAME );
 			if (calibFileName == null){ 
 				IJ.error("No Calibration File!");
 				return null;

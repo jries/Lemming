@@ -46,7 +46,7 @@ public class GaussRendererPanel extends ConfigurationPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dlg.setSettings();
+				dlg.setVisible(true);
 				fireChanged();
 			}
 			
