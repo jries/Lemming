@@ -13,7 +13,9 @@ import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
 import ij.plugin.frame.ContrastAdjuster;
 import ij.process.FloatPolygon;
+import ij.process.ImageProcessor;
 import net.imglib2.img.Img;
+import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
@@ -58,6 +60,8 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.factories.PreProcessingFactory;
 import org.lemming.factories.RendererFactory;
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
+import org.lemming.modules.DataTable;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
@@ -66,7 +70,6 @@ import org.lemming.modules.LocalizationMapper;
 import org.lemming.modules.Renderer;
 import org.lemming.modules.StoreLoader;
 import org.lemming.modules.TableLoader;
-import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.pipeline.FastStore;
@@ -104,7 +107,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 
-public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame implements 
+public class Controller<T extends NumericType<T> & NativeType<T>, F extends Frame<T>> extends JFrame implements 
 	ActionListener,ListCheckListener,ContainerListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;
@@ -191,13 +194,15 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 
 	private Renderer renderer;
 
-	private FrameElements detResults;
+	private FrameElements<T> detResults;
 
-	private FrameElements fitResults;
+	private List<Element> fitResults;
 
 	private ImageWindow rendererWindow;
 
 	protected int widgetSelection = 0;
+
+	private boolean processed = false;
 
 	protected static int DETECTOR = 1;
 
@@ -228,7 +233,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		}
 		setTitle("Lemming");
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, 330, 470);
+		setBounds(100, 100, 330, 500);
 		contentPane = new JPanel();
 		setContentPane(contentPane);
 
@@ -371,7 +376,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		tabbedPane.addTab("Reconstruct", null, panelRecon, null);
 		GridBagLayout gbl_panelRecon = new GridBagLayout();
 		gbl_panelRecon.columnWidths = new int[] {300};
-		gbl_panelRecon.rowHeights = new int[] {70, 280};
+		gbl_panelRecon.rowHeights = new int[] {80, 310};
 		gbl_panelRecon.columnWeights = new double[]{1.0};
 		gbl_panelRecon.rowWeights = new double[]{1.0, 0.0};
 		panelRecon.setLayout(gbl_panelRecon);
@@ -467,7 +472,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 
 ////Overrides
 	
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object s = e.getSource();
@@ -503,86 +507,11 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		if (s == this.chkboxFilter){
 			if (panelReconDown != null)				// remove panel if one exists
 				panelRecon.remove(panelReconDown);
+			filterTable();
 		}
 		
-		if (s == this.btnProcess){ // Manager
-			
-			
-			if (tabbedPane.getSelectedIndex()==0){
-				if (panelDown != null){
-					Map<String, Object> curSet = panelDown.getSettings();
-					for (String key : curSet.keySet())
-						settings.put(key, curSet.get(key));
-				}
-			} else if (tabbedPane.getSelectedIndex()==1){
-				if (panelReconDown != null){
-					Map<String, Object> curSet = panelReconDown.getSettings();
-					for (String key : curSet.keySet())
-						settings.put(key, curSet.get(key));
-				}
-			}
-			if (tif==null) {
-				IJ.error("Please load images first!");
-				return;
-			}
-			
-			if (storeLoader != null){
-				LocalizationMapper mapper = new LocalizationMapper();
-				manager.add(mapper);
-				manager.linkModules(storeLoader, mapper);
-				
-				if (fitter != null){
-					manager.add(fitter);
-					manager.linkModules(tif, fitter);
-					manager.linkModules(mapper, fitter);
-				}
-				if (renderer != null){
-					manager.add(renderer);
-					manager.linkModules(fitter, renderer, false);
-				}	
-				manager.run();
-				return;
-			}
-			
-			if (detector==null) {
-				IJ.error("Please choose detector first!");
-				return;
-			}
-			
-			manager.add(detector);
-			
-			ImageMath math = null;
-			if (!checksPreprocessing.isEmpty()){
-				AbstractModule pp = preProcessingFactory.getModule();
-				manager.add(pp);
-				manager.linkModules(tif, pp);
-				operators op = preProcessingFactory.getOperator();
-				math = new ImageMath();
-				math.setOperator(op);
-				manager.add(math);
-				manager.linkModules(tif, math);
-				manager.linkModules(pp, math);
-				manager.linkModules(math, detector);
-			} else {
-				manager.linkModules(tif, detector);
-			}			
-			UnpackElements unpacker = new UnpackElements();
-			manager.add(unpacker);
-			manager.linkModules(detector, unpacker);
-			
-			if (fitter != null){
-				manager.add(fitter);
-				if (math != null)
-					manager.linkModules(math, fitter);
-				else
-					manager.linkModules(tif, fitter);
-				manager.linkModules(detector, fitter);				
-			}
-			if (renderer != null){
-				manager.add(renderer);
-				manager.linkModules(fitter, renderer, false);
-			}
-			manager.run();
+		if (s == this.btnProcess){ 			
+			process(true);		
 		}
 		
 		if (s == this.btnLoad){
@@ -593,6 +522,9 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		}
 		
 		if (s == this.btnSave){
+			if (!processed) {
+				// TODO
+			}
 			if (chkboxFilter.isSelected()){
 				
 			} else {
@@ -608,7 +540,80 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		}
 	}
 
-	
+	private void process(boolean b) {
+		// Manager
+
+		/*if (tabbedPane.getSelectedIndex() == 0) {
+			if (panelDown != null) {
+				Map<String, Object> curSet = panelDown.getSettings();
+				for (String key : curSet.keySet())
+					settings.put(key, curSet.get(key));
+			}
+		} else if (tabbedPane.getSelectedIndex() == 1) {
+			if (panelReconDown != null) {
+				Map<String, Object> curSet = panelReconDown.getSettings();
+				for (String key : curSet.keySet())
+					settings.put(key, curSet.get(key));
+			}
+		}*/
+		if (tif == null) {
+			IJ.error("Please load images first!");
+			return;
+		}
+
+		if (storeLoader != null) {
+			LocalizationMapper mapper = new LocalizationMapper();
+			manager.add(mapper);
+			manager.linkModules(storeLoader, mapper);
+
+			if (fitter != null) {
+				manager.add(fitter);
+				manager.linkModules(tif, fitter);
+				manager.linkModules(mapper, fitter);
+			}
+			if (renderer != null) {
+				manager.add(renderer);
+				manager.linkModules(fitter, renderer, false);
+			}
+			return;
+		}
+
+		if (detector == null) {
+			IJ.error("Please choose detector first!");
+			return;
+		}
+		manager.add(detector);
+
+		ImageMath<T,F> math = null;
+		if (!checksPreprocessing.isEmpty()) {
+			AbstractModule pp = preProcessingFactory.getModule();
+			manager.add(pp);
+			manager.linkModules(tif, pp);
+			operators op = preProcessingFactory.getOperator();
+			math = new ImageMath<>();
+			math.setOperator(op);
+			manager.add(math);
+			manager.linkModules(tif, math);
+			manager.linkModules(pp, math);
+			manager.linkModules(math, detector);
+		} else {
+			manager.linkModules(tif, detector);
+		}
+		
+		if (fitter != null) {
+			manager.add(fitter);
+			manager.linkModules(detector, fitter);
+		}
+		if (renderer != null) {
+			manager.add(renderer);
+			manager.linkModules(fitter, renderer, false);
+		}
+		if (b) {
+			manager.run();
+			processed = true;
+		}
+	}
+
 	@Override
 	public void addCheck(ListEvent event) {
 		ListCheckModel source = event.getSource();
@@ -640,6 +645,17 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
 			gbc_panelDown.gridx = 0;
 			gbc_panelDown.gridy = 2;
+			
+			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
+
+				@SuppressWarnings("unchecked")
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
+					ppPreview(value);
+				}
+			});
+			
 			panelLoc.add(panelDown, gbc_panelDown);
 			this.validate();
 			this.repaint();
@@ -686,6 +702,50 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 	}
 	
 	//// Private Methods
+	
+	@SuppressWarnings("unchecked")
+	private void ppPreview(Map<String, Object> map) {
+		preProcessingFactory.setAndCheckSettings(map);
+		AbstractModule preProcessor = detectorFactory.getDetector();
+		int frameNumber = previewerWindow.getImagePlus().getSlice();
+		List<Element> list = new ArrayList<>();
+		
+		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
+			ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(i);
+			Img<T> curImage = LemmingUtils.wrap(ip);
+			Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
+			list.add(curFrame);
+		}
+		
+		FastStore ppResults = new FastStore();;
+		if (!list.isEmpty()){
+			FastStore previewStore = new FastStore();
+	 		Element last = list.remove(list.size()-1);
+			for (Element entry : list)	
+				previewStore.put(entry);
+			last.setLast(true);
+			previewStore.put(last);
+			preProcessor.setInput(previewStore);
+			preProcessor.setOutput(ppResults);
+			Thread preProcessingThread = new Thread(preProcessor,preProcessor.getClass().getSimpleName());
+			preProcessingThread.start();
+			try {
+				preProcessingThread.join();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		rendererWindow.repaint();
+		
+		if(ppResults.isEmpty()) return;
+		
+		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
+			Frame<T> resFrame = (Frame<T>) ppResults.get();
+			if (resFrame == null) continue;
+			ImageProcessor ip = ImageJFunctions.wrap(resFrame.getPixels(), "").getProcessor();
+			previewerWindow.getImagePlus().getStack().setProcessor(ip, i);
+		}
+	}
 	
 	private void loadImages() {
 	    manager.reset();
@@ -764,7 +824,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
         File file = fc.getSelectedFile();
 
 		if (this.chkboxFilter.isSelected()){
-        	TableLoader tl = new TableLoader(file,",");
+        	TableLoader tl = new TableLoader(file);
+        	tl.readCSV(',');
         	table = tl.getTable();
 		}
         else {
@@ -829,6 +890,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		repaint();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private void detectorPreview(Map<String, Object> map){
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
@@ -836,8 +898,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		Img<T> curImage = LemmingUtils.wrap(previewerWindow.getImagePlus().getStack().getProcessor(frameNumber));
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
 		
-		detResults = (FrameElements) detector.preview(curFrame);
-		FloatPolygon points = LemmingUtils.convertToPoints(detResults);
+		detResults = (FrameElements<T>) detector.preview(curFrame);
+		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList());
 		PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
@@ -948,7 +1010,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 		});
 		rendererWindow.setVisible(true);
 	
-		List<Element> list = fitResults.getList();
+		List<Element> list = fitResults;
 		if (!list.isEmpty()){
 			FastStore previewStore = new FastStore();
 	 		Element last = list.remove(list.size()-1);
@@ -966,6 +1028,30 @@ public class Controller<T extends NumericType<T> & NativeType<T>> extends JFrame
 			}
 		}
 		rendererWindow.repaint();
+	}
+	
+	private void filterTable() {
+		if (!processed){
+			if (IJ.showMessageWithCancel("Filter", "Pipeline not yet processed.\nDo you want to process it now?"))
+				process(false);
+			if(fitter == null) return;
+			DataTable dt = new DataTable();
+			manager.add(dt);
+			manager.linkModules(fitter, dt);
+			manager.run();
+			processed = true;
+			this.table = dt.getTable();
+			if (table!=null || !table.columnNames().isEmpty()){
+				panelReconDown = new FilterPanel(table);
+				GridBagConstraints gbc_panelDown = new GridBagConstraints();
+				gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
+				gbc_panelDown.gridx = 0;
+				gbc_panelDown.gridy = 1;
+				panelRecon.add(panelReconDown, gbc_panelDown);
+				validate();
+				repaint();
+			}
+		}
 	}
 	
 	private void createDetectorProvider(){

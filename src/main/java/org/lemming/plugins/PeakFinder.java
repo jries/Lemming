@@ -9,10 +9,10 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.PeakFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.modules.Detector;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.MultiRunModule;
 import org.scijava.plugin.Plugin;
 
 import net.imglib2.Cursor;
@@ -24,7 +24,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
 
 	public static final String NAME = "Peak Finder";
 
@@ -35,7 +35,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 											+ "</html>";
 	private int size;
 	private double threshold;
-	private long start;
 	private int counter;
 
 	/**
@@ -53,28 +52,9 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 		this.threshold = threshold;
 	}
 
+	
 	@Override
-	protected void beforeRun() {
-		start = System.currentTimeMillis();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public Element process(Element data) {
-
-		F frame = (F) data;
-		if (frame == null)
-			return null;
-		
-		if (frame.isLast()) { // make the poison pill
-			pause(10);
-			cancel();
-			return process1(frame,true);
-		}
-		return process1(frame,false);
-	}
-
-	private FrameElements process1(final F frame, boolean b) {
+	public FrameElements<T> detect(final F frame) {
 		Interval interval = Intervals.expand(frame.getPixels(), -size);
 
 		RandomAccessibleInterval<T> source = Views.interval(frame.getPixels(), interval);
@@ -115,12 +95,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 				counter++; 
 			}
 		}
-				
-		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
-		if (b)			
-			fe.setLast(true);
-	
-		return fe;
+		return new FrameElements<>(found, frame);
 	}
 
 	/**
@@ -128,18 +103,6 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Multi
 	 */
 	public double getThreshold() {
 		return threshold;
-	}
-
-	@Override
-	protected void afterRun() {
-		System.out.println("PeakFinder found "
-				+ counter + " peaks in "
-				+ (System.currentTimeMillis() - start) + "ms.");
-	}
-
-	@Override
-	public boolean check() {
-		return inputs.size()==1 && outputs.size()>=1;
 	}
 	
 	@Plugin( type = DetectorFactory.class, visible = true )

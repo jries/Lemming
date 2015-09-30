@@ -7,6 +7,4 @@ public interface Element{
 	public boolean isLast();
 	
 	public void setLast(boolean b);
-	
-	public Element deepClone();
 }

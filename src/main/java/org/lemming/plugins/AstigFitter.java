@@ -20,7 +20,6 @@ import org.lemming.interfaces.Frame;
 import org.lemming.math.GaussianFitterZ;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.FittedLocalization;
-import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
@@ -45,20 +44,20 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 	}
 	
 	@Override
-	public FrameElements fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
+	public List<Element> fit(List<Element> sliceLocs,RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
 		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
 		List<Element> found = new ArrayList<>();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			final Roi origroi = new Roi(loc.getX() - size, loc.getY() - size, 2*size+1, 2*size+1);
-			final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+			final Roi roi = cropRoi(ip.getRoi(),origroi.getBounds());
 			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 3000, 1000, params);
 			double[] result = null;
 			result = gf.fit();
 			if (result!= null)
 				found.add(new FittedLocalization(loc.getID(),loc.getFrame(), result[0], result[1], result[2], result[3], result[4]));			
 		}
-		return new FrameElements(found, frameNumber);
+		return found;
 	}
 
 	@Plugin( type = FitterFactory.class, visible = true )

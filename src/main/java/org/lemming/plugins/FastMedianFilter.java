@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -87,7 +88,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		return null;
 	}
 
-	class FrameCallable implements Callable<F> {
+	private class FrameCallable implements Callable<F> {
 
 		private FastTable<F> list;
 		private boolean isLast;
@@ -99,16 +100,16 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 		@Override
 		public F call() throws Exception {
-			return process1(list, isLast);
+			return process(list, isLast);
 		}
 
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	private F process1(final FastTable<F> list, final boolean isLast) {
+	private F process(final Queue<F> list, final boolean isLast) {
 		if (list.isEmpty())
 			return null;
-		//final int middle = nFrames / 2; // integer division
+		
 		final F firstFrame = list.peek();
 		final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
 
@@ -143,7 +144,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		return newFrame;
 	}
 
-	@SuppressWarnings("null")
 	@Override
 	protected void afterRun() {
 
@@ -204,7 +204,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 				}
 				frameA = frameB;
 			}
-
+			if (frameB == null) return;
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
 				newOutput(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
@@ -297,6 +297,12 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		@Override
 		public operators getOperator() {
 			return operators.SUBSTRACTION;
+		}
+
+		@Override
+		public int processingFrames() {
+			int procFrames = (int) ((int) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (int) settings.get(FastMedianPanel.KEY_FRAMES) == 0); 
+			return procFrames;
 		}
 		
 	}

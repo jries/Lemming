@@ -28,14 +28,14 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.DoGFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.modules.Detector;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.MultiRunModule;
 import org.scijava.plugin.Plugin;
 
 
-public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
 
 	public static final String NAME = "DoG Finder";
 
@@ -46,21 +46,17 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 											+ "</html>";
 	private double radius;
 	private float threshold;
-	private long start;
 	private double[] calibration;
 	private int counter = 0;
 
 	public DoGFinder(final double radius, final float threshold) {
+		super();
 		this.radius = radius;
 		this.threshold = threshold;
 		this.calibration = new double[]{1,1};
 	}
 	
-	@Override
-	protected void beforeRun() {
-		start = System.currentTimeMillis();
-	}
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element process(Element data) {
@@ -70,14 +66,18 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 		if (frame.isLast()){
 			System.out.println("Last frame finished:"+frame.getFrameNumber());
 			cancel();
-			return process1(frame, true);
+			FrameElements<T> res = detect(frame);
+			res.setLast(true);
+			return res; 
 		}
 		if (frame.getFrameNumber()%100==0)
 			System.out.println("frames: " + frame.getFrameNumber());
-		return process1(frame, false);
+		return detect(frame);
 	}
-
-	private FrameElements process1(F frame, boolean b) {
+	
+	@Override
+	public FrameElements<T> detect(F frame){
+	
 		final RandomAccessibleInterval< T > interval = frame.getPixels();
 		final ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> extended = Views.extendMirrorSingle(interval);
 		
@@ -123,19 +123,11 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 			found.add(new Localization(frame.getFrameNumber(), x, y));
 			counter++;
 		}
-		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
-		if (b)			
-			fe.setLast(true);
-		return fe;
+
+		return new FrameElements<>(found, frame);
 	}
 	
-	@Override
-	protected void afterRun() {
-		System.out.println("DoGFinder found "
-				+ counter + " peaks in "
-				+ (System.currentTimeMillis() - start) + "ms.");
-	}
-	
+		
 	private static <T extends Comparable<T>> ArrayList<Point> findLocalExtrema( final RandomAccessibleInterval<T> img, final MaximumCheck<T> localNeighborhoodCheck, int size)
 	{
 		
@@ -230,5 +222,6 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends MultiR
 		}
 		
 	}
+
 
 }

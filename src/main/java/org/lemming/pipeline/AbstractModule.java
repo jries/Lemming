@@ -141,8 +141,7 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 		return process(el);
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public Element preview(Frame el){
+	public <T> Element preview(Frame<T> el){
 		return process(el);
 	}	
 	

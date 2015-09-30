@@ -8,7 +8,7 @@ import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
 @SuppressWarnings("deprecation")
-public class RoiSelector extends SingleRunModule {
+public class RoiSelector<T> extends SingleRunModule {
 	
 	private RectangleRegionOfInterest roi;
 	private long start;
@@ -29,12 +29,13 @@ public class RoiSelector extends SingleRunModule {
 		start = System.currentTimeMillis();		
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Element process(Element data) {
 		
-		FrameElements fe = (FrameElements) data;
+		FrameElements<T> fe = (FrameElements<T>) data;
 		if (fe==null) return null;
-		if (fe.getNumber() < skipFrames) return null;
+		if (fe.getFrame().getFrameNumber() < skipFrames) return null;
 		
 		for ( Element el : fe.getList()){
 			Localization loc = (Localization) el;

@@ -24,11 +24,7 @@ public class MapElement implements Element {
 		this.isLast = isLast;
 	}
 
-	@Override
-	public Element deepClone() {
-		return new MapElement(map);
-	}
-	
+
 	public Map<String,Object> get(){
 		return map;
 	}

@@ -1,5 +1,6 @@
 package org.lemming.plugins;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,6 @@ import org.lemming.interfaces.Frame;
 import org.lemming.math.GaussianFitterLM;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.FittedLocalization;
-import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
@@ -59,13 +59,14 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 	}
 
 	@Override
-	public FrameElements fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
+	public List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
 		ImageProcessor ip = ImageJFunctions.wrap(pixels,"").getProcessor();
 		List<Element> found = new ArrayList<>();
+		final Rectangle imageRoi = ip.getRoi();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			final Roi origroi = new Roi(loc.getX() - size, loc.getY() - size, 2*size+1, 2*size+1);
-			final Roi roi = new Roi(ip.getRoi().intersection(origroi.getBounds()));
+			final Roi roi = cropRoi(imageRoi,origroi.getBounds());
 			GaussianFitterLM gf = new GaussianFitterLM(ip, roi, 3000, 1000);
 			double[] result = null;
 			result = gf.fit();
@@ -74,7 +75,7 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 				found.add(new FittedLocalization(loc.getID(),loc.getFrame(), result[0], result[1], calculateZ(SxSy), result[2], result[3]));	
 			}
 		}
-		return new FrameElements(found, frameNumber);
+		return found;
 	}
 	
 	private double calculateZ(final double SxSy){

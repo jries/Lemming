@@ -13,13 +13,13 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.NMSDetectorPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.modules.Detector;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.MultiRunModule;
 import org.scijava.plugin.Plugin;
 
-public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
 	
 	public static final String NAME = "NMS Detector";
 
@@ -33,36 +33,15 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 	
 	private int n_;
 
-	private long start;
-
 	private int counter=0;
 
 	public NMSDetector(final double threshold, final int size) {
 		this.threshold = threshold;
 		this.n_ = size;
 	}
-	
+		
 	@Override
-	protected void beforeRun() {
-		start = System.currentTimeMillis();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public Element process(Element data) {
-		F frame = (F) data;
-		if (frame == null)
-			return null;
-
-		if (frame.isLast()) { // make the poison pill
-			pause(10);
-			cancel();
-			return process1(frame, true);
-		}
-		return process1(frame, false);
-	}
-	
-	private FrameElements process1(F frame, boolean b) {
+	public FrameElements<T> detect(F frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		RandomAccess<T> ra = interval.randomAccess();
 		
@@ -119,27 +98,10 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Mult
 			}			
 		}
 				
-		
-		FrameElements fe = new FrameElements(found, frame.getFrameNumber());
-		if (b){			
-			fe.setLast(true);
-			return fe;
-		}
 		if (found.isEmpty()) return null;
-		return fe;
+		return new FrameElements<>(found, frame);
 	}
 	
-	@Override
-	protected void afterRun() {
-		System.out.println("NMSFinder found "
-				+ counter + " peaks in "
-				+ (System.currentTimeMillis() - start) + "ms.");
-	}
-
-	@Override
-	public boolean check() {
-		return outputs.entrySet().size()==1;
-	}
 
 	@Plugin( type = DetectorFactory.class, visible = true )
 	public static class Factory implements DetectorFactory{

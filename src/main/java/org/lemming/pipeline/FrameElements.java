@@ -3,16 +3,17 @@ package org.lemming.pipeline;
 import java.util.List;
 
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 
-public class FrameElements implements Element {
+public class FrameElements<T> implements Element {
 	
 	private boolean isLast;
 	private List<Element> list;
-	private long number;
+	private Frame<T> frame;
 
-	public FrameElements(List<Element> list_, long num) {
+	public FrameElements(List<Element> list_, Frame<T> f) {
 		list = list_;
-		number = num;
+		frame = f;
 	}
 
 	@Override
@@ -25,13 +26,8 @@ public class FrameElements implements Element {
 		isLast = b;
 	}
 
-	@Override
-	public Element deepClone() {
-		return new FrameElements(list, number);
-	}
-
-	public long getNumber(){
-		return number;
+	public Frame<T> getFrame(){
+		return frame;
 	}
 	
 	public List<Element> getList(){

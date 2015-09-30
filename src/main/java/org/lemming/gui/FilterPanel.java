@@ -100,7 +100,6 @@ public class FilterPanel extends ConfigurationPanel implements ActionListener, C
 			scrollPane.add(hPanel);
 			panelStack.add(hPanel);
 			stateChanged( CHANGE_EVENT );
-
 		}
 		
 		if (s == this.btnRemove){
@@ -112,6 +111,6 @@ public class FilterPanel extends ConfigurationPanel implements ActionListener, C
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		
+		fireChanged();
 	}
 }

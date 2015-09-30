@@ -33,6 +33,8 @@ public class ExtendableTable {
 	
 	public ExtendableTable(Map<String, List<Object>> table){
 		this.table = table;
+		for(String key : table.keySet())
+			names.put(key,key);
 	}
 	
 	/**
@@ -46,7 +48,7 @@ public class ExtendableTable {
 	/**
 	 * 
 	 */
-	public void addLocalizationMembers(){
+	public void addXYMembers(){
 		//table.put("id",new FastTable<Object>());
 		addNewMember("x");
 		addNewMember("y");
@@ -150,7 +152,8 @@ public class ExtendableTable {
 	public void add(String member, Object o){
 		List<Object> t = table.get(member);
 		if (t!=null){
-			if (t.size() == nRows) nRows++;
+			if (t.size() == nRows) 
+				nRows++;
 			t.add(o);
 			return;
 		}
@@ -162,6 +165,8 @@ public class ExtendableTable {
 	 * @return number of rows
 	 */
 	public int getNumberOfRows() {
+		if (nRows < table.values().iterator().next().size())
+			nRows = table.values().iterator().next().size();
 		return nRows;
 	}
 	
@@ -229,5 +234,4 @@ public class ExtendableTable {
 
 		};
 	}
-	
 }

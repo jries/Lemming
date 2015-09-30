@@ -4,8 +4,9 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 
+import java.util.List;
+
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 
 import ij.process.ByteProcessor;
@@ -14,12 +15,11 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 
-
 public class LemmingUtils {
 	
-	public static FloatPolygon convertToPoints(FrameElements me){
+	public static FloatPolygon convertToPoints(List<Element> me){
 		FloatPolygon polygon = new FloatPolygon();
-		for (Element el: me.getList()){
+		for (Element el: me){
 			Localization loc = (Localization) el;
 			polygon.addPoint(loc.getX(),loc.getY());
 		}

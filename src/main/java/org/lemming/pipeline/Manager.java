@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import org.lemming.interfaces.Store;
 
+import ij.IJ;
+
 public class Manager implements Runnable {
 	
 	private Map<Integer,Store> storeMap = new LinkedHashMap<>();
@@ -79,10 +81,17 @@ public class Manager implements Runnable {
 		
 		List<Thread> threads= new ArrayList<>();
 		for(AbstractModule starter:modules.values()){
-			if (!starter.check()) continue;
+			if (!starter.check()) {
+				IJ.error("Module not linked properly");
+				continue;
+			}try {
+				Thread.sleep(100); 						// HACK : give the module some time to start working
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			Thread t = new Thread(starter, starter.getClass().getSimpleName());
 			t.start();
-			threads.add(t);
+			threads.add(t);			
 		}
 		
 		for(Thread joiner:threads){

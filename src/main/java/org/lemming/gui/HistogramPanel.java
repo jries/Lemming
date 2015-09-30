@@ -8,8 +8,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.math3.stat.StatUtils;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -18,8 +16,10 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.lemming.modules.TableLoader;
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.tools.LogHistogramDataset;
+import org.lemming.tools.NumericHistogram;
 import org.lemming.tools.XYTextSimpleAnnotation;
 
 import java.awt.BasicStroke;
@@ -38,6 +38,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -59,6 +60,10 @@ public class HistogramPanel extends JPanel
 	private static final long serialVersionUID = 1L;
 
 	private static final String DATA_SERIES_NAME = "Data";
+
+	private static final int maxCount = 1000;
+	
+	private static final int maxBins = 80;
 
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
 
@@ -100,40 +105,22 @@ public class HistogramPanel extends JPanel
 
 	private ExtendableTable table;
 
+	private Random rnd;
+	
 
-	/*
+	/**
 	 * CONSTRUCTOR
 	 */
-
-	/*public FilterPanel(  final Map< String, double[] > valuesMap, final int selectedKey )
-	{
-		super();
-		this.valuesMap = valuesMap;
-		allKeys = new ArrayList<>();
-		for (String k : valuesMap.keySet())
-			allKeys.add(k);
-		initGUI();
-		jComboBoxFeature.setSelectedIndex( selectedKey );
-	}
-
-	public FilterPanel( final Map< String, double[] > valuesMap)
-	{
-		this( valuesMap, 0 );
-	}*/
-
 	public HistogramPanel(ExtendableTable table, final int selectedKey) {
 		super();
 		allKeys = new ArrayList<>();
 		this.table = table;
 		for (String k : table.getNames().keySet())
 			allKeys.add(k);
+		this.rnd = new Random(System.currentTimeMillis());
 		initGUI();
 		jComboBoxFeature.setSelectedIndex( selectedKey );
 	}
-
-	/*
-	 * PUBLIC METHODS
-	 */
 
 	/**
 	 * Set the threshold currently selected for the data displayed in this
@@ -210,50 +197,32 @@ public class HistogramPanel extends JPanel
 	public void refresh()
 	{
 		final double old = getThreshold();
+		final double oldUpper = getUpperThreshold();
 		key = allKeys.get( jComboBoxFeature.getSelectedIndex() );
-		Double[] col = table.getColumn(key).toArray(new Double[]{});
-		final double[] values = ArrayUtils.toPrimitive(col);
+		NumericHistogram histogram = new NumericHistogram();
+		histogram.allocate(maxBins);
+		final List<Object> col = table.getColumn(key);
+		final int nRows = table.getNumberOfRows();
+		for (int i = 0 ; i < Math.min(maxCount, nRows); i++){
+			Number rowD = (Number) col.get(rnd.nextInt(nRows));
+			histogram.add(rowD.doubleValue());
+		}
 
-		if ( null == values || 0 == values.length )	{
+		if (  null == col || 0 == col.size()  )	{
 			dataset = new LogHistogramDataset();
 			annotationUpper.setLocation( 0.5f, 0.5f );
 			annotationUpper.setText( "No data" );
 		}
 		else {
-			final int nBins = getNBins( values, 8, 100 );
 			dataset = new LogHistogramDataset();
-			if ( nBins > 1 ){
-				dataset.addSeries( DATA_SERIES_NAME, values, nBins );
-			}
+			dataset.addSeries( DATA_SERIES_NAME, histogram.getCounts(), maxBins, histogram.quantile(0), histogram.quantile(1));
 		}
 		plot.setDataset( dataset );
 		setThreshold(old);
+		setUpperThreshold(oldUpper);
 		chartPanel.repaint();
 	}
 
-	/**
-	 * Return the optimal bin number for a histogram of the data given in array,
-	 * using the Freedman and Diaconis rule (bin_space = 2*IQR/n^(1/3)). It is
-	 * ensured that the bin number returned is not smaller and no bigger than
-	 * the bounds given in argument.
-	 */
-	private static final int getNBins( final double[] values, final int minBinNumber, final int maxBinNumber )
-	{
-		final int size = values.length;
-		final double q1 = StatUtils.percentile( values, 0.25 );
-		final double q3 = StatUtils.percentile( values, 0.75 );
-		final double iqr = q3 - q1;
-		final double binWidth = 2 * iqr * Math.pow( size, -0.333 );
-		final double range = StatUtils.max(values)-StatUtils.min(values);
-		int nBin = ( int ) ( range / binWidth + 1 );
-		if ( nBin > maxBinNumber ){
-			nBin = maxBinNumber;
-		}
-		else if ( nBin < minBinNumber ){
-			nBin = minBinNumber;
-		}
-		return nBin;
-	}
 	
 	private void fireThresholdChanged()
 	{
@@ -263,11 +232,21 @@ public class HistogramPanel extends JPanel
 
 	private void comboBoxSelectionChanged()
 	{
+		// long start = System.currentTimeMillis();
 		final int index = jComboBoxFeature.getSelectedIndex();
 		key = allKeys.get( index );
-		Double[] col = table.getColumn(key).toArray(new Double[]{});
-		final double[] values = ArrayUtils.toPrimitive(col);
-		if ( null == col || 0 == col.length )
+		NumericHistogram histogram = new NumericHistogram();
+		histogram.allocate(maxBins);
+		final List<Object> col = table.getColumn(key);
+		final int nRows = table.getNumberOfRows();
+		for (int i = 0 ; i < Math.min(maxCount, nRows); i++){ 			// random portion of the whole data set
+			Number rowD = (Number) col.get(rnd.nextInt(nRows));
+			histogram.add(rowD.doubleValue());
+		}
+		histogram.add(((Number)col.get(0)).doubleValue()); 				// set first and last to get the whole range
+		histogram.add(((Number)col.get(nRows-1)).doubleValue());		// in sequential data
+		
+		if ( null == col || 0 == col.size() )
 		{
 			dataset = new LogHistogramDataset();
 			setThreshold(Double.NaN);
@@ -279,11 +258,9 @@ public class HistogramPanel extends JPanel
 		}
 		else
 		{
-			final int nBins = getNBins( values, 8, 100 );
 			dataset = new LogHistogramDataset();
-			if ( nBins > 1 ){
-				dataset.addSeries( DATA_SERIES_NAME, values, nBins );
-			}
+			dataset.addSeries( DATA_SERIES_NAME, histogram.getCounts(), maxBins, histogram.quantile(0), histogram.quantile(1));
+			
 			plot.setDataset( dataset );
 			final double length = plot.getDomainAxis().getRange().getLength();
 			setThreshold(plot.getDomainAxis().getRange().getCentralValue()-0.25*length);
@@ -291,6 +268,7 @@ public class HistogramPanel extends JPanel
 		}
 		resetAxes();
 		redrawThresholdMarker();
+		// System.out.println("Histogram created in :" + (System.currentTimeMillis()-start) + "ms");
 	}
 
 	private void initGUI()
@@ -537,39 +515,12 @@ public class HistogramPanel extends JPanel
 	 */
 	public static void main( final String[] args )
 	{
-		// Prepare fake data
-		final int N_ITEMS = (int) 1e7;
-		final Random ran = new Random();
-		double mean;
+		TableLoader loader = new TableLoader(new File("/home/ronny/Videos/testTable.csv"));
+		//loader.readObjects();
+		loader.readCSV(',');
 		
-		ExtendableTable table = new ExtendableTable();
-		table.addNewMember("Contrast");
-		table.addNewMember("Morphology");
-		table.addNewMember("Mean intensity");
-		
-		for (String k: table.getNames().keySet()){
-			List<Object> col = table.getColumn(k);
-			mean = ran.nextDouble() * 10;
-			for ( int j = 0; j < N_ITEMS; j++ )
-				col.add(ran.nextGaussian() + 5 + mean);
-		}
-
-		/*final String[] features = new String[] { "Contrast", "Morphology", "Mean intensity" };
-
-		final Map< String, double[] > fv = new HashMap<>();
-		for ( final String feature : features )
-		{
-			final double[] val = new double[ N_ITEMS ];
-			mean = ran.nextDouble() * 10;
-			for ( int j = 0; j < val.length; j++ )
-				val[ j ] = ran.nextGaussian() + 5 + mean;
-			fv.put( feature, val );
-		}*/
-		
-		
-
 		// Create GUI
-		final HistogramPanel tp = new HistogramPanel( table, 0 );
+		final HistogramPanel tp = new HistogramPanel( loader.getTable(), 0 );
 		tp.resetAxes();
 		final JFrame frame = new JFrame();
 		frame.getContentPane().add( tp );

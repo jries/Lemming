@@ -1,6 +1,5 @@
 package org.lemming.pipeline;
 
-import org.lemming.interfaces.Element;
 import org.lemming.interfaces.LocalizationInterface;
 
 public class Localization implements LocalizationInterface {
@@ -52,11 +51,7 @@ public class Localization implements LocalizationInterface {
 		return frame;
 	}
 
-	@Override
-	public Element deepClone() {
-		return new Localization(ID, frame, X, Y);
-	}
-	
+
 	@Override
 	public String toString(){
 		return "" + getID() + "," + getFrame() + "," + getX() + "," + getY();

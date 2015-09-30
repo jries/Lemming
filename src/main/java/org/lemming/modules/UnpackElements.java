@@ -7,7 +7,7 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
-public class UnpackElements extends SingleRunModule {
+public class UnpackElements<T> extends SingleRunModule {
 
 	private long start;
 	private int counter;
@@ -20,10 +20,11 @@ public class UnpackElements extends SingleRunModule {
 		start = System.currentTimeMillis();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Element process(Element data) {
 		if (data instanceof FrameElements){
-			FrameElements el = (FrameElements) data;
+			FrameElements<T> el = (FrameElements<T>) data;
 			counter++;
 			List<Element> list = el.getList();
 			if(el.isLast()){

@@ -1,63 +1,111 @@
 package org.lemming.tests;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.pipeline.ExtendableTable;
 
-public class ExtendableTableTest {
+import ij.IJ;
+import javolution.util.FastTable;
 
+public class ExtendableTableTest {
+	
+	final int N = (int) 1e7;
+	final long[] T = new long[N];
+	long sum = 0;
+	long max = 0;
+	long id = 0;
+	long t0,t00;
+	final Random ran = new Random();
+	final static String datafile = "testTable.csv";
+	private ExtendableTable h;
+	private List<Object> colx;
+	private List<Object> coly;
+	private List<Object> colz;
+	private List<Object> colf;
+	
 	@Before
 	public void setUp() throws Exception {
-	}
 
-	@Test
-	public static void test() {
-		int N = (int) 1e7;
-		ExtendableTable h = new ExtendableTable();
+		h = new ExtendableTable();
+		h.addXYMembers();
 		h.addNewMember("z");
 		h.addNewMember("frame");
 		h.addNewMember("roi");
+
+		colx = h.getColumn("x");
+		coly = h.getColumn("y");
+		colz = h.getColumn("z");
+		colf = h.getColumn("frame");
+	}
+
+	@SuppressWarnings("cast")
+	@Test
+	public void test() {
 		
-		long t0 = System.nanoTime();
-		long t00 = t0;
-		final long[] T = new long[N];
+		t0 = System.nanoTime();
+		t00 = t0;
+		double meanx = ran.nextDouble() * 10;
+		double meany = ran.nextDouble() * 10;
+		double meanz = ran.nextDouble() * 10;
 		
-		long sum = 0;
-		long max = 0;
-		long id = 0;			
+		try {
+			final File file = File.createTempFile("testTable", ".tmp", new File("/tmp"));
+			FileOutputStream os = new FileOutputStream(file);
+			ObjectOutputStream br = new ObjectOutputStream (new BufferedOutputStream(os));
+			//BufferedWriter br = new BufferedWriter(new OutputStreamWriter(os));
+			//br.write("x,y,z,frame\n");
 		
-		List<Object> colx = h.getColumn("x");
-		List<Object> coly = h.getColumn("y");
-		List<Object> colz = h.getColumn("z");
-		List<Object> colf = h.getColumn("frame");
-		List<Object> colr = h.getColumn("roi");
-		double[] D = new double[] {1,2,3,4};
-		
-		
-		for (Integer i=0;i<N;i++){
-			colx.add(i);
-			coly.add(-i);
-			colz.add(i);
-			colf.add(i+1);
-			colr.add(D);			
-			
-			long ct = System.nanoTime();
-			long dt = ct - t0;
-			
-			t0=ct;
-			
-			sum+=dt;
-			
-			if (max < dt) {
-				max=dt;
-				id=i;
+			for (Integer i=0;i<N;i++){
+				final double gx = ran.nextGaussian() + 5 + meanx;
+				final double gy = ran.nextGaussian() + 5 + meany;
+				final double gz = ran.nextGaussian() + 5 + meanz;
+				colx.add( gx );
+				coly.add( gy);
+				colz.add( gz);
+				colf.add( i+1);
+				
+				//final String converted = gx + "," + gy + "," + gz + ","+ (i+1) +"\n";
+				//br.write(converted);
+				long ct = System.nanoTime();
+				long dt = ct - t0;
+				
+				t0=ct;
+				
+				sum+=dt;
+				
+				if (max < dt) {
+					max=dt;
+					id=i;
+				}
+				
+				T[i] = dt;
+				if (i % (N/10) == 0) 
+					System.out.println(""+ (int)((float)i/N*100) +"%");
 			}
 			
-			T[i] = dt;
+			br.writeInt(h.columnNames().size());
+			Iterator<String> cit = h.columnNames().iterator();
+			for (int k=0; k < h.columnNames().size();k++)
+				br.writeObject(cit.next());
+			Iterator<String> it = h.columnNames().iterator();
+			while (it.hasNext())
+				br.writeObject((FastTable<Object>) h.getColumn(it.next()));			
+			
+			br.close();
+		} catch (IOException e){
+			IJ.error(e.getMessage());
 		}
-		
 		System.out.println("Total time is "+(System.nanoTime()-t00)/1e6);
 		System.out.println("Average time is "+sum/N/1e6);
 		System.out.println("Max time is "+max/1e6);		

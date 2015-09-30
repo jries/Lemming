@@ -1,6 +1,5 @@
 package org.lemming.pipeline;
 
-import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 
 import net.imglib2.RandomAccessibleInterval;
@@ -76,10 +75,4 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 		else return -1;
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public Element deepClone() {
-		return new ImgLib2Frame(frameNo, height, height, slice);
-	}	
-
 }

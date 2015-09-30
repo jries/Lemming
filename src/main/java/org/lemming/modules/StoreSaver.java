@@ -43,7 +43,7 @@ public class StoreSaver extends SingleRunModule {
 		try {
 			br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 			for (String key : metaData.keySet()){
-			String line = "" + key + "=" + metaData.get(key)+"\n";
+			String line = "# " + key + "=" + metaData.get(key)+"\n";
 				br.write(line);	
 			}	
 		} catch (IOException e) {

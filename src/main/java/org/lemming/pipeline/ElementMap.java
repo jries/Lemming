@@ -27,13 +27,6 @@ public class ElementMap extends AbstractMap<String,Object> implements Element {
 		isLast = b;		
 	}
 
-
-	@Override
-	public Element deepClone() {
-		return new ElementMap(entrySet);
-	}
-
-
 	@Override
 	public Set<Entry<String,Object>> entrySet() {
         return Collections.unmodifiableSet(entrySet);

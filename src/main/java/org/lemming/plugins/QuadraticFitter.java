@@ -11,7 +11,6 @@ import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.math.SubpixelLocalization;
 import org.lemming.modules.Fitter;
-import org.lemming.pipeline.FrameElements;
 import org.scijava.plugin.Plugin;
 
 import net.imglib2.RandomAccessible;
@@ -35,14 +34,14 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 	}
 
 	@Override
-	public FrameElements fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
+	public List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
 		final RandomAccessible<T> ra = Views.extendBorder(pixels);
 		final boolean[] allowedToMoveInDim = new boolean[ ra.numDimensions() ];
 		Arrays.fill( allowedToMoveInDim, true );
 		
 		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, size, true, 0.01f, allowedToMoveInDim);
 
-		return new FrameElements(refined, frameNumber);
+		return refined;
 	}
 	
 	@Plugin( type = FitterFactory.class, visible = true )

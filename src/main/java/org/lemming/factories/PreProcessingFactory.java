@@ -1,7 +1,6 @@
 package org.lemming.factories;
 
 import java.util.Map;
-
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.PluginInterface;
 import org.lemming.modules.ImageMath.operators;
@@ -29,6 +28,14 @@ public interface PreProcessingFactory extends PluginInterface {
 	 */
 	public ConfigurationPanel getConfigurationPanel();
 	
+	/**
+	 * Returns the operator (none, plus, minus, divide or multiply) for the math operation after calculation of the module
+	 */
 	public operators getOperator();
-
+	
+	/**
+	 * Returns the number of frames used in the preview
+	 */
+	public int processingFrames();
+	
 }
