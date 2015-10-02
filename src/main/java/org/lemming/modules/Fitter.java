@@ -2,7 +2,7 @@ package org.lemming.modules;
 
 import java.awt.Rectangle;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -19,12 +19,10 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 	private long start;
 	protected int size;
-	private int queueSize;
-	private AtomicInteger counter = new AtomicInteger(0);
+	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
-	public Fitter(int queueSize, int windowSize) {
+	public Fitter(int windowSize) {
 		this.size = windowSize;
-		this.queueSize = queueSize;
 	}
 
 	public int getWindowSize(){
@@ -59,7 +57,7 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 	private void process1(FrameElements<T> data) {
 		List<Element> res = fit( data.getList(), data.getFrame().getPixels(), size, data.getFrame().getFrameNumber());
-		counter.addAndGet(res.size());
+		counterList.add(res.size());
 		for (Element el : res)
 			newOutput(el);
 	}
@@ -69,11 +67,13 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 	@SuppressWarnings({ })
 	@Override
 	protected void afterRun() {
-
+		Integer cc=0;
+		for (Integer i : counterList)
+			cc+=i;
 		FittedLocalization lastLoc = new FittedLocalization(0, -1, -1, 0, -1, -1) ;
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
-		System.out.println("Fitting of "+ counter +" elements done in " + (System.currentTimeMillis() - start)+"ms");
+		System.out.println("Fitting of "+ cc +" elements done in " + (System.currentTimeMillis() - start)+"ms");
 	}
 
 	@Override

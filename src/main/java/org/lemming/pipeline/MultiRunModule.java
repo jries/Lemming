@@ -15,102 +15,99 @@ public abstract class MultiRunModule extends AbstractModule{
 	
 	@Override
 	public void run() {
-
 		if (!inputs.isEmpty() && !outputs.isEmpty()) { // first check for existing inputs
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
+			while (inputs.get(iterator).isEmpty())
+				pause(10);
 			beforeRun();
-			if (inputs.get(iterator) != null) {
-				while (inputs.get(iterator).isEmpty())
-					pause(10);
+			
+			final ArrayList<Future<Void>> futures = new ArrayList<>();
 
-				final ArrayList<Future<Void>> futures = new ArrayList<>();
+			for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
 
-				for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
+				final Callable<Void> r = new Callable<Void>() {
 
-					final Callable<Void> r = new Callable<Void>() {
-
-						@Override
-						public Void call() {
-							while (running) {
-								if (Thread.currentThread().isInterrupted())
-									break;
-								Element data = nextInput();
-								if (data != null) 
-									newOutput(process(data));
-							}
-							return null;
+					@Override
+					public Void call() {
+						while (running) {
+							if (Thread.currentThread().isInterrupted())
+								break;
+							Element data = nextInput();
+							if (data != null) 
+								newOutput(process(data));
 						}
-
-					};
-					futures.add(service.submit(r));
-				}
-
-				for (final Future<Void> f : futures) {
-					try {
-						f.get();
-					} catch (final InterruptedException | ExecutionException e) {
-						System.err.println(e.getMessage());
+						return null;
 					}
-				}
 
+				};
+				futures.add(service.submit(r));
+			}
+
+			for (final Future<Void> f : futures) {
 				try {
-					service.awaitTermination(5, TimeUnit.MINUTES);
-				} catch (InterruptedException e) {
-					System.err.println(e.getMessage());
+					f.get();
+				} catch (final InterruptedException | ExecutionException e) {
+					System.err.println(getClass().getSimpleName()+e.getMessage());
 				}
 			}
+
+			try {
+				service.awaitTermination(5, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				System.err.println(getClass().getSimpleName()+e.getMessage());
+			}
+			
 			afterRun();
 			return;
 		}
 		if (!inputs.isEmpty()) { // first check for existing inputs
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
+			while (inputs.get(iterator).isEmpty())
+				pause(10);
 			beforeRun();
-			if (inputs.get(iterator) != null) {
-				while (inputs.get(iterator).isEmpty())
-					pause(10);
+			
+			final ArrayList<Future<Void>> futures = new ArrayList<>();
 
-				final ArrayList<Future<Void>> futures = new ArrayList<>();
+			for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
 
-				for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
+				final Callable<Void> r = new Callable<Void>() {
 
-					final Callable<Void> r = new Callable<Void>() {
-
-						@Override
-						public Void call() {
-							while (running) {
-								if (Thread.currentThread().isInterrupted())
-									break;
-								Element data = nextInput();
-								if (data != null) 
-									process(data);
-							}
-							return null;
+					@Override
+					public Void call() {
+						while (running) {
+							if (Thread.currentThread().isInterrupted())
+								break;
+							Element data = nextInput();
+							if (data != null) 
+								process(data);
 						}
-
-					};
-					futures.add(service.submit(r));
-				}
-
-				for (final Future<Void> f : futures) {
-					try {
-						f.get();
-					} catch (final InterruptedException | ExecutionException e) {
-						System.err.println(e.getMessage());
+						return null;
 					}
-				}
 
+				};
+				futures.add(service.submit(r));
+			}
+
+			for (final Future<Void> f : futures) {
 				try {
-					service.awaitTermination(5, TimeUnit.MINUTES);
-				} catch (InterruptedException e) {
-					System.err.println(e.getMessage());
+					f.get();
+				} catch (final InterruptedException | ExecutionException e) {
+					System.err.println(getClass().getSimpleName()+e.getMessage());
 				}
 			}
+
+			try {
+				service.awaitTermination(5, TimeUnit.MINUTES);
+			} catch (InterruptedException e) {
+				System.err.println(getClass().getSimpleName()+e.getMessage());
+			}
+			
 			afterRun();
 			return;
 		}
-		if (!outputs.isEmpty()) { // no inputs but maybe only output
+		if (!outputs.isEmpty()) { // only output
 			beforeRun();
 			while (running) {
 				if (Thread.currentThread().isInterrupted())

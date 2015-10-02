@@ -10,7 +10,8 @@ import org.lemming.modules.ReadLocalizations;
 import org.lemming.modules.RoiSelector;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
-
+	
+@SuppressWarnings("rawtypes")
 public class RoiSelectorTest {
 
 	private Pipeline pipe;

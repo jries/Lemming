@@ -133,7 +133,7 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
-			System.err.println(e.getMessage());
+			System.err.println("Pause:"+e.getMessage());
 		}
 	}
 	

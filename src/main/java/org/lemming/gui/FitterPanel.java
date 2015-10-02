@@ -32,7 +32,6 @@ public class FitterPanel extends ConfigurationPanel {
 	public static final String KEY_CALIBRATION_FILENAME = "CALIBRATION_FILENAME";
 	public static final String KEY_CAMERA_FILENAME = "CAMERA_FILENAME";
 	private JSpinner spinnerWindowSize;
-	private JSpinner spinnerQueueSize;
 	private JButton btnCamera;
 	private JButton btnCalibration;
 	private JLabel lblCamera;
@@ -56,11 +55,6 @@ public class FitterPanel extends ConfigurationPanel {
 			}
 		});
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
-		
-		JLabel lblQueueSize = new JLabel("Queue Size");
-		
-		spinnerQueueSize = new JSpinner();
-		spinnerQueueSize.setModel(new SpinnerNumberModel(new Integer(60), null, null, new Integer(1)));
 		
 		lblCalibration = new JLabel("File");
 		lblCalibration.setAlignmentX(0.5f);
@@ -113,27 +107,23 @@ public class FitterPanel extends ConfigurationPanel {
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addContainerGap()
-							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addGroup(groupLayout.createSequentialGroup()
-									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addComponent(lblWindowSize)
-										.addComponent(lblQueueSize))
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-										.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE)
-										.addComponent(spinnerQueueSize, GroupLayout.PREFERRED_SIZE, 63, GroupLayout.PREFERRED_SIZE)))
-								.addGroup(groupLayout.createSequentialGroup()
-									.addComponent(btnCamera, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
-									.addGap(12)
-									.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
-								.addGroup(groupLayout.createSequentialGroup()
-									.addComponent(btnCalibration, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
-									.addGap(12)
-									.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))))
+							.addComponent(lblWindowSize)
+							.addGap(7)
+							.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(13)
+							.addContainerGap()
+							.addComponent(btnCamera, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(btnCalibration, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
 							.addComponent(btnNewCalibration)))
-					.addContainerGap(136, Short.MAX_VALUE))
+					.addContainerGap(148, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -142,21 +132,17 @@ public class FitterPanel extends ConfigurationPanel {
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblWindowSize)
 						.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(17)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblQueueSize)
-						.addComponent(spinnerQueueSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(btnCamera)
 						.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
-					.addGap(6)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnCalibration)
 						.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnNewCalibration)
-					.addContainerGap(128, Short.MAX_VALUE))
+					.addContainerGap(161, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
 	}
@@ -178,7 +164,6 @@ public class FitterPanel extends ConfigurationPanel {
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		spinnerWindowSize.setValue(settings.get(KEY_WINDOW_SIZE));
-		spinnerQueueSize.setValue(settings.get(KEY_QUEUE_SIZE));
 		camFile = (File) settings.get(KEY_CAMERA_FILENAME);
 		lblCamera.setText(camFile.getName());
 		calibFile = (File) settings.get(KEY_CALIBRATION_FILENAME);
@@ -191,7 +176,6 @@ public class FitterPanel extends ConfigurationPanel {
 	public Map<String, Object> getSettings() {
 		final Map< String, Object > settings = new HashMap<>( 4 );
 		settings.put(KEY_WINDOW_SIZE, spinnerWindowSize.getValue());
-		settings.put(KEY_QUEUE_SIZE, spinnerQueueSize.getValue());
 		if (calibFile == null){
 			return settings;
 		}
