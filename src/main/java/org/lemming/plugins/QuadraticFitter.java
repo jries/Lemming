@@ -29,8 +29,8 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 			+ "</html>";
 
 
-	public QuadraticFitter(int queueSize, int windowSize) {
-		super(queueSize, windowSize);
+	public QuadraticFitter(int windowSize) {
+		super(windowSize);
 	}
 
 	@Override
@@ -76,9 +76,8 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
-			final int queueSize = (int) settings.get( QuadraticFitterPanel.KEY_QUAD_QUEUE_SIZE );
 			final int windowSize = (int) settings.get( QuadraticFitterPanel.KEY_QUAD_WINDOW_SIZE );
-			return new QuadraticFitter(queueSize, windowSize);
+			return new QuadraticFitter(windowSize);
 		}
 
 		@Override

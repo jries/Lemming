@@ -151,7 +151,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 	private JComboBox<String> comboBoxFitter;
 
 	private RendererProvider rendererProvider;
-	private JPanel panel;
+	private JPanel panelRenderer;
 	private JLabel lblRenderer;
 	private JComboBox<String> comboBoxRenderer;
 	private JCheckBox chkboxFilter;
@@ -214,7 +214,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 	 * Create the frame.
 	 * @param imp 
 	 */
-	public Controller(ImagePlus imp) {
+	public Controller() {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -378,16 +378,16 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 		gbl_panelRecon.columnWidths = new int[] {300};
 		gbl_panelRecon.rowHeights = new int[] {80, 310};
 		gbl_panelRecon.columnWeights = new double[]{1.0};
-		gbl_panelRecon.rowWeights = new double[]{1.0, 0.0};
+		gbl_panelRecon.rowWeights = new double[]{1.0, 1.0};
 		panelRecon.setLayout(gbl_panelRecon);
 		
-		panel = new JPanel();
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.insets = new Insets(0, 0, 5, 0);
-		gbc_panel.fill = GridBagConstraints.BOTH;
-		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 0;
-		panelRecon.add(panel, gbc_panel);
+		panelRenderer = new JPanel();
+		GridBagConstraints gbc_panelRenderer = new GridBagConstraints();
+		gbc_panelRenderer.insets = new Insets(0, 0, 5, 0);
+		gbc_panelRenderer.fill = GridBagConstraints.BOTH;
+		gbc_panelRenderer.gridx = 0;
+		gbc_panelRenderer.gridy = 0;
+		panelRecon.add(panelRenderer, gbc_panelRenderer);
 		
 		lblRenderer = new JLabel("Renderer");
 		
@@ -396,31 +396,31 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 		
 		chkboxFilter = new JCheckBox("Filter");
 		chkboxFilter.addActionListener(this);
-		GroupLayout gl_panel = new GroupLayout(panel);
-		gl_panel.setHorizontalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
+		GroupLayout gl_panelRenderer = new GroupLayout(panelRenderer);
+		gl_panelRenderer.setHorizontalGroup(
+			gl_panelRenderer.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelRenderer.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panel.createSequentialGroup()
+					.addGroup(gl_panelRenderer.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelRenderer.createSequentialGroup()
 							.addComponent(lblRenderer)
 							.addGap(39)
 							.addComponent(comboBoxRenderer, GroupLayout.PREFERRED_SIZE, 165, GroupLayout.PREFERRED_SIZE))
 						.addComponent(chkboxFilter))
 					.addContainerGap(39, Short.MAX_VALUE))
 		);
-		gl_panel.setVerticalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
+		gl_panelRenderer.setVerticalGroup(
+			gl_panelRenderer.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelRenderer.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panel.createParallelGroup(Alignment.BASELINE)
+					.addGroup(gl_panelRenderer.createParallelGroup(Alignment.BASELINE)
 						.addComponent(comboBoxRenderer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblRenderer))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(chkboxFilter)
 					.addContainerGap(24, Short.MAX_VALUE))
 		);
-		panel.setLayout(gl_panel);
+		panelRenderer.setLayout(gl_panelRenderer);
 		
 		spinnerSkipFrames.setVisible(false);
 		lblSkipFrames.setVisible(false);
@@ -507,7 +507,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 		if (s == this.chkboxFilter){
 			if (panelReconDown != null)				// remove panel if one exists
 				panelRecon.remove(panelReconDown);
-			filterTable();
+			if (this.chkboxFilter.isSelected())
+				filterTable();
 		}
 		
 		if (s == this.btnProcess){ 			
@@ -658,7 +659,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 			
 			panelLoc.add(panelDown, gbc_panelDown);
 			this.validate();
-			this.repaint();
 		}
 	}
 
@@ -676,7 +676,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 			}
 			if (removalString!=null)
 				checksPreprocessing.remove(removalString);	
-			this.validate();
 			this.repaint();
 		}
 	}
@@ -789,7 +788,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 	        }
 		}
         if (loc_im !=null){
-		    tif = new ImageLoader<>(loc_im);
+		    tif = new ImageLoader<>(loc_im.duplicate());
 		    manager.add(tif);
 		    
 		    previewerWindow = new StackWindow(loc_im,loc_im.getCanvas());
@@ -1031,6 +1030,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 	}
 	
 	private void filterTable() {
+		// TODO
 		if (!processed){
 			if (IJ.showMessageWithCancel("Filter", "Pipeline not yet processed.\nDo you want to process it now?"))
 				process(false);
@@ -1048,8 +1048,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 				gbc_panelDown.gridx = 0;
 				gbc_panelDown.gridy = 1;
 				panelRecon.add(panelReconDown, gbc_panelDown);
-				validate();
-				repaint();
+				revalidate();
 			}
 		}
 	}

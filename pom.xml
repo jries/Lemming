@@ -2,16 +2,16 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-		<groupId>net.imglib2</groupId>
-		<artifactId>pom-imglib2</artifactId>
+		<groupId>sc.fiji</groupId>
+		<artifactId>pom-fiji</artifactId>
 		<relativePath />
-		<version>5.2.1</version>
+		<version>8.0.0</version>
   </parent>
   
   
   <groupId>org.lemming</groupId>
-  <artifactId>lemming</artifactId>
-  <version>0.3.1</version>
+  <artifactId>lemming_</artifactId>
+  <version>0.3.2</version>
   <name>Lemming</name>
   <description>The ultimate localization microscopy software</description>
   
@@ -104,8 +104,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
-			<version>3.4.1</version>
-		</dependency>
+			</dependency>
 		<dependency>
 			<groupId>org.japura</groupId>
 			<artifactId>japura-gui</artifactId>

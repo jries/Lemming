@@ -50,8 +50,8 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 	private static int INDEX_D = 7;
 	private static int INDEX_Mp = 8;
 
-	public GaussianFitter(int queueSize, int windowSize, final Map<String,List<Double>> cal) {
-		super(queueSize, windowSize);
+	public GaussianFitter(int windowSize, final Map<String,List<Double>> cal) {
+		super(windowSize);
 		param = cal.get("param");
 		zgrid = cal.get("zgrid");
 		Calibcurve = cal.get("Calibcurve");
@@ -166,7 +166,6 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
-			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
 			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILENAME );
 			if (calibFileName == null){ 
@@ -174,7 +173,7 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 				return null;
 			}
 			Map<String, List<Double>> cal = Settings.readCSV(calibFileName);
-			return new GaussianFitter(queueSize, windowSize, cal);
+			return new GaussianFitter(windowSize, cal);
 		}
 
 		@Override

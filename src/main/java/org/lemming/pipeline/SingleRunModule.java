@@ -8,11 +8,11 @@ public abstract class SingleRunModule extends AbstractModule {
 	public void run() {
 
 		if (!inputs.isEmpty() && !outputs.isEmpty()) {
-			if (inputs.keySet().iterator().hasNext()){
+			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
-				while (inputs.get(iterator).isEmpty())
-					pause(10);
-			}
+			while (inputs.get(iterator).isEmpty())
+				pause(10);
+			
 			beforeRun();
 			while (running) {
 				if (Thread.currentThread().isInterrupted())
@@ -26,11 +26,11 @@ public abstract class SingleRunModule extends AbstractModule {
 			return;
 		}
 		if (!inputs.isEmpty()) {  // no outputs
-			if (inputs.keySet().iterator().hasNext()){
+			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
-				while (inputs.get(iterator).isEmpty())
-					pause(10);
-			}
+			while (inputs.get(iterator).isEmpty())
+				pause(10);
+			
 			beforeRun();
 			while (running) {
 				if (Thread.currentThread().isInterrupted())

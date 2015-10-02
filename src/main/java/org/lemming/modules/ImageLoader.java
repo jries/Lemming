@@ -8,10 +8,10 @@ import net.imglib2.type.numeric.NumericType;
 
 import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ImgLib2Frame;
-import org.lemming.pipeline.MultiRunModule;
+import org.lemming.pipeline.SingleRunModule;
 import org.lemming.tools.LemmingUtils;
 
-public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends MultiRunModule{
+public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice = 0;
 	private ImagePlus img;
@@ -30,17 +30,17 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Multi
 	}
 
 	@Override
-	public Element process(Element data) {
-		
-		if (curSlice >= stackSize){ cancel(); return null; }
-		
+	public Element process(Element data) {		
 		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
 		
 		Img<T> theImage = LemmingUtils.wrap(ip);
 		
 		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
-		if (curSlice >= stackSize)
+		if (curSlice >= stackSize){
 			frame.setLast(true);
+			cancel(); 
+			return frame; 
+		}
 		return frame;
 	}
 	

@@ -36,8 +36,8 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 	
 	private final double[] params;
 	
-	public AstigFitter(final int queueSize, final int windowSize, final List<Double> list) {
-		super(queueSize, windowSize);
+	public AstigFitter(final int windowSize, final List<Double> list) {
+		super(windowSize);
 		this.params = new double[list.size()];
 		for (int i =0 ; i<list.size(); i++)
 			params[i]=list.get(i);
@@ -94,14 +94,13 @@ public class AstigFitter<T extends RealType<T>, F extends Frame<T>> extends Fitt
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
-			final int queueSize = (int) settings.get( FitterPanel.KEY_QUEUE_SIZE );
 			final int windowSize = (int) settings.get( FitterPanel.KEY_WINDOW_SIZE );
 			final String calibFileName = (String) settings.get( FitterPanel.KEY_CALIBRATION_FILENAME );
 			if (calibFileName == null){ 
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			return new AstigFitter(queueSize, windowSize, Settings.readCSV(calibFileName).get("param"));
+			return new AstigFitter(windowSize, Settings.readCSV(calibFileName).get("param"));
 		}
 
 		@Override

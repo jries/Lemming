@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Store;
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.pipeline.SingleRunModule;
 
 public class DataTable extends SingleRunModule {
 
-	private Store store;
 	private ExtendableTable table;
 	private List<PropertyDescriptor> descriptors;
 	private long start;
@@ -29,11 +27,8 @@ public class DataTable extends SingleRunModule {
 	
 	@Override
 	public void beforeRun(){
-		store = inputs.get(iterator);
 		start = System.currentTimeMillis();
-		while (store.isEmpty())
-			pause(10);
-		Element el = store.peek();
+		Element el = inputs.get(iterator).peek();
 		try {
 			BeanInfo b = Introspector.getBeanInfo(el.getClass());
 			for (PropertyDescriptor p : b.getPropertyDescriptors()) {

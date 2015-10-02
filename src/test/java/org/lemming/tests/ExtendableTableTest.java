@@ -1,13 +1,10 @@
 package org.lemming.tests;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -16,11 +13,10 @@ import org.junit.Test;
 import org.lemming.pipeline.ExtendableTable;
 
 import ij.IJ;
-import javolution.util.FastTable;
 
 public class ExtendableTableTest {
 	
-	final int N = (int) 1e7;
+	final int N = (int) 1e6;
 	final long[] T = new long[N];
 	long sum = 0;
 	long max = 0;
@@ -49,7 +45,6 @@ public class ExtendableTableTest {
 		colf = h.getColumn("frame");
 	}
 
-	@SuppressWarnings("cast")
 	@Test
 	public void test() {
 		
@@ -60,11 +55,11 @@ public class ExtendableTableTest {
 		double meanz = ran.nextDouble() * 10;
 		
 		try {
-			final File file = File.createTempFile("testTable", ".tmp", new File("/tmp"));
+			final File file = File.createTempFile("testTable", ".tmp", new File("/Users/ronny"));
 			FileOutputStream os = new FileOutputStream(file);
-			ObjectOutputStream br = new ObjectOutputStream (new BufferedOutputStream(os));
-			//BufferedWriter br = new BufferedWriter(new OutputStreamWriter(os));
-			//br.write("x,y,z,frame\n");
+			//ObjectOutputStream br = new ObjectOutputStream (new BufferedOutputStream(os));
+			BufferedWriter br = new BufferedWriter(new OutputStreamWriter(os));
+			br.write("x,y,z,frame\n");
 		
 			for (Integer i=0;i<N;i++){
 				final double gx = ran.nextGaussian() + 5 + meanx;
@@ -75,8 +70,8 @@ public class ExtendableTableTest {
 				colz.add( gz);
 				colf.add( i+1);
 				
-				//final String converted = gx + "," + gy + "," + gz + ","+ (i+1) +"\n";
-				//br.write(converted);
+				final String converted = gx + "," + gy + "," + gz + ","+ (i+1) +"\n";
+				br.write(converted);
 				long ct = System.nanoTime();
 				long dt = ct - t0;
 				
@@ -94,13 +89,13 @@ public class ExtendableTableTest {
 					System.out.println(""+ (int)((float)i/N*100) +"%");
 			}
 			
-			br.writeInt(h.columnNames().size());
-			Iterator<String> cit = h.columnNames().iterator();
-			for (int k=0; k < h.columnNames().size();k++)
-				br.writeObject(cit.next());
-			Iterator<String> it = h.columnNames().iterator();
-			while (it.hasNext())
-				br.writeObject((FastTable<Object>) h.getColumn(it.next()));			
+//			br.writeInt(h.columnNames().size());
+//			Iterator<String> cit = h.columnNames().iterator();
+//			for (int k=0; k < h.columnNames().size();k++)
+//				br.writeObject(cit.next());
+//			Iterator<String> it = h.columnNames().iterator();
+//			while (it.hasNext())
+//				br.writeObject((FastTable<Object>) h.getColumn(it.next()));			
 			
 			br.close();
 		} catch (IOException e){

@@ -42,7 +42,7 @@ public class NumericHistogram {
     // init the RNG for breaking ties in histogram merging. A fixed seed is specified here
     // to aid testing, but can be eliminated to use a time-based seed (which would
     // make the algorithm non-deterministic).
-    prng = new Random(31183);
+    prng = new Random(System.currentTimeMillis());
   }
 
   /**
@@ -228,10 +228,12 @@ public class NumericHistogram {
   
   public int[] getCounts(){
   	int[] counts = new int[nbins];
-  	
-  	for (int i=0 ; i<nbins;i++)
-  		counts[i] = (int) getBin(i).y;
-  
+  	if (nusedbins < 2)
+		counts[0]=(int) getBin(0).y;
+  	else	
+  		for (int i=0 ; i<nbins;i++)
+  			counts[i] = (int) getBin(i).y;
+
   	return counts;
   }
 

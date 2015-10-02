@@ -4,6 +4,7 @@ import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import java.awt.GridBagLayout;
+
 import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Random;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
@@ -79,8 +81,6 @@ public class HistogramPanel extends JPanel
 
 	private IntervalMarker intervalMarker;
 
-	//private final Map< String, double[] > valuesMap;
-
 	private XYTextSimpleAnnotation annotationUpper;
 	
 	private XYTextSimpleAnnotation annotationLower;
@@ -111,7 +111,7 @@ public class HistogramPanel extends JPanel
 	/**
 	 * CONSTRUCTOR
 	 */
-	public HistogramPanel(ExtendableTable table, final int selectedKey) {
+	public HistogramPanel(ExtendableTable table) {
 		super();
 		allKeys = new ArrayList<>();
 		this.table = table;
@@ -119,7 +119,7 @@ public class HistogramPanel extends JPanel
 			allKeys.add(k);
 		this.rnd = new Random(System.currentTimeMillis());
 		initGUI();
-		jComboBoxFeature.setSelectedIndex( selectedKey );
+		jComboBoxFeature.setSelectedIndex( 0 );
 	}
 
 	/**
@@ -241,10 +241,15 @@ public class HistogramPanel extends JPanel
 		final int nRows = table.getNumberOfRows();
 		for (int i = 0 ; i < Math.min(maxCount, nRows); i++){ 			// random portion of the whole data set
 			Number rowD = (Number) col.get(rnd.nextInt(nRows));
-			histogram.add(rowD.doubleValue());
+			if (rowD != null)
+				histogram.add(rowD.doubleValue());
 		}
-		histogram.add(((Number)col.get(0)).doubleValue()); 				// set first and last to get the whole range
-		histogram.add(((Number)col.get(nRows-1)).doubleValue());		// in sequential data
+		Number rowD = (Number)col.get(0);
+		if (rowD != null)
+			histogram.add(rowD.doubleValue());
+		rowD = (Number)col.get(nRows-1);
+		if (rowD != null)							// set first and last to get the whole range
+			histogram.add(rowD.doubleValue());		// in sequential data
 		
 		if ( null == col || 0 == col.size() )
 		{
@@ -273,23 +278,28 @@ public class HistogramPanel extends JPanel
 
 	private void initGUI()
 	{
-		final Dimension panelSize = new java.awt.Dimension( 250, 140 );
-		final Dimension panelMaxSize = new java.awt.Dimension( 1000, 140 );
+		final Dimension panelSize = new java.awt.Dimension( 280, 120 );
+		final Dimension panelMaxSize = new java.awt.Dimension( 1000, 120 );
 		try
 		{
-			final GridBagLayout thisLayout = new GridBagLayout();
-			thisLayout.rowWeights = new double[] { 0.0, 1.0, 0.0 };
-			thisLayout.rowHeights = new int[] { 10, 7, 15 };
-			thisLayout.columnWeights = new double[] { 0.0, 0.0, 1.0 };
-			thisLayout.columnWidths = new int[] { 7, 20, 7 };
-			this.setLayout( thisLayout );
+			final GridBagLayout gridBagLayout = new GridBagLayout();
+			gridBagLayout.columnWidths = new int[]{50, 0};
+			gridBagLayout.rowHeights = new int[]{0, 0, 0};
+			gridBagLayout.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+			gridBagLayout.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+			this.setLayout( gridBagLayout );
 			this.setPreferredSize( panelSize );
 			this.setMaximumSize( panelMaxSize );
 			this.setBorder( new LineBorder( annotationColor, 1, true ) );
 			{
 				final ComboBoxModel<String> jComboBoxFeatureModel = new DefaultComboBoxModel<>( table.getNames().keySet().toArray( new String[] {} ) );
 				jComboBoxFeature = new JComboBox<>();
-				this.add( jComboBoxFeature, new GridBagConstraints( 0, 0, 3, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets( 2, 5, 2, 5 ), 0, 0 ) );
+				GridBagConstraints gbc_comboBox = new GridBagConstraints();
+				gbc_comboBox.insets = new Insets(0, 0, 1, 0);
+				gbc_comboBox.gridx = 0;
+				gbc_comboBox.gridy = 0;
+				this.add( jComboBoxFeature, gbc_comboBox );
+				jComboBoxFeature.setPreferredSize(new Dimension(80, 27));
 				jComboBoxFeature.setModel( jComboBoxFeatureModel );
 				jComboBoxFeature.setFont( FONT );
 				jComboBoxFeature.addActionListener( new ActionListener()
@@ -498,7 +508,7 @@ public class HistogramPanel extends JPanel
 		fireThresholdChanged();
 	}
 
-	private void resetAxes()
+	public void resetAxes()
 	{
 		plot.getRangeAxis().setLowerMargin( 0 );
 		plot.getRangeAxis().setUpperMargin( 0 );
@@ -515,12 +525,12 @@ public class HistogramPanel extends JPanel
 	 */
 	public static void main( final String[] args )
 	{
-		TableLoader loader = new TableLoader(new File("/home/ronny/Videos/testTable.csv"));
+		TableLoader loader = new TableLoader(new File("/Users/ronny/Documents/testTable.csv"));
 		//loader.readObjects();
 		loader.readCSV(',');
 		
 		// Create GUI
-		final HistogramPanel tp = new HistogramPanel( loader.getTable(), 0 );
+		final HistogramPanel tp = new HistogramPanel( loader.getTable());
 		tp.resetAxes();
 		final JFrame frame = new JFrame();
 		frame.getContentPane().add( tp );
