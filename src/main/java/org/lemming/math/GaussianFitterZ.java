@@ -7,6 +7,7 @@ import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
@@ -96,7 +97,7 @@ public class GaussianFitterZ implements FitterInterface {
 			fittedEG = optimum.getPoint().toArray();
 			residuals = optimum.getSigma(1e-14).toArray();
 			//System.out.println("Too many evaluations:" + residuals.length);
-		} catch(TooManyEvaluationsException | ConvergenceException e){
+		} catch(TooManyEvaluationsException | ConvergenceException | SingularMatrixException e){
 			//System.out.println("Too many evaluations" + e.getMessage());
         	return null;
 		}

@@ -26,7 +26,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
 import javax.swing.BoxLayout;
-import java.awt.BorderLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 
 public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 
@@ -56,17 +57,14 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setEnabled(true);
-		setLayout(new BorderLayout(0, 0));
 		
 		panelHolder = new JPanel();
 		scrollPane.setViewportView(panelHolder);
 		panelHolder.setLayout(new BoxLayout(panelHolder, BoxLayout.Y_AXIS));
-		add(scrollPane, BorderLayout.CENTER);
 		
 		panelButtons = new JPanel();
 		FlowLayout flowLayout = (FlowLayout) panelButtons.getLayout();
 		flowLayout.setHgap(0);
-		add(panelButtons, BorderLayout.SOUTH);
 		
 		btnAdd = new JButton("Add");
 		panelButtons.add(btnAdd);
@@ -80,6 +78,19 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		
 		btnRemove = new JButton("Remove");
 		panelButtons.add(btnRemove);
+		GroupLayout groupLayout = new GroupLayout(this);
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 320, GroupLayout.PREFERRED_SIZE)
+				.addComponent(panelButtons, GroupLayout.PREFERRED_SIZE, 320, GroupLayout.PREFERRED_SIZE)
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 301, GroupLayout.PREFERRED_SIZE)
+					.addComponent(panelButtons, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+		);
+		setLayout(groupLayout);
 		btnRemove.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed( final ActionEvent e ){
@@ -103,24 +114,21 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		hPanel.addChangeListener(this);
 		panelStack.add(hPanel);
 		panelHolder.add(hPanel);
-		panelHolder.revalidate();
+		panelHolder.validate();
 		stateChanged( CHANGE_EVENT );		
 	}
 
-	@Override
-	public void setSettings(Map<String, Object> settings) {
-
-	}
-
-	@Override
-	public Map<String, Object> getSettings() {
-		return null;
-	}
+	private void refresh() {
+		for ( final HistogramPanel hp : panelStack ){
+			table.addFilterMinMax(hp.getKey(), hp.getThreshold(), hp.getUpperThreshold());
+		}		
+		//table.filter();
+	}	
 
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		fireChanged();
+		refresh();
 	}
 	
 	/**
@@ -128,7 +136,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
  */
 	public static void main( final String[] args )
 	{
-		TableLoader loader = new TableLoader(new File("/Users/ronny/Documents/testTable.csv"));
+		TableLoader loader = new TableLoader(new File("/home/ronny/ownCloud/storm/testTable.csv"));
 		//loader.readObjects();
 		loader.readCSV(',');
 		
@@ -140,4 +148,17 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		frame.pack();
 		frame.setVisible( true );
 	}
+
+	@Override
+	public void setSettings(Map<String, Object> settings) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Map<String, Object> getSettings() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

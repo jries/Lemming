@@ -12,7 +12,6 @@ import net.imglib2.Point;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.GaussRendererPanel;
-import org.lemming.gui.RendererSettingsPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.FittedLocalization;
@@ -205,8 +204,8 @@ public class GaussRenderer extends Renderer {
 
 		@Override
 		public Renderer getRenderer() {
-			int w = (int) settings.get(RendererSettingsPanel.KEY_RENDERER_WIDTH);
-			int h = (int) settings.get(RendererSettingsPanel.KEY_RENDERER_HEIGHT);
+			int w = (int) settings.get(RendererFactory.KEY_RENDERER_WIDTH);
+			int h = (int) settings.get(RendererFactory.KEY_RENDERER_HEIGHT);
 			return new GaussRenderer(w,h);
 		}
 

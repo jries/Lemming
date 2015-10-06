@@ -49,6 +49,7 @@ public abstract class MultiRunModule extends AbstractModule{
 					f.get();
 				} catch (final InterruptedException | ExecutionException e) {
 					System.err.println(getClass().getSimpleName()+e.getMessage());
+					e.printStackTrace();
 				}
 			}
 
@@ -56,6 +57,7 @@ public abstract class MultiRunModule extends AbstractModule{
 				service.awaitTermination(5, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
 				System.err.println(getClass().getSimpleName()+e.getMessage());
+				e.printStackTrace();
 			}
 			
 			afterRun();

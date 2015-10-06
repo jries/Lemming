@@ -22,6 +22,7 @@ import net.imglib2.type.numeric.NumericType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -61,6 +62,7 @@ import org.lemming.factories.PreProcessingFactory;
 import org.lemming.factories.RendererFactory;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.Store;
 import org.lemming.modules.DataTable;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
@@ -822,18 +824,12 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
         
         File file = fc.getSelectedFile();
 
-		if (this.chkboxFilter.isSelected()){
-        	TableLoader tl = new TableLoader(file);
-        	tl.readCSV(',');
-        	table = tl.getTable();
-		}
-        else {
-        	storeLoader = new StoreLoader(file,",");
-        	manager.add(storeLoader);
-        }
+    	TableLoader tl = new TableLoader(file);
+    	tl.readCSV(',');
+    	this.table = tl.getTable();
 		
 		this.lblFile.setText(file.getName());
-		this.btnLoad.setEnabled(false);
+		this.processed = true;
 	}
 
 	private void chooseDetector(){
@@ -917,7 +913,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 		panelDown = fitterFactory.getConfigurationPanel();
 		System.out.println("Fitter_"+index+" : "+key);
 		panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
-
 			@SuppressWarnings("unchecked")
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -958,7 +953,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 	
 	private void chooseRenderer() { 
 		final int index = comboBoxRenderer.getSelectedIndex() - 1;
-		if (index<0 || fitter == null ) return;
+		if (index<0) return;
 		
 		widgetSelection = RENDERER;
 		
@@ -984,39 +979,56 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 		
 		Map<String, Object> initMap = panelReconDown.getSettings();
 		if (previewerWindow != null){ // Settings overwrite
-			initMap.put(RendererSettingsPanel.KEY_RENDERER_WIDTH, previewerWindow.getImagePlus().getWidth());
-			initMap.put(RendererSettingsPanel.KEY_RENDERER_HEIGHT, previewerWindow.getImagePlus().getHeight());
+			initMap.put(RendererFactory.KEY_RENDERER_WIDTH, previewerWindow.getImagePlus().getWidth());
+			initMap.put(RendererFactory.KEY_RENDERER_HEIGHT, previewerWindow.getImagePlus().getHeight());
 		}
-		
+
 		rendererPreview(initMap);
-		validate();
-		repaint();		
+		revalidate();
 	}
 	
 	private void rendererPreview(Map<String, Object> map){
+		
 		rendererFactory.setAndCheckSettings(map);
 		renderer = rendererFactory.getRenderer();
-		rendererWindow = new ImageWindow(renderer.getImage());
-		rendererWindow.addKeyListener(new KeyAdapter(){
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyChar() == 'C'){
-					contrastAdjuster = new ContrastAdjuster();
-					contrastAdjuster.run("B&C");
+		if(rendererWindow == null){
+			rendererWindow = new ImageWindow(renderer.getImage());
+			rendererWindow.addKeyListener(new KeyAdapter(){
+		
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if (e.getKeyChar() == 'C'){
+						contrastAdjuster = new ContrastAdjuster();
+						contrastAdjuster.run("B&C");
+					}
 				}
-			}
-		});
-		rendererWindow.setVisible(true);
-	
+			});
+			rendererWindow.setVisible(true);
+		} else {
+			rendererWindow.setImage(renderer.getImage());
+			rendererWindow.getCanvas().fitToWindow();
+		}
 		List<Element> list = fitResults;
-		if (!list.isEmpty()){
+		if (list != null && !list.isEmpty()){
 			FastStore previewStore = new FastStore();
 	 		Element last = list.remove(list.size()-1);
 			for (Element entry : list)	
 				previewStore.put(entry);
 			last.setLast(true);
 			previewStore.put(last);
+			renderer.setInput(previewStore);
+			Thread rendererThread = new Thread(renderer,renderer.getClass().getSimpleName());
+			rendererThread.start();
+			try {
+				rendererThread.join();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		if (table!=null){
+			Store previewStore = table.getFIFO();
+			System.out.println("Rendering " + table.getNumberOfRows() + " elements");
 			renderer.setInput(previewStore);
 			Thread rendererThread = new Thread(renderer,renderer.getClass().getSimpleName());
 			rendererThread.start();
@@ -1041,16 +1053,16 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 			manager.run();
 			processed = true;
 			this.table = dt.getTable();
-			if (table!=null || !table.columnNames().isEmpty()){
-				panelReconDown = new FilterPanel(table);
-				GridBagConstraints gbc_panelDown = new GridBagConstraints();
-				gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
-				gbc_panelDown.gridx = 0;
-				gbc_panelDown.gridy = 1;
-				panelRecon.add(panelReconDown, gbc_panelDown);
-				revalidate();
-			}
 		}
+		if (table!=null || !table.columnNames().isEmpty()){
+			panelReconDown = new FilterPanel(table);
+			GridBagConstraints gbc_panelDown = new GridBagConstraints();
+			gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
+			gbc_panelDown.gridx = 0;
+			gbc_panelDown.gridy = 1;
+			panelRecon.add(panelReconDown, gbc_panelDown);
+			validate();
+		}		
 	}
 	
 	private void createDetectorProvider(){

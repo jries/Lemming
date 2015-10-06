@@ -9,9 +9,9 @@ import java.util.Map;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.HistogramRendererPanel;
-import org.lemming.gui.RendererSettingsPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
+import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
@@ -32,6 +32,11 @@ public class HistogramRenderer extends Renderer {
 	private long start;
 	private float xwidth;
 	private float ywidth;
+	private float x;
+	private float y;
+	private int index;
+	private int xindex;
+	private int yindex;
 
 	public HistogramRenderer(){
 		this(256,256,0,256,0,256);
@@ -56,23 +61,28 @@ public class HistogramRenderer extends Renderer {
 
 	@Override
 	public Element process(Element data) {
-		Localization loc = (Localization) data;
-		if(loc==null) return null;
+		if(data == null) return null;
+		if(data.isLast())
+				cancel();
+		if (data instanceof Localization){
+			Localization loc = (Localization) data;
+			x = (float) loc.getX();
+			y = (float) loc.getY();
+		}
+		if (data instanceof ElementMap){
+			ElementMap map = (ElementMap) data;
+			x = map.get("x").floatValue();
+			y = map.get("y").floatValue();
+		}
 		
-		if(loc.isLast())
-			cancel();
-		
-		float x = (float) loc.getX();
-		float y = (float) loc.getY();
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	int xindex = Math.round((x - xmin) / xwidth);
-        	int yindex = Math.round((y - ymin) / ywidth);
-        	values[xindex+yindex*xBins]++;
+        	xindex = Math.round((x - xmin) / xwidth);
+        	yindex = Math.round((y - ymin) / ywidth);
+        	index = xindex+yindex*xBins;
+        	if (index < values.length)
+        		values[index]++;
         }		
-		
-//        if (counter%100==0)
-//        	window.repaint();
-        
+		        
 		return null;
 	}
 	
@@ -114,8 +124,8 @@ public class HistogramRenderer extends Renderer {
 			final int xmax = (int) settings.get(HistogramRendererPanel.KEY_xmax);
 			final int ymin = (int) settings.get(HistogramRendererPanel.KEY_ymin);
 			final int ymax = (int) settings.get(HistogramRendererPanel.KEY_ymax);
-			final Integer width = (Integer) settings.get(RendererSettingsPanel.KEY_RENDERER_WIDTH);
-			final Integer height = (Integer) settings.get(RendererSettingsPanel.KEY_RENDERER_HEIGHT);
+			final Integer width = (Integer) settings.get(RendererFactory.KEY_RENDERER_WIDTH);
+			final Integer height = (Integer) settings.get(RendererFactory.KEY_RENDERER_HEIGHT);
 			if (width != null && height != null)
 				return new HistogramRenderer(width.intValue(), height.intValue(), xmin, width.intValue(), ymin, height.intValue());
 			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax);

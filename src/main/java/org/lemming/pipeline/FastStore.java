@@ -1,9 +1,6 @@
 package org.lemming.pipeline;
 
 import java.util.Collection;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Store;
 
@@ -12,7 +9,6 @@ import javolution.util.FastTable;
 public class FastStore implements Store {
 	
 	private FastTable<Element> q = new FastTable<>();
-	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 	
 	/**
 	 * 
@@ -29,51 +25,36 @@ public class FastStore implements Store {
 	}
 
 	@Override
-	public void put(Element el) {
-		lock.writeLock().lock();
-		try{
+	public synchronized void put(Element el) {
 			q.addLast(el);
-		} finally {
-			lock.writeLock().unlock();
-		}
 	}
 	
 	@Override
-	public Element peek(){
+	public synchronized Element peek(){
 		Element res = null;
-		lock.readLock().lock();
-		try{
+		
 			while (!isEmpty()){
 				res = q.peek();
 				if (res != null) break;
 			} 
-		} finally {
-			lock.readLock().unlock();
-		}
-		
+				
 		return res;
 	}
 
 	@Override
-	public Element get() {
+	public synchronized Element get() {
 		Element res = null;
-		lock.readLock().lock();
-		try{
-			while (!isEmpty()){
-				res = q.poll();
-				if (res != null) break;
-			} 	
-		} finally {
-			lock.readLock().unlock();
-		}
 		
+		while (!isEmpty()){
+			res = q.poll();
+			if (res != null) break;
+		} 	
 		return res;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		boolean b = q.isEmpty();
-		return b;
+		return q.size()<1 || q.isEmpty();
 	}
 	
 	@Override

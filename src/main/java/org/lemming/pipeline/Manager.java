@@ -12,6 +12,8 @@ public class Manager implements Runnable {
 	
 	private Map<Integer,Store> storeMap = new LinkedHashMap<>();
 	private Map<Integer,AbstractModule> modules = new LinkedHashMap<>();
+//	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+//	private ScheduledFuture< ? > future;
 	private int counter;
 
 	public Manager() {
@@ -80,20 +82,27 @@ public class Manager implements Runnable {
 		if (modules.isEmpty()) return;
 		
 		List<Thread> threads= new ArrayList<>();
+		
+		ProgressWindow progressWindow = new ProgressWindow(storeMap);
+		
+		//future = executor.scheduleAtFixedRate(new MonitorThread(this.storeMap), 100, 1000 ,TimeUnit.MILLISECONDS);
+		
 		for(AbstractModule starter:modules.values()){
 			if (!starter.check()) {
 				IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
 				break;
 			}
-			
+		
 			Thread t = new Thread(starter, starter.getClass().getSimpleName());
 			t.start();
-			threads.add(t);			
+			threads.add(t);	
+			
 			try {
-				Thread.sleep(modules.size()*250); 						// HACK : give the module some time to start working
+				Thread.sleep(100); 						// HACK : give the module some time to start working
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+
 		}
 		
 		for(Thread joiner:threads){
@@ -103,6 +112,10 @@ public class Manager implements Runnable {
 				System.err.println(e.getMessage());
 			}
 		}
+//		if (future != null && !future.isDone()) {
+//			future.cancel(false);
+//		}
+		progressWindow.cancel();
 	}
 
 	public void reset() {

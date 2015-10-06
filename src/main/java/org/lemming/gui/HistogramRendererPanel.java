@@ -1,20 +1,23 @@
 package org.lemming.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import org.lemming.tools.WaitForKeyListener;
+
+import java.awt.event.MouseWheelListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class HistogramRendererPanel extends ConfigurationPanel {
 
@@ -33,18 +36,54 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	private RangeSlider rangeSliderY;
 	private JSpinner spinnerXBins;
 	private JSpinner spinnerYBins;
+	private int xOldValue=0;
+	private int xOldUpperValue=100;
+	private int yOldValue=0;
+	private int yOldUpperValue=100;
+	private int factor=100;
+	private boolean changed=false;
 
 	public HistogramRendererPanel() {
 		setBorder(null);
 		
 		rangeSliderX = new RangeSlider(0,100);
-		rangeSliderX.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				fireChanged();
+		rangeSliderX.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(changed){
+					fireChanged();
+					changed=false;
+				}
 			}
 		});
-		rangeSliderX.setMinorTickSpacing(25);
-		rangeSliderX.setMajorTickSpacing(100);
+		rangeSliderX.addMouseWheelListener(new MouseWheelListener() {
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				factor = (int) roundPretty(rangeSliderX.getMaximum()/10);
+				int width = rangeSliderX.getMaximum() + (e.getWheelRotation() * factor);
+				if (width<1)
+					width =1;
+				rangeSliderX.setMaximum(width);
+				rangeSliderX.setMajorTickSpacing(width);
+				rangeSliderX.setMinorTickSpacing(width/4);				
+				rangeSliderY.setPaintLabels(false);
+				rangeSliderY.revalidate();
+				rangeSliderY.setPaintLabels(true);
+				e.consume();
+			}
+		});
+		rangeSliderX.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				
+				if(rangeSliderX.getValue()!=xOldValue || rangeSliderX.getUpperValue()!=xOldUpperValue){
+					xOldValue = rangeSliderX.getValue();
+					xOldUpperValue = rangeSliderX.getUpperValue();
+					changed = true;
+				}
+			}
+		});
+		rangeSliderX.setMinorTickSpacing(10);
+		rangeSliderX.setMajorTickSpacing(50);
 		rangeSliderX.setPaintTicks(true);
 		rangeSliderX.setPaintLabels(true);
 		
@@ -53,13 +92,42 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		JLabel lblY = new JLabel("Y");
 		
 		rangeSliderY = new RangeSlider(0,100);
-		rangeSliderY.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				fireChanged();
+		rangeSliderY.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if(changed){
+					fireChanged();
+					changed=false;
+				}
 			}
 		});
-		rangeSliderY.setMinorTickSpacing(25);
-		rangeSliderY.setMajorTickSpacing(100);
+		rangeSliderY.addMouseWheelListener(new MouseWheelListener() {
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				factor = (int) roundPretty(rangeSliderY.getMaximum()/10);
+				int width = rangeSliderY.getMaximum() + (e.getWheelRotation() * factor);
+				if (width<1)
+					width =1;
+				rangeSliderY.setMaximum(width);
+				rangeSliderY.setMajorTickSpacing(width);
+				rangeSliderY.setMinorTickSpacing(width/5);
+				rangeSliderY.setPaintLabels(false);
+				rangeSliderY.revalidate();
+				rangeSliderY.setPaintLabels(true);
+				e.consume();
+			}
+		});
+		rangeSliderY.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				if(rangeSliderY.getValue()!=yOldValue || rangeSliderY.getUpperValue()!=yOldUpperValue){
+					yOldValue = rangeSliderY.getValue();
+					yOldUpperValue = rangeSliderY.getUpperValue();
+					changed = true;
+				}
+			}
+		});
+		rangeSliderY.setMinorTickSpacing(10);
+		rangeSliderY.setMajorTickSpacing(50);
 		rangeSliderY.setPaintTicks(true);
 		rangeSliderY.setPaintLabels(true);
 		
@@ -68,6 +136,12 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		JLabel lblYBins = new JLabel("Y Bins");
 		
 		spinnerXBins = new JSpinner();
+		spinnerXBins.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged();
+			}
+		}));
 		spinnerXBins.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				fireChanged();
@@ -76,6 +150,12 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		spinnerXBins.setModel(new SpinnerNumberModel(new Integer(100), null, null, new Integer(1)));
 		
 		spinnerYBins = new JSpinner();
+		spinnerYBins.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged();
+			}
+		}));
 		spinnerYBins.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				fireChanged();
@@ -129,28 +209,6 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 					.addContainerGap(160, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
-		JPopupMenu popup = new JPopupMenu();
-		JMenuItem menuItem = new JMenuItem("Settings");
-		menuItem.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				RendererSettingsPanel dlg = new RendererSettingsPanel();
-				dlgSettings = dlg.getSettings();
-				if (dlgSettings!=null){
-					int width = (int) dlgSettings.get(RendererSettingsPanel.KEY_RENDERER_WIDTH);
-					rangeSliderX.setMaximum(width);
-					rangeSliderX.setMajorTickSpacing(width);
-					rangeSliderX.setMinorTickSpacing(width /4);
-					int height = (int) dlgSettings.get(RendererSettingsPanel.KEY_RENDERER_HEIGHT);
-					rangeSliderY.setMaximum(height);
-					rangeSliderY.setMajorTickSpacing(height);
-					rangeSliderY.setMinorTickSpacing(height/4);
-				}
-			}				
-			
-		});
-		popup.add(menuItem);
-		setComponentPopupMenu(popup);
 	}
 
 	@Override
@@ -183,5 +241,16 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 				settings.put(key,dlgSettings.get(key));
 		}
 		return settings;
+	}
+	
+	static double roundPretty(int val) {
+	    int fraction = 1;
+	    double log = Math.floor(Math.log10(val));
+
+	    // This keeps from adding digits after the decimal
+	    if(log > 1) 
+	        fraction = 4;
+
+	    return Math.round(val * fraction * Math.pow(10, -log)) / fraction / Math.pow(10, -log);
 	}
 }

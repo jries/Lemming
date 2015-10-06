@@ -51,10 +51,10 @@ public class DataTable extends SingleRunModule {
 	public Element process(Element data) {
 		if (data==null) return null;
 		if (data.isLast()) cancel();
-		Map<String,Object> row = new HashMap<>();
+		Map<String,Number> row = new HashMap<>();
 		for (PropertyDescriptor p:descriptors){
 			try {
-				row.put(p.getName(), p.getReadMethod().invoke(data));
+				row.put(p.getName(), (Number) p.getReadMethod().invoke(data));
 			} catch ( IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				e.printStackTrace();
 			}

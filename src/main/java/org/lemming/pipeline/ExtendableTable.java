@@ -21,8 +21,8 @@ import javolution.util.function.Predicate;
 public class ExtendableTable {
 	
 	private int nRows = 0;
-	private Map<String, List<Object>> table = new LinkedHashMap<>();
-	private Map<String, Predicate<Object>> filtersCollection = new HashMap<>();
+	private Map<String, List<Number>> table = new LinkedHashMap<>();
+	private Map<String, Predicate<Number>> filtersCollection = new HashMap<>();
 	private Map<String, String> names = new LinkedHashMap<>();
 	
 	/**
@@ -31,17 +31,18 @@ public class ExtendableTable {
 	public ExtendableTable(){
 	}
 	
-	public ExtendableTable(Map<String, List<Object>> table){
+	public ExtendableTable(Map<String, List<Number>> table){
 		this.table = table;
 		for(String key : table.keySet())
 			names.put(key,key);
 	}
 	
+		
 	/**
 	 * @param member - member
 	 */
 	public void addNewMember(String member) {
-		table.put(member,new FastTable<>());
+		table.put(member,new FastTable<Number>());
 		names.put(member,member);
 	}
 	
@@ -59,43 +60,43 @@ public class ExtendableTable {
 		return table.keySet();
 	}
 	
-	public Map<String, List<Object>> filter(){
+	public ExtendableTable filter(){
 		
-		if (filtersCollection.isEmpty()) return table;
+		if (filtersCollection.isEmpty()) return this;
 		
-		Map<String, List<Object>> filteredTable = new HashMap<>();
+		final ExtendableTable filteredTable = new ExtendableTable(); //new instance
+		for (String col: this.columnNames())
+			filteredTable.addNewMember(col);
 		
+		Map<String, Number> row;
 		for (int index = 0 ; index < getNumberOfRows(); index++){
-			Map<String, Object> row = getRow(index);
+			row = getRow(index);
 			boolean filtered = false;
-			for (Entry<String, Predicate<Object>> entry : filtersCollection.entrySet())
-				filtered = filtered || entry.getValue().test(row.get(entry.getKey()));
+			for (String key : filtersCollection.keySet())
+				filtered = filtered || filtersCollection.get(key).test(row.get(key));
 			if(filtered)
-				addRow(row);
+				filteredTable.addRow(row);
 		}
-		
 		return filteredTable;
 	}
 	
 	public void addFilterMinMax(final String col, final double min, final double max){
-		Predicate<Object> p = new Predicate<Object>(){
+		Predicate<Number> p = new Predicate<Number>(){
 
 			@Override
-			public boolean test(Object t) {
-				Double d = (Double) t;
-				
-				return (d>=min) && (d<=max);
+			public boolean test(Number t) {				
+				return (t.doubleValue()>=min) && (t.doubleValue()<=max);
 			}
 			
 		};
 		filtersCollection.put(col, p);
 	}
 	
-	public void addFilterExact(final String col, final Object o){
-		Predicate<Object> p = new Predicate<Object>(){
+	public void addFilterExact(final String col, final Number o){
+		Predicate<Number> p = new Predicate<Number>(){
 
 			@Override
-			public boolean test(Object t) {				
+			public boolean test(Number t) {	
 				return t.equals(o);
 			}
 			
@@ -106,8 +107,8 @@ public class ExtendableTable {
 	/**
 	 * @param row - row
 	 */
-	public void addRow(Map<String,Object> row){
-		for (Entry<String,Object> e : row.entrySet()){
+	public void addRow(Map<String,Number> row){
+		for (Entry<String,Number> e : row.entrySet()){
 			add(e.getKey(),e.getValue());
 		}
 		nRows++;
@@ -117,8 +118,8 @@ public class ExtendableTable {
 	 * @param row - row
 	 * @return data
 	 */
-	public Map<String,Object> getRow(int row){
-		Map<String,Object> map = new HashMap<>(); // row map
+	public Map<String, Number> getRow(int row){
+		Map<String,Number> map = new HashMap<>(); // row map
 		for (String key : table.keySet())
 			map.put(key, table.get(key).get(row));
 		return map;
@@ -128,7 +129,7 @@ public class ExtendableTable {
 	 * @param col - colummn
 	 * @return column
 	 */
-	public List<Object> getColumn(String col){
+	public List<Number> getColumn(String col){
 		return table.get(col);
 	}
 	
@@ -137,7 +138,7 @@ public class ExtendableTable {
 	 * @return column
 	 */
 	public Object getData(String col, int row){
-		List<Object> c = table.get(col);
+		List<Number> c = table.get(col);
 		if(c != null && row < nRows)
 			return c.get(row);
 		
@@ -149,8 +150,8 @@ public class ExtendableTable {
 	 * @param member - member 
 	 * @param o - object
 	 */
-	public void add(String member, Object o){
-		List<Object> t = table.get(member);
+	public void add(String member, Number o){
+		List<Number> t = table.get(member);
 		if (t!=null){
 			if (t.size() == nRows) 
 				nRows++;
@@ -196,14 +197,14 @@ public class ExtendableTable {
 						
 			@Override
 			public boolean isEmpty() {
-				return lastRow >= nRows;
+				return lastRow >= getNumberOfRows();
 			}
 			
 			@SuppressWarnings("unchecked")
 			@Override
 			public void put(Element el) {
 				if (el instanceof Map){
-					Map<String,Object> em = (Map<String,Object>) el;
+					Map<String,Number> em = (Map<String,Number>) el;
 					addRow(em);
 					nRows++;
 				}

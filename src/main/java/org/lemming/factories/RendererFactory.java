@@ -28,4 +28,7 @@ public interface RendererFactory extends PluginInterface {
 	 */
 	public ConfigurationPanel getConfigurationPanel();
 	
+	public static final String KEY_RENDERER_WIDTH = "RENDERER_WIDTH";
+	public static final String KEY_RENDERER_HEIGHT = "RENDERER_HEIGHT";
+	
 }

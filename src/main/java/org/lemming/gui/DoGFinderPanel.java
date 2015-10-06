@@ -35,7 +35,7 @@ public class DoGFinderPanel extends ConfigurationPanel {
 		jTextFieldThreshold = new JTextField();
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
 		jTextFieldThreshold.setText("100");
-		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1, new Runnable(){
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 
 			@Override
 			public void run() {

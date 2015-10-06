@@ -61,6 +61,7 @@ public class RangeSlider extends JSlider {
 		// UI of the slider. Refer to JSlider.updateUI().
 		updateLabelUIs();
 	}
+	
 
 	/**
 	 * Returns the lower value in the range.

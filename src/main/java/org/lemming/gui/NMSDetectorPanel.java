@@ -27,7 +27,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Threshold");
 		
 		jTextFieldThreshold = new JTextField();
-		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1, new Runnable(){
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
 				fireChanged();

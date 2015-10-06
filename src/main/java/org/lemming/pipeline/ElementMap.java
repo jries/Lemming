@@ -6,13 +6,13 @@ import java.util.Set;
 
 import org.lemming.interfaces.Element;
 
-public class ElementMap extends AbstractMap<String,Object> implements Element {
+public class ElementMap extends AbstractMap<String,Number> implements Element {
 	
 	private boolean isLast;
-	private Set<Entry<String,Object>> entrySet;
+	private Set<Entry<String, Number>> entrySet;
 	
-	public ElementMap(Set<Entry<String,Object>> es){
-		this.entrySet = es;
+	public ElementMap(Set<Entry<String, Number>> set){
+		this.entrySet = set;
 	}
 
 
@@ -28,7 +28,7 @@ public class ElementMap extends AbstractMap<String,Object> implements Element {
 	}
 
 	@Override
-	public Set<Entry<String,Object>> entrySet() {
+	public Set<Entry<String, Number>> entrySet() {
         return Collections.unmodifiableSet(entrySet);
 	}
 

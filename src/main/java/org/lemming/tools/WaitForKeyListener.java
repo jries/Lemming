@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class WaitForKeyListener implements KeyListener {
 	
-	private long delay = 1;
+	private long delay = 1000;
 	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture< ? > future;
 	private Runnable command;
@@ -25,7 +25,7 @@ public class WaitForKeyListener implements KeyListener {
 		if (future != null && !future.isDone()) {
 			future.cancel(false);
 		}
-		future = executor.schedule(command, delay, TimeUnit.SECONDS);
+		future = executor.schedule(command, delay, TimeUnit.MILLISECONDS);
 	}
 
 	@Override

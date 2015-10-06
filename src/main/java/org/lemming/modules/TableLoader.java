@@ -109,9 +109,9 @@ public class TableLoader {
 				colNames[k] = (String) br.readObject();
 			}
 			
-			Map<String, List<Object>> readTable = new LinkedHashMap<>();
+			Map<String, List<Number>> readTable = new LinkedHashMap<>();
 			for (int k = 0; k < size; k++)
-				readTable.put(colNames[k], (FastTable<Object>) br.readObject());
+				readTable.put(colNames[k], (FastTable<Number>) br.readObject());
 			this.table = new ExtendableTable(readTable);
 			br.close();
 		} catch (IOException | ClassNotFoundException e) {

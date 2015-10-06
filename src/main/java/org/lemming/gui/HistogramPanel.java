@@ -201,10 +201,10 @@ public class HistogramPanel extends JPanel
 		key = allKeys.get( jComboBoxFeature.getSelectedIndex() );
 		NumericHistogram histogram = new NumericHistogram();
 		histogram.allocate(maxBins);
-		final List<Object> col = table.getColumn(key);
+		final List<Number> col = table.getColumn(key);
 		final int nRows = table.getNumberOfRows();
 		for (int i = 0 ; i < Math.min(maxCount, nRows); i++){
-			Number rowD = (Number) col.get(rnd.nextInt(nRows));
+			Number rowD = col.get(rnd.nextInt(nRows));
 			histogram.add(rowD.doubleValue());
 		}
 
@@ -237,17 +237,17 @@ public class HistogramPanel extends JPanel
 		key = allKeys.get( index );
 		NumericHistogram histogram = new NumericHistogram();
 		histogram.allocate(maxBins);
-		final List<Object> col = table.getColumn(key);
+		final List<Number> col = table.getColumn(key);
 		final int nRows = table.getNumberOfRows();
 		for (int i = 0 ; i < Math.min(maxCount, nRows); i++){ 			// random portion of the whole data set
-			Number rowD = (Number) col.get(rnd.nextInt(nRows));
+			Number rowD = col.get(rnd.nextInt(nRows));
 			if (rowD != null)
 				histogram.add(rowD.doubleValue());
 		}
-		Number rowD = (Number)col.get(0);
+		Number rowD = col.get(0);
 		if (rowD != null)
 			histogram.add(rowD.doubleValue());
-		rowD = (Number)col.get(nRows-1);
+		rowD = col.get(nRows-1);
 		if (rowD != null)							// set first and last to get the whole range
 			histogram.add(rowD.doubleValue());		// in sequential data
 		
@@ -291,32 +291,30 @@ public class HistogramPanel extends JPanel
 			this.setPreferredSize( panelSize );
 			this.setMaximumSize( panelMaxSize );
 			this.setBorder( new LineBorder( annotationColor, 1, true ) );
-			{
-				final ComboBoxModel<String> jComboBoxFeatureModel = new DefaultComboBoxModel<>( table.getNames().keySet().toArray( new String[] {} ) );
-				jComboBoxFeature = new JComboBox<>();
-				GridBagConstraints gbc_comboBox = new GridBagConstraints();
-				gbc_comboBox.insets = new Insets(0, 0, 1, 0);
-				gbc_comboBox.gridx = 0;
-				gbc_comboBox.gridy = 0;
-				this.add( jComboBoxFeature, gbc_comboBox );
-				jComboBoxFeature.setPreferredSize(new Dimension(80, 27));
-				jComboBoxFeature.setModel( jComboBoxFeatureModel );
-				jComboBoxFeature.setFont( FONT );
-				jComboBoxFeature.addActionListener( new ActionListener()
+
+			final ComboBoxModel<String> jComboBoxFeatureModel = new DefaultComboBoxModel<>( table.getNames().keySet().toArray( new String[] {} ) );
+			jComboBoxFeature = new JComboBox<>();
+			GridBagConstraints gbc_comboBox = new GridBagConstraints();
+			gbc_comboBox.insets = new Insets(0, 0, 1, 0);
+			gbc_comboBox.gridx = 0;
+			gbc_comboBox.gridy = 0;
+			this.add( jComboBoxFeature, gbc_comboBox );
+			jComboBoxFeature.setPreferredSize(new Dimension(80, 27));
+			jComboBoxFeature.setModel( jComboBoxFeatureModel );
+			jComboBoxFeature.setFont( FONT );
+			jComboBoxFeature.addActionListener( new ActionListener(){
+				@Override
+				public void actionPerformed( final ActionEvent e1 )
 				{
-					@Override
-					public void actionPerformed( final ActionEvent e1 )
-					{
-						comboBoxSelectionChanged();
-					}
-				} );
-			}
-			{
-				createHistogramPlot();
-				chartPanel.setPreferredSize( new Dimension( 0, 0 ) );
-				this.add( chartPanel, new GridBagConstraints( 0, 1, 3, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets( 0, 0, 0, 0 ), 0, 0 ) );
-				chartPanel.setOpaque( false );
-			}
+					comboBoxSelectionChanged();
+				}
+			} );
+
+			createHistogramPlot();
+			chartPanel.setPreferredSize( new Dimension( 0, 0 ) );
+			this.add( chartPanel, new GridBagConstraints( 0, 1, 3, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets( 0, 0, 0, 0 ), 0, 0 ) );
+			chartPanel.setOpaque( false );
+
 		}
 		catch ( final Exception e )
 		{
@@ -338,7 +336,7 @@ public class HistogramPanel extends JPanel
 		renderer.setMargin( 0 );
 		renderer.setBarPainter( new StandardXYBarPainter() );
 		renderer.setDrawBarOutline( true );
-		renderer.setSeriesOutlinePaint( 0, Color.BLACK );
+		renderer.setSeriesOutlinePaint( 0, Color.black );
 		renderer.setSeriesPaint( 0, new Color( 1, 1, 1, 0 ) );
 
 		plot.setBackgroundPaint( new Color( 1, 1, 1, 0 ) );
@@ -351,7 +349,7 @@ public class HistogramPanel extends JPanel
 		plot.getDomainAxis().setVisible( false );
 
 		chart.setBorderVisible( false );
-		chart.setBackgroundPaint( new Color( 0.6f, 0.6f, 0.7f ) );
+		chart.setBackgroundPaint( new Color( 0.8f, 0.8f, 0.9f ) );
 
 		intervalMarker = new IntervalMarker( 0, 0, new Color( 0.3f, 0.5f, 0.8f ), new BasicStroke(), new Color( 0, 0, 0.5f ), new BasicStroke( 1.5f ), 0.5f );
 		plot.addDomainMarker( intervalMarker );
@@ -367,6 +365,7 @@ public class HistogramPanel extends JPanel
 			public void mouseReleased( final MouseEvent e ){
 				lowerDragging = false;
 				upperDragging = false;
+				fireThresholdChanged();
 			}
 
 			@Override
@@ -451,12 +450,14 @@ public class HistogramPanel extends JPanel
 			public void focusLost( final FocusEvent arg0 )
 			{
 				annotationUpper.setColor( annotationColor.darker() );
+				annotationLower.setColor( annotationColor.darker() );
 			}
 
 			@Override
 			public void focusGained( final FocusEvent arg0 )
 			{
 				annotationUpper.setColor( Color.RED.darker() );
+				annotationLower.setColor( Color.RED.darker() );
 			}
 		} );
 
@@ -479,7 +480,7 @@ public class HistogramPanel extends JPanel
 	private void redrawThresholdMarker()
 	{
 		final String selectedFeature = allKeys.get( jComboBoxFeature.getSelectedIndex() );
-		List<Object> col = table.getColumn(selectedFeature);
+		List<Number> col = table.getColumn(selectedFeature);
 		if ( null == col )
 			return;
 
@@ -505,7 +506,6 @@ public class HistogramPanel extends JPanel
 		y = ( float ) ( 0.8 * plot.getRangeAxis().getUpperBound() );
 		annotationLower.setText( String.format( "%.2f", getThreshold() ) );
 		annotationLower.setLocation( x, y );
-		fireThresholdChanged();
 	}
 
 	public void resetAxes()
