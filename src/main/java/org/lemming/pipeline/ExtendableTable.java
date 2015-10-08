@@ -22,7 +22,7 @@ public class ExtendableTable {
 	
 	private int nRows = 0;
 	private Map<String, List<Number>> table = new LinkedHashMap<>();
-	private Map<String, Predicate<Number>> filtersCollection = new HashMap<>();
+	public Map<String, Predicate<Number>> filtersCollection = new HashMap<>();
 	private Map<String, String> names = new LinkedHashMap<>();
 	
 	/**
@@ -71,9 +71,9 @@ public class ExtendableTable {
 		Map<String, Number> row;
 		for (int index = 0 ; index < getNumberOfRows(); index++){
 			row = getRow(index);
-			boolean filtered = false;
+			boolean filtered = true;
 			for (String key : filtersCollection.keySet())
-				filtered = filtered || filtersCollection.get(key).test(row.get(key));
+				filtered = filtered && (filtered == filtersCollection.get(key).test(row.get(key)));
 			if(filtered)
 				filteredTable.addRow(row);
 		}

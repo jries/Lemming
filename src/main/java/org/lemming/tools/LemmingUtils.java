@@ -3,7 +3,6 @@ package org.lemming.tools;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
-
 import java.util.List;
 
 import org.lemming.interfaces.Element;

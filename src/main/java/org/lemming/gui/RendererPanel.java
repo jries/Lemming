@@ -1,14 +1,17 @@
 package org.lemming.gui;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.JFrame;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -19,7 +22,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class HistogramRendererPanel extends ConfigurationPanel {
+public class RendererPanel extends ConfigurationPanel {
 
 	/**
 	 * 
@@ -31,7 +34,6 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	public static final String KEY_xmax = "xmax";
 	public static final String KEY_ymin = "ymin";
 	public static final String KEY_ymax = "ymax";
-	protected Map<String, Object> dlgSettings = null;
 	private RangeSlider rangeSliderX;
 	private RangeSlider rangeSliderY;
 	private JSpinner spinnerXBins;
@@ -43,7 +45,7 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	private int factor=100;
 	private boolean changed=false;
 
-	public HistogramRendererPanel() {
+	public RendererPanel() {
 		setBorder(null);
 		
 		rangeSliderX = new RangeSlider(0,100);
@@ -58,16 +60,24 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		});
 		rangeSliderX.addMouseWheelListener(new MouseWheelListener() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
-				factor = (int) roundPretty(rangeSliderX.getMaximum()/10);
-				int width = rangeSliderX.getMaximum() + (e.getWheelRotation() * factor);
-				if (width<1)
-					width =1;
+				if( rangeSliderY.getMaximum()<100)
+					factor = 10;
+				else if( rangeSliderY.getMaximum()<10)
+					factor = 1;
+				else 
+					factor = 100;
+				int width = rangeSliderY.getMaximum() + (e.getWheelRotation() * factor);
+				if (width < 1)
+					width = 0;
 				rangeSliderX.setMaximum(width);
 				rangeSliderX.setMajorTickSpacing(width);
-				rangeSliderX.setMinorTickSpacing(width/4);				
-				rangeSliderY.setPaintLabels(false);
-				rangeSliderY.revalidate();
-				rangeSliderY.setPaintLabels(true);
+				rangeSliderX.setMinorTickSpacing(width/4);
+				Hashtable<Integer,JLabel> dict = new Hashtable<>();
+				dict.put(0, new JLabel(String.valueOf(0)));
+				dict.put(width/2, new JLabel(String.valueOf(width/2)));
+				dict.put(width, new JLabel(String.valueOf(width)));
+				rangeSliderX.setLabelTable(dict);
+				rangeSliderX.revalidate();
 				e.consume();
 			}
 		});
@@ -103,16 +113,24 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		});
 		rangeSliderY.addMouseWheelListener(new MouseWheelListener() {
 			public void mouseWheelMoved(MouseWheelEvent e) {
-				factor = (int) roundPretty(rangeSliderY.getMaximum()/10);
+				if( rangeSliderY.getMaximum()<100)
+					factor = 10;
+				else if( rangeSliderY.getMaximum()<10)
+					factor = 1;
+				else 
+					factor = 100;
 				int width = rangeSliderY.getMaximum() + (e.getWheelRotation() * factor);
-				if (width<1)
-					width =1;
+				if (width < 1)
+					width = 0;
 				rangeSliderY.setMaximum(width);
 				rangeSliderY.setMajorTickSpacing(width);
 				rangeSliderY.setMinorTickSpacing(width/5);
-				rangeSliderY.setPaintLabels(false);
+				Hashtable<Integer,JLabel> dict = new Hashtable<>();
+				dict.put(0, new JLabel(String.valueOf(0)));
+				dict.put(width/2, new JLabel(String.valueOf(width/2)));
+				dict.put(width, new JLabel(String.valueOf(width)));
+				rangeSliderY.setLabelTable(dict);
 				rangeSliderY.revalidate();
-				rangeSliderY.setPaintLabels(true);
 				e.consume();
 			}
 		});
@@ -236,21 +254,22 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		settings.put(KEY_ymax, rangeSliderY.getUpperValue());
 		settings.put(KEY_xBins, spinnerXBins.getValue());
 		settings.put(KEY_yBins, spinnerYBins.getValue());
-		if (dlgSettings!=null){
-			for (String key : dlgSettings.keySet())
-				settings.put(key,dlgSettings.get(key));
-		}
 		return settings;
 	}
 	
-	static double roundPretty(int val) {
-	    int fraction = 1;
-	    double log = Math.floor(Math.log10(val));
-
-	    // This keeps from adding digits after the decimal
-	    if(log > 1) 
-	        fraction = 4;
-
-	    return Math.round(val * fraction * Math.pow(10, -log)) / fraction / Math.pow(10, -log);
+	/**
+	 * Display this JPanel inside a new JFrame.
+	 */
+	public static void main( final String[] args )
+	{
+		
+		// Create GUI
+		final RendererPanel tp = new RendererPanel( );
+		final JFrame frame = new JFrame();
+		frame.getContentPane().add( tp );
+		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
+		frame.pack();
+		frame.setVisible( true );
 	}
+	
 }

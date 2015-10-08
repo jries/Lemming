@@ -1,5 +1,7 @@
 package org.lemming.tools;
 
+import java.util.Arrays;
+
 public class FloatingDecimal {
 
 	private boolean isNegative;
@@ -11,6 +13,7 @@ public class FloatingDecimal {
 	static final int    intDecimalDigits = 9;
     static final int    maxDecimalExponent = 308;
     static final int    minDecimalExponent = -324;
+    static final int    bigDecimalExponent = 324;
 	private static final double small10pow[] = {
 	        1.0e0,
 	        1.0e1, 1.0e2, 1.0e3, 1.0e4, 1.0e5,
@@ -35,11 +38,33 @@ public class FloatingDecimal {
         this.nDigits = n;
     }
 	
-	public static FloatingDecimal read( char[] in ) throws NumberFormatException {
+	public static char[] trim(char[] array) {
+        int len = array.length;
+        int st = 0;
+        char[] val = array;    /* avoid getfield opcode */
+
+        while ((st < len) && (val[st] <= ' ')) {
+            st++;
+        }
+        while ((st < len) && (val[len - 1] <= ' ')) {
+            len--;
+        }
+        return ((st > 0) || (len < array.length)) ? substring(array,st, len) : array;
+    }
+	
+	private static char[] substring(char[] array, int beginIndex, int endIndex) {
+		int subLen = endIndex - beginIndex;
+        if (subLen < 0) 
+            throw new IndexOutOfBoundsException();
+		return Arrays.copyOfRange(array, beginIndex, endIndex);
+	}
+
+	public static FloatingDecimal read( char[] array ) throws NumberFormatException {
 		 char    c;
 		 boolean isNegative = false;
 	     boolean signSeen   = false;
 	     int decExp;
+	     char[] in = trim(array);
 	 
 	 parseNumber:
         try{
@@ -120,9 +145,62 @@ public class FloatingDecimal {
                 decExp = nDigits+nTrailZero;
             }
             
-            if ( i+nTrailZero < l && i != l - 1) {
-                    break parseNumber; // go throw exception
+            /*
+             * Look for 'e' or 'E' and an optionally signed integer.
+             */
+            if ( (i < l) &&  ((c = in[i] ) =='e' || c == 'E') ){
+                int expSign = 1;
+                int expVal  = 0;
+                int reallyBig = Integer.MAX_VALUE / 10;
+                boolean expOverflow = false;
+                int expAt = i;
+                switch( in[++i] ){
+                case '-':
+                    expSign = -1;
+                    //FALLTHROUGH
+                case '+':
+                    i++;
                 }
+            expLoop:
+                while ( i < l  ){
+                    if ( expVal >= reallyBig ){
+                        // the next character will cause integer
+                        // overflow.
+                        expOverflow = true;
+                    }
+                    switch ( c = in[i] ){
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        expVal = expVal*10 + ( c - '0' );
+                        i++;
+                        continue;
+                    default:
+                        i--;           // back up.
+                        break expLoop; // stop parsing exponent.
+                    }
+                }
+                int expLimit = bigDecimalExponent+nDigits+nTrailZero;
+                if ( expOverflow || ( expVal > expLimit ) ){           
+                    decExp = expSign*expLimit;
+                } else {
+                    decExp = decExp + expSign*expVal;
+                }
+
+                if ( i == expAt )
+                    break parseNumber; // certainly bad
+            }          
+            
+            if ( i+nTrailZero < l && i != l - 1) {
+                break parseNumber; // go throw exception
+            }
             
             return new FloatingDecimal( isNegative, decExp, digits, nDigits);        	
         } catch ( StringIndexOutOfBoundsException e ){ }

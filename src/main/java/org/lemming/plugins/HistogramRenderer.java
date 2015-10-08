@@ -3,12 +3,12 @@ package org.lemming.plugins;
 import ij.ImagePlus;
 import ij.process.ShortProcessor;
 
-import java.awt.image.IndexColorModel;
 import java.util.Map;
 
+import org.apache.commons.math3.util.FastMath;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
-import org.lemming.gui.HistogramRendererPanel;
+import org.lemming.gui.RendererPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
@@ -28,7 +28,7 @@ public class HistogramRenderer extends Renderer {
 	private int xmax;
 	private int ymin;
 	private int ymax;
-	private short[] values;
+	private volatile short[] values;
 	private long start;
 	private float xwidth;
 	private float ywidth;
@@ -50,8 +50,9 @@ public class HistogramRenderer extends Renderer {
 		this.ymax = ymax;
 		this.xwidth = (float)(xmax - xmin) / xBins;
     	this.ywidth = (float)(ymax - ymin) / yBins;
-		values = new short[xBins*yBins];
-		ip = new ImagePlus(title, new ShortProcessor(xBins, yBins,values, getDefaultColorModel()));
+		ShortProcessor sp = new ShortProcessor(xBins, yBins);
+		ip = new ImagePlus(title, sp);
+		values = (short[]) sp.getPixels();
 	}
 	
 	@Override
@@ -71,13 +72,15 @@ public class HistogramRenderer extends Renderer {
 		}
 		if (data instanceof ElementMap){
 			ElementMap map = (ElementMap) data;
-			x = map.get("x").floatValue();
-			y = map.get("y").floatValue();
+			try{
+				x = map.get("x").floatValue();
+				y = map.get("y").floatValue();
+			} catch (NullPointerException ne) {}
 		}
 		
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	xindex = Math.round((x - xmin) / xwidth);
-        	yindex = Math.round((y - ymin) / ywidth);
+        	xindex = FastMath.round((x - xmin) / xwidth);
+        	yindex = FastMath.round((y - ymin) / ywidth);
         	index = xindex+yindex*xBins;
         	if (index < values.length)
         		values[index]++;
@@ -98,7 +101,7 @@ public class HistogramRenderer extends Renderer {
 	@Plugin( type = RendererFactory.class, visible = true )
 	public static class Factory implements RendererFactory{
 
-		private HistogramRendererPanel configPanel = new HistogramRendererPanel();
+		private RendererPanel configPanel = new RendererPanel();
 		private Map<String, Object> settings;
 
 		@Override
@@ -118,12 +121,12 @@ public class HistogramRenderer extends Renderer {
 
 		@Override
 		public Renderer getRenderer() {
-			final int xBins = (int) settings.get(HistogramRendererPanel.KEY_xBins);
-			final int yBins = (int) settings.get(HistogramRendererPanel.KEY_yBins);
-			final int xmin = (int) settings.get(HistogramRendererPanel.KEY_xmin);
-			final int xmax = (int) settings.get(HistogramRendererPanel.KEY_xmax);
-			final int ymin = (int) settings.get(HistogramRendererPanel.KEY_ymin);
-			final int ymax = (int) settings.get(HistogramRendererPanel.KEY_ymax);
+			final int xBins = (int) settings.get(RendererPanel.KEY_xBins);
+			final int yBins = (int) settings.get(RendererPanel.KEY_yBins);
+			final int xmin = (int) settings.get(RendererPanel.KEY_xmin);
+			final int xmax = (int) settings.get(RendererPanel.KEY_xmax);
+			final int ymin = (int) settings.get(RendererPanel.KEY_ymin);
+			final int ymax = (int) settings.get(RendererPanel.KEY_ymax);
 			final Integer width = (Integer) settings.get(RendererFactory.KEY_RENDERER_WIDTH);
 			final Integer height = (Integer) settings.get(RendererFactory.KEY_RENDERER_HEIGHT);
 			if (width != null && height != null)
@@ -144,16 +147,16 @@ public class HistogramRenderer extends Renderer {
 		
 	}
 	
-	private static IndexColorModel getDefaultColorModel() {
-		byte[] r = new byte[256];
-		byte[] g = new byte[256];
-		byte[] b = new byte[256];
-		for(int i=0; i<256; i++) {
-			r[i]=(byte)i;
-			g[i]=(byte)i;
-			b[i]=(byte)i;
-		}
-		return new IndexColorModel(8, 256, r, g, b);
-	}
+//	private static IndexColorModel getDefaultColorModel() {
+//		byte[] r = new byte[256];
+//		byte[] g = new byte[256];
+//		byte[] b = new byte[256];
+//		for(int i=0; i<256; i++) {
+//			r[i]=(byte)i;
+//			g[i]=(byte)i;
+//			b[i]=(byte)i;
+//		}
+//		return new IndexColorModel(8, 256, r, g, b);
+//	}
 
 }

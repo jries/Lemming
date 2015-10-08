@@ -26,8 +26,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.JPanel;
 import java.awt.FlowLayout;
 import javax.swing.BoxLayout;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 
 public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 
@@ -46,8 +44,9 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	private JPanel panelButtons;
 	
 	public FilterPanel(ExtendableTable table) {
-		setMinimumSize(new Dimension(280, 300));
-		setPreferredSize(new Dimension(320, 340));
+		setBorder(null);
+		setMinimumSize(new Dimension(295, 315));
+		setPreferredSize(new Dimension(300, 340));
 		this.table = table;
 		
 		scrollPane = new JScrollPane();
@@ -78,19 +77,9 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		
 		btnRemove = new JButton("Remove");
 		panelButtons.add(btnRemove);
-		GroupLayout groupLayout = new GroupLayout(this);
-		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 320, GroupLayout.PREFERRED_SIZE)
-				.addComponent(panelButtons, GroupLayout.PREFERRED_SIZE, 320, GroupLayout.PREFERRED_SIZE)
-		);
-		groupLayout.setVerticalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup()
-					.addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, 301, GroupLayout.PREFERRED_SIZE)
-					.addComponent(panelButtons, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-		);
-		setLayout(groupLayout);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		add(scrollPane);
+		add(panelButtons);
 		btnRemove.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed( final ActionEvent e ){
@@ -118,22 +107,18 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		stateChanged( CHANGE_EVENT );		
 	}
 
-	private void refresh() {
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		table.filtersCollection.clear();
 		for ( final HistogramPanel hp : panelStack ){
 			table.addFilterMinMax(hp.getKey(), hp.getThreshold(), hp.getUpperThreshold());
 		}		
-		//table.filter();
-	}	
-
-
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		refresh();
+		fireChanged();
 	}
 	
 	/**
- * Display this JPanel inside a new JFrame.
- */
+	 * Display this JPanel inside a new JFrame.
+	 */
 	public static void main( final String[] args )
 	{
 		TableLoader loader = new TableLoader(new File("/home/ronny/ownCloud/storm/testTable.csv"));

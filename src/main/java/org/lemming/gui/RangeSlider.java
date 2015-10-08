@@ -40,6 +40,7 @@ public class RangeSlider extends JSlider {
 		super(min, max);
 		setValue(min);
 		setUpperValue(max);
+		setToolTipText("");
 	}
 
 	public RangeSlider(int min, int max, int value) {
@@ -107,6 +108,12 @@ public class RangeSlider extends JSlider {
 
 		// Set extent to set upper value.
 		setExtent(newExtent);
+	}
+	
+	@Override
+	public String getToolTipText(MouseEvent e) {
+		int value = ((BasicSliderUI) ui).valueForXPosition(e.getX());
+		return String.valueOf(value);
 	}
 
 	/**
@@ -233,6 +240,7 @@ public class RangeSlider extends JSlider {
 		protected Dimension getThumbSize() {
 			return new Dimension(12, 12);
 		}
+		
 
 		/**
 		 * Paints the slider. The selected thumb is always painted on top of the
@@ -488,7 +496,7 @@ public class RangeSlider extends JSlider {
 				if (slider.isRequestFocusEnabled()) {
 					slider.requestFocus();
 				}
-
+				
 				// Determine which thumb is pressed. If the upper thumb is
 				// selected (last one dragged), then check its position first;
 				// otherwise check the position of the lower thumb first.

@@ -1,9 +1,10 @@
 package org.lemming.modules;
 
 import ij.ImagePlus;
-import org.lemming.pipeline.SingleRunModule;
 
-public abstract class Renderer extends SingleRunModule {
+import org.lemming.pipeline.MultiRunModule;
+
+public abstract class Renderer extends MultiRunModule {
 	
 	
 	protected ImagePlus ip;

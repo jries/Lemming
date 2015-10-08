@@ -138,7 +138,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 		final Cursor< T > center = Views.flatIterable( img ).cursor();
 		
 		for ( final Neighborhood< T > neighborhood : shape.neighborhoods( img ) ){
-			center.fwd();
+			center.fwd(); 
 			final Point p = localNeighborhoodCheck.check( center, neighborhood );
 			if ( p != null )
 				extrema.add( p );

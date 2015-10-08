@@ -206,6 +206,8 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 
 	private boolean processed = false;
 
+	protected ExtendableTable filteredTable = null;
+
 	protected static int DETECTOR = 1;
 
 	protected static int FITTER = 2;
@@ -390,6 +392,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 		gbc_panelRenderer.gridx = 0;
 		gbc_panelRenderer.gridy = 0;
 		panelRecon.add(panelRenderer, gbc_panelRenderer);
+		panelRecon.addContainerListener(this);
 		
 		lblRenderer = new JLabel("Renderer");
 		
@@ -504,6 +507,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 			if (panelReconDown != null)				// remove panel if one exists
 				panelRecon.remove(panelReconDown);
 			chooseRenderer();
+			repaint();
 		}
 		
 		if (s == this.chkboxFilter){
@@ -511,6 +515,7 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 				panelRecon.remove(panelReconDown);
 			if (this.chkboxFilter.isSelected())
 				filterTable();
+			repaint();
 		}
 		
 		if (s == this.btnProcess){ 			
@@ -546,19 +551,6 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 	private void process(boolean b) {
 		// Manager
 
-		/*if (tabbedPane.getSelectedIndex() == 0) {
-			if (panelDown != null) {
-				Map<String, Object> curSet = panelDown.getSettings();
-				for (String key : curSet.keySet())
-					settings.put(key, curSet.get(key));
-			}
-		} else if (tabbedPane.getSelectedIndex() == 1) {
-			if (panelReconDown != null) {
-				Map<String, Object> curSet = panelReconDown.getSettings();
-				for (String key : curSet.keySet())
-					settings.put(key, curSet.get(key));
-			}
-		}*/
 		if (tif == null) {
 			IJ.error("Please load images first!");
 			return;
@@ -826,10 +818,10 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 
     	TableLoader tl = new TableLoader(file);
     	tl.readCSV(',');
-    	this.table = tl.getTable();
+    	table = tl.getTable();
 		
-		this.lblFile.setText(file.getName());
-		this.processed = true;
+		lblFile.setText(file.getName());
+		processed = true;
 	}
 
 	private void chooseDetector(){
@@ -1026,9 +1018,10 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 			}
 		}
 		
-		if (table!=null){
-			Store previewStore = table.getFIFO();
-			System.out.println("Rendering " + table.getNumberOfRows() + " elements");
+		if (table!=null){	
+			ExtendableTable tableToRender = filteredTable == null ? table : filteredTable;	
+			Store previewStore = tableToRender.getFIFO();
+			System.out.println("Rendering " + tableToRender.getNumberOfRows() + " elements");
 			renderer.setInput(previewStore);
 			Thread rendererThread = new Thread(renderer,renderer.getClass().getSimpleName());
 			rendererThread.start();
@@ -1060,8 +1053,20 @@ public class Controller<T extends NumericType<T> & NativeType<T>, F extends Fram
 			gbc_panelDown.anchor = GridBagConstraints.NORTHWEST;
 			gbc_panelDown.gridx = 0;
 			gbc_panelDown.gridy = 1;
+			gbc_panelDown.insets = new Insets(0, 5, 0, 5);
 			panelRecon.add(panelReconDown, gbc_panelDown);
-			validate();
+			panelReconDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					if (table.filtersCollection.isEmpty()){
+						filteredTable = null;
+					} else {
+						filteredTable = table.filter();
+					}
+					rendererPreview(settings);
+				}
+			});
+			revalidate();
 		}		
 	}
 	

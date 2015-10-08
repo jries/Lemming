@@ -27,7 +27,7 @@ public class GaussRendererTest {
 		reader.setOutput(localizations);
 		pipe.add(reader);
 		
-		gauss = new GaussRenderer(128,128);
+		gauss = new GaussRenderer(1024, 1024, 0, 127, 0, 127);
 		gauss.setInput(localizations);
 		pipe.add(gauss);
 	}
