@@ -30,7 +30,7 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	}
 
 	@Override
-	public Element process(Element data) {		
+	public Element processData(Element data) {		
 		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
 		
 		Img<T> theImage = LemmingUtils.wrap(ip);

@@ -38,7 +38,7 @@ public class SaveLocalizations extends SingleRunModule {
 	}
 
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		
 		if (data.isLast()) {
 			if (data instanceof Localization) {

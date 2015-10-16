@@ -135,13 +135,14 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 		@SuppressWarnings("rawtypes")
 		@Override
 		public AbstractModule getDetector() {
-			final double threshold = ( Double ) settings.get( NMSDetectorPanel.KEY_THRESHOLD );
+			final double threshold = ( Double ) settings.get( NMSDetectorPanel.KEY_NMS_THRESHOLD );
 			final int stepSize = ( Integer ) settings.get( NMSDetectorPanel.KEY_NMS_STEPSIZE );
 			return new NMSDetector(threshold, stepSize);
 		}
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 		

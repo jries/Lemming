@@ -31,7 +31,7 @@ public class RoiSelector<T> extends SingleRunModule {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		
 		FrameElements<T> fe = (FrameElements<T>) data;
 		if (fe==null) return null;

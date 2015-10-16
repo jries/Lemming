@@ -72,8 +72,13 @@ public class ExtendableTable {
 		for (int index = 0 ; index < getNumberOfRows(); index++){
 			row = getRow(index);
 			boolean filtered = true;
-			for (String key : filtersCollection.keySet())
-				filtered = filtered && (filtered == filtersCollection.get(key).test(row.get(key)));
+			for (String key : filtersCollection.keySet()){
+				Number value = row.get(key);
+				if (value!=null)
+					filtered = filtered && (filtered == filtersCollection.get(key).test(value));
+				else
+					filtered = false;
+			}
 			if(filtered)
 				filteredTable.addRow(row);
 		}

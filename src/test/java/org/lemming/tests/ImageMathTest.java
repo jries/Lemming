@@ -41,7 +41,7 @@ public class ImageMathTest {
 		pipe.linkModules(tif, fmf, true);
 		pipe.linkModules(tif, im);
 		pipe.linkModules(fmf, im);
-		map = pipe.get();
+		map = pipe.getMap();
 		
 	}
 

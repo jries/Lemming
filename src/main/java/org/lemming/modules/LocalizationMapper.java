@@ -22,7 +22,7 @@ public class LocalizationMapper extends SingleRunModule {
 	}
 
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		try{
 			MapElement me = (MapElement) data;
 			long col1 = (long) me.get().get("col1");

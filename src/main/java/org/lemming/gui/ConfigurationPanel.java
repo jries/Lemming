@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.swing.JPanel;
 
 public abstract class ConfigurationPanel extends JPanel {
+	
 
 	/**
 	 * 
@@ -23,7 +24,7 @@ public abstract class ConfigurationPanel extends JPanel {
 	 * by this panel.
 	 */
 	public abstract Map<String, Object> getSettings();
-	
+		
 	protected void fireChanged() {
 		firePropertyChange(propertyName, null, getSettings());
 	}

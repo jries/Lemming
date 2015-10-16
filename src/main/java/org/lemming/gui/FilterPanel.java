@@ -3,6 +3,7 @@ package org.lemming.gui;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JFrame;
@@ -47,6 +48,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		setBorder(null);
 		setMinimumSize(new Dimension(295, 315));
 		setPreferredSize(new Dimension(300, 340));
+		setName("FILTER");
 		this.table = table;
 		
 		scrollPane = new JScrollPane();
@@ -99,6 +101,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	}
 
 	protected void addPanel() {
+		if (table==null) return;
 		HistogramPanel hPanel = new HistogramPanel(table);
 		hPanel.addChangeListener(this);
 		panelStack.add(hPanel);
@@ -136,14 +139,12 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		// TODO Auto-generated method stub
-		
+		// nothing
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
-		// TODO Auto-generated method stub
-		return null;
+		return new HashMap<>();
 	}
 
 }

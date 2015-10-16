@@ -12,21 +12,23 @@ import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.ModuleInterface;
 import org.lemming.interfaces.Store;
 
-import net.imglib2.algorithm.MultiThreaded;
-
-public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
+public abstract class AbstractModule implements ModuleInterface,Runnable {
 	
-	private int numTasks;
-	protected final ExecutorService service;
+	protected int numTasks;
+	protected int numThreads = Runtime.getRuntime().availableProcessors()-1;
+	protected ExecutorService service= Executors.newCachedThreadPool();
 	protected Map<Integer, Store> inputs = new LinkedHashMap<>();
 	protected Map<Integer, Store> outputs = new LinkedHashMap<>();
 	
 	protected volatile boolean running = true;
 	protected Integer iterator;
 	
+	
 	public AbstractModule(){
-		setNumThreads();
-		service = Executors.newFixedThreadPool(numTasks);
+	}
+	
+	public void setService(ExecutorService service){
+		this.service = service;
 	}
 	
 	protected void newOutput(final Element data) {
@@ -43,20 +45,6 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 		return getInput(iterator);
 	}
 
-	@Override
-	public void setNumThreads() {
-		setNumThreads(Runtime.getRuntime().availableProcessors());
-	}
-
-	@Override
-	public void setNumThreads(int numThreads) {
-		numTasks=numThreads;
-	}
-
-	@Override
-	public int getNumThreads() {
-		return numTasks;
-	}
 
 	@Override
 	public void cancel() {
@@ -129,7 +117,8 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 		return running;
 	}
 	
-	protected static void pause(long ms){
+	@SuppressWarnings("static-method")
+	protected void pause(long ms){
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
@@ -138,11 +127,11 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	}
 	
 	public Element preview(Element el){
-		return process(el);
+		return processData(el);
 	}
 	
 	public <T> Element preview(Frame<T> el){
-		return process(el);
+		return processData(el);
 	}	
 	
 	/**
@@ -150,5 +139,5 @@ public abstract class AbstractModule implements ModuleInterface, MultiThreaded {
 	 * @param data - data to process
 	 * @return Element
 	 */
-	public abstract Element process(Element data);
+	public abstract Element processData(Element data);
 }

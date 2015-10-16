@@ -52,7 +52,7 @@ public class StoreSaver extends SingleRunModule {
 	}
 
 	@Override
-	public Element process(Element data) { // data not used here
+	public Element processData(Element data) { // data not used here
 		
 		String converted = new String();
 		if (data instanceof MapElement){

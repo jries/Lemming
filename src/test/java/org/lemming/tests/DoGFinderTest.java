@@ -47,7 +47,7 @@ public class DoGFinderTest {
 		pipe.linkModules(tif, peak, true);
 		pipe.linkModules(peak, unpacker);
 		pipe.linkModules(unpacker, saver);
-		map = pipe.get();
+		map = pipe.getMap();
 	}
 
 	@Test

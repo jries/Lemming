@@ -29,7 +29,7 @@ public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends Si
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		F frame = (F) data;
 		if (frame == null) return null;
 		stack.addSlice(ImageJFunctions.wrap(frame.getPixels(), "" + frame.getFrameNumber()).getProcessor());

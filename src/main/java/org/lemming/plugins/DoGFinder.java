@@ -59,7 +59,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		F frame = (F) data;
 		if (frame==null) return null;
 		
@@ -218,6 +218,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 		

@@ -65,7 +65,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		F frameB = (F) data;
 		if (frameB==null){ 
 			return null;

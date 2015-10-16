@@ -1,23 +1,28 @@
 package org.lemming.pipeline;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.SwingWorker;
+
 import org.lemming.interfaces.Store;
 
 import ij.IJ;
 
-public class Manager implements Runnable {
+public class Manager extends SwingWorker<Void,Void> {
 	
 	private Map<Integer,Store> storeMap = new LinkedHashMap<>();
 	private Map<Integer,AbstractModule> modules = new LinkedHashMap<>();
-//	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-//	private ScheduledFuture< ? > future;
 	private int counter;
+	private boolean done = false;
+	private int maximum = 1;
 
 	public Manager() {
-		counter=0;
+		counter = 0;
 	}
 	
 	public void add(AbstractModule module){		
@@ -37,13 +42,13 @@ public class Manager implements Runnable {
 			return;
 		}
 		
-		AbstractModule source = modules.get(fromOrTo.hashCode());
-		if (source==null) throw new NullPointerException("Wrong linkage!");
+		AbstractModule well = modules.get(fromOrTo.hashCode());
+		if (well==null) throw new NullPointerException("Wrong linkage!");
 		Store s = new FastStore();
-		source.setOutput(s);
+		well.setInput(s);
 		AbstractModule cur = modules.get(current.hashCode());
 		if (cur==null) throw new NullPointerException("Wrong linkage!");
-		cur.setInput(s);
+		cur.setOutput(s);
 		storeMap.put(s.hashCode(), s);
 	}
 	
@@ -72,27 +77,30 @@ public class Manager implements Runnable {
 		counter++;
 	}
 	
-	public Map<Integer, Store> get(){
+	public Map<Integer, Store> getMap(){
 		return storeMap;
 	}
 	
-
 	@Override
-	public void run() {
-		if (modules.isEmpty()) return;
-		
-		List<Thread> threads= new ArrayList<>();
-		
-		ProgressWindow progressWindow = new ProgressWindow(storeMap);
-		
-		//future = executor.scheduleAtFixedRate(new MonitorThread(this.storeMap), 100, 1000 ,TimeUnit.MILLISECONDS);
+	protected Void doInBackground() throws Exception {
+		if (modules.isEmpty()) return null;
+		StoreMonitor sm = new StoreMonitor();
+		sm.addPropertyChangeListener(new PropertyChangeListener(){
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getPropertyName().equals("progress")) 
+					setProgress((int) evt.getNewValue());
+			}});
+		sm.execute();
+		final List<Thread> threads= new ArrayList<>();
 		
 		for(AbstractModule starter:modules.values()){
 			if (!starter.check()) {
 				IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
 				break;
-			}
-		
+			}	
+//			starter.setService(service);
+
 			Thread t = new Thread(starter, starter.getClass().getSimpleName());
 			t.start();
 			threads.add(t);	
@@ -102,20 +110,16 @@ public class Manager implements Runnable {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
 		}
-		
-		for(Thread joiner:threads){
-			try {
+		try {
+			for(Thread joiner:threads)
 				joiner.join();
-			} catch (InterruptedException e) {
-				System.err.println(e.getMessage());
-			}
+
+		} catch (InterruptedException e) {
+			System.err.println(e.getMessage());
 		}
-//		if (future != null && !future.isDone()) {
-//			future.cancel(false);
-//		}
-		progressWindow.cancel();
+		done = true;
+		return null;
 	}
 
 	public void reset() {
@@ -123,5 +127,34 @@ public class Manager implements Runnable {
 		storeMap.clear();
 		counter=0;
 	}
+	
+	
+	class StoreMonitor extends SwingWorker<Void,Integer> {
+
+		public StoreMonitor() {
+		}
+
+		@Override
+		protected Void doInBackground() throws Exception {
+			while(!done){
+				try {
+	                Thread.sleep(200);
+	            } catch (InterruptedException ignore) {}
+				int max = 0;
+				int n = 0;
+				for(Integer key : storeMap.keySet()){
+					n = storeMap.get(key).getLength();
+					max= Math.max(n, max);
+				}
+				if (max > maximum)
+					maximum = max;
+				
+				setProgress(Math.round(100-(float)max/maximum*100));
+				}
+			return null;
+		}
+
+	}
+
 
 }

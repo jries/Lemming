@@ -1,11 +1,11 @@
 package org.lemming.plugins;
 
-import ij.ImagePlus;
 import ij.process.ShortProcessor;
 
+import java.awt.image.IndexColorModel;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.util.FastMath;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.RendererPanel;
@@ -24,35 +24,39 @@ public class HistogramRenderer extends Renderer {
 											+ "</html>";
 	
 	private int xBins;
-	private int xmin;
-	private int xmax;
-	private int ymin;
-	private int ymax;
-	private volatile short[] values;
+	private double xmin;
+	private double ymin;
 	private long start;
-	private float xwidth;
-	private float ywidth;
-	private float x;
-	private float y;
+	private double xwidth;
+	private double ywidth;
+	private double x;
+	private double y;
 	private int index;
-	private int xindex;
-	private int yindex;
+	private long xindex;
+	private long yindex;
+	private volatile short[] values; // volatile keyword keeps the array on the heap available
+	private double xmax;
+	private double ymax;
 
 	public HistogramRenderer(){
 		this(256,256,0,256,0,256);
 	}
 
-	public HistogramRenderer(final int xBins, final int yBins, final int xmin, final int xmax, final int ymin, final int ymax) {
+	public HistogramRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax) {
 		this.xBins = xBins;
 		this.xmin = xmin;
-		this.xmax = xmax;
 		this.ymin = ymin;
+		this.xmax = xmax;
 		this.ymax = ymax;
-		this.xwidth = (float)(xmax - xmin) / xBins;
-    	this.ywidth = (float)(ymax - ymin) / yBins;
-		ShortProcessor sp = new ShortProcessor(xBins, yBins);
-		ip = new ImagePlus(title, sp);
-		values = (short[]) sp.getPixels();
+		this.xwidth = (xmax - xmin) / xBins;
+    	this.ywidth = (ymax - ymin) / yBins;
+    	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
+    		cancel(); return;
+    	}
+    	values = new short[xBins*yBins];
+		ShortProcessor sp = new ShortProcessor(xBins, yBins,values,getDefaultColorModel());
+		ip.setProcessor(sp);
+		ip.updateAndRepaintWindow();
 	}
 	
 	@Override
@@ -61,7 +65,7 @@ public class HistogramRenderer extends Renderer {
 	}
 
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		if(data == null) return null;
 		if(data.isLast())
 				cancel();
@@ -75,26 +79,48 @@ public class HistogramRenderer extends Renderer {
 			try{
 				x = map.get("x").floatValue();
 				y = map.get("y").floatValue();
-			} catch (NullPointerException ne) {}
+			} catch (NullPointerException ne) { return null;}
 		}
 		
+		synchronized(this){
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	xindex = FastMath.round((x - xmin) / xwidth);
-        	yindex = FastMath.round((y - ymin) / ywidth);
-        	index = xindex+yindex*xBins;
-        	if (index < values.length)
-        		values[index]++;
-        }		
-		        
+	    	xindex = Math.round((x - xmin) / xwidth);
+	    	yindex = Math.round((y - ymin) / ywidth);
+	    	index = (int) (xindex+yindex*xBins);
+	    	if (index>=0 && index<values.length)
+	    		values[index]++;
+		
+			} 
+        }   
 		return null;
 	}
 	
 	@Override
 	public void afterRun(){
-		ip.updateImage();
+		ip.getProcessor().setMinAndMax(0, 3);
+		ip.updateAndDraw();
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
 		//while(ip.isVisible()) pause(10);
+	}
+	
+	private static IndexColorModel getDefaultColorModel() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		for(int i=0; i<256; i++) {
+			r[i]=(byte)i;
+			g[i]=(byte)i;
+			b[i]=(byte)i;
+		}
+		return new IndexColorModel(8, 256, r, g, b);
+	}
+
+	@Override
+	public void preview(List<Element> previewList) {
+		for(Element el : previewList)
+			processData(el);
+		ip.updateAndDraw();
 	}
 	
 	
@@ -121,42 +147,27 @@ public class HistogramRenderer extends Renderer {
 
 		@Override
 		public Renderer getRenderer() {
-			final int xBins = (int) settings.get(RendererPanel.KEY_xBins);
-			final int yBins = (int) settings.get(RendererPanel.KEY_yBins);
-			final int xmin = (int) settings.get(RendererPanel.KEY_xmin);
-			final int xmax = (int) settings.get(RendererPanel.KEY_xmax);
-			final int ymin = (int) settings.get(RendererPanel.KEY_ymin);
-			final int ymax = (int) settings.get(RendererPanel.KEY_ymax);
-			final Integer width = (Integer) settings.get(RendererFactory.KEY_RENDERER_WIDTH);
-			final Integer height = (Integer) settings.get(RendererFactory.KEY_RENDERER_HEIGHT);
-			if (width != null && height != null)
-				return new HistogramRenderer(width.intValue(), height.intValue(), xmin, width.intValue(), ymin, height.intValue());
+			final int xBins = (int) settings.get(RendererFactory.KEY_xBins);
+			final int yBins = (int) settings.get(RendererFactory.KEY_yBins);
+			final double xmin = (double) settings.get(RendererFactory.KEY_xmin);
+			final double xmax = (double) settings.get(RendererFactory.KEY_xmax);
+			final double ymin = (double) settings.get(RendererFactory.KEY_ymin);
+			final double ymax = (double) settings.get(RendererFactory.KEY_ymax);
 			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax);
 		}
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
+			configPanel.setSettings(settings);
 			return settings != null;
 		}
 		
 	}
-	
-//	private static IndexColorModel getDefaultColorModel() {
-//		byte[] r = new byte[256];
-//		byte[] g = new byte[256];
-//		byte[] b = new byte[256];
-//		for(int i=0; i<256; i++) {
-//			r[i]=(byte)i;
-//			g[i]=(byte)i;
-//			b[i]=(byte)i;
-//		}
-//		return new IndexColorModel(8, 256, r, g, b);
-//	}
-
 }

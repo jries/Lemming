@@ -19,9 +19,8 @@ public abstract class SingleRunModule extends AbstractModule {
 					break;
 				Element data = nextInput();
 				if (data != null) 
-					newOutput(process(data));
+					newOutput(processData(data));
 			}
-			
 			afterRun();
 			return;
 		}
@@ -37,9 +36,8 @@ public abstract class SingleRunModule extends AbstractModule {
 					break;
 				Element data = nextInput();
 				if (data != null) 
-					process(data);
+					processData(data);
 			}
-			
 			afterRun();
 			return;
 		}
@@ -48,13 +46,13 @@ public abstract class SingleRunModule extends AbstractModule {
 			while (running) {
 				if (Thread.currentThread().isInterrupted())
 					break;
-				Element data = process(null);
+				Element data = processData(null);
 				newOutput(data);
 			}
 			afterRun();
 			return;
 		}
-		service.shutdown();
+		return;
 	}
 
 	protected void afterRun() {

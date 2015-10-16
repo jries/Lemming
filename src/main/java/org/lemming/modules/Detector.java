@@ -26,7 +26,7 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		F frame = (F) data;
 		if (frame == null)
 			return null;
@@ -41,7 +41,9 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 		}
 		FrameElements<T> res = detect(frame);
 		//counter += res.getList().size();
+		try{
 		counterList.add(res.getList().size());
+		} catch (NullPointerException e){}
 		return res;
 	}
 	

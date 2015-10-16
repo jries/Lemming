@@ -48,7 +48,7 @@ public class DataTable extends SingleRunModule {
 	}
 
 	
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		if (data==null) return null;
 		if (data.isLast()) cancel();
 		Map<String,Number> row = new HashMap<>();
@@ -65,7 +65,7 @@ public class DataTable extends SingleRunModule {
 	
 	@Override
 	protected void afterRun() {
-		System.out.println("Import in DataTable done in " + (System.currentTimeMillis() - start) + "ms.");
+		System.out.println("DataTable imported " + table.getNumberOfRows() +" elements in " + (System.currentTimeMillis() - start) + "ms.");
 	}
 	
 	public ExtendableTable getTable(){

@@ -22,7 +22,7 @@ public class UnpackElements<T> extends SingleRunModule {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		if (data instanceof FrameElements){
 			FrameElements<T> el = (FrameElements<T>) data;
 			counter++;

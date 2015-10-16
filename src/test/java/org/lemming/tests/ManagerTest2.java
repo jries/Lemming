@@ -9,6 +9,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
+import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveFittedLocalizations;
 import org.lemming.modules.SaveLocalizations;
@@ -36,7 +37,7 @@ public class ManagerTest2 {
 	@Before
 	public void setUp() throws Exception {
 		
-        File file = new File("/home/ronny/ownCloud/storm/p500ast.tif");
+        File file = new File(System.getProperty("user.home")+"/ownCloud/storm/p500ast.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -71,14 +72,11 @@ public class ManagerTest2 {
 
 		PeakFinder peak = new PeakFinder(700,4);
 		//QuadraticFitter fitter = new QuadraticFitter(10);
-		AstigFitter fitter = new AstigFitter(10, Settings.readCSV("/home/ronny/ownCloud/storm/calTest.csv").get("param"));
-		//AstigFitter fitter = new AstigFitter(60,10, Settings.readProps("/Users/ronny/ownCloud/storm/Settings.properties"));
+		Fitter fitter = new AstigFitter(7, Settings.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
 
 		UnpackElements unpacker = new UnpackElements();
-		SaveFittedLocalizations saver = new SaveFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"));
-		//SaveFittedLocalizations saver = new SaveFittedLocalizations(new File("/Users/ronny/Documents/fitted.csv"));
-		SaveLocalizations saver2 = new SaveLocalizations(new File("/home/ronny/Bilder/outOrig.csv"));
-		//SaveLocalizations saver2 = new SaveLocalizations(new File("/Users/ronny/Documents/outOrig.csv"));
+		SaveFittedLocalizations saver = new SaveFittedLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted.csv"));
+		SaveLocalizations saver2 = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/outOrig.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
@@ -93,7 +91,7 @@ public class ManagerTest2 {
 		pipe.linkModules(fitter,saver);
 		pipe.linkModules(peak,unpacker);
 		pipe.linkModules(unpacker,saver2);
-		storeMap = pipe.get();
+		storeMap = pipe.getMap();
 	}
 
 	@Test

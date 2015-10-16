@@ -32,7 +32,7 @@ public class HistogramRendererTest {
 	@Test
 	public void test() {
 		pipe.run();
-		assertEquals(true,pipe.get().values().iterator().next().isEmpty());
+		assertEquals(true,pipe.getMap().values().iterator().next().isEmpty());
 	}
 
 }

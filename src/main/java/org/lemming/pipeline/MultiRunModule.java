@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.lemming.interfaces.Element;
 
@@ -24,7 +23,7 @@ public abstract class MultiRunModule extends AbstractModule{
 			
 			final ArrayList<Future<Void>> futures = new ArrayList<>();
 
-			for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
+			for (int taskNum = 0; taskNum < numThreads; ++taskNum) {
 
 				final Callable<Void> r = new Callable<Void>() {
 
@@ -35,13 +34,14 @@ public abstract class MultiRunModule extends AbstractModule{
 								break;
 							Element data = nextInput();
 							if (data != null) 
-								newOutput(process(data));
+								newOutput(processData(data));
 						}
 						return null;
 					}
 
 				};
-				futures.add(service.submit(r));
+				if (!service.isShutdown() || !service.isTerminated())
+					futures.add(service.submit(r));
 			}
 
 			for (final Future<Void> f : futures) {
@@ -52,14 +52,6 @@ public abstract class MultiRunModule extends AbstractModule{
 					e.printStackTrace();
 				}
 			}
-
-			try {
-				service.awaitTermination(5, TimeUnit.MINUTES);
-			} catch (InterruptedException e) {
-				System.err.println(getClass().getSimpleName()+e.getMessage());
-				e.printStackTrace();
-			}
-			
 			afterRun();
 			return;
 		}
@@ -72,7 +64,7 @@ public abstract class MultiRunModule extends AbstractModule{
 			
 			final ArrayList<Future<Void>> futures = new ArrayList<>();
 
-			for (int taskNum = 0; taskNum < getNumThreads(); ++taskNum) {
+			for (int taskNum = 0; taskNum < numThreads; ++taskNum) {
 
 				final Callable<Void> r = new Callable<Void>() {
 
@@ -83,29 +75,23 @@ public abstract class MultiRunModule extends AbstractModule{
 								break;
 							Element data = nextInput();
 							if (data != null) 
-								process(data);
+								processData(data);
 						}
 						return null;
 					}
 
 				};
-				futures.add(service.submit(r));
+				if (!service.isShutdown() || !service.isTerminated())
+					futures.add(service.submit(r));
 			}
 
 			for (final Future<Void> f : futures) {
 				try {
 					f.get();
 				} catch (final InterruptedException | ExecutionException e) {
-					System.err.println(getClass().getSimpleName()+e.getMessage());
+					e.printStackTrace();
 				}
 			}
-
-			try {
-				service.awaitTermination(5, TimeUnit.MINUTES);
-			} catch (InterruptedException e) {
-				System.err.println(getClass().getSimpleName()+e.getMessage());
-			}
-			
 			afterRun();
 			return;
 		}
@@ -114,12 +100,13 @@ public abstract class MultiRunModule extends AbstractModule{
 			while (running) {
 				if (Thread.currentThread().isInterrupted())
 					break;
-				Element data = process(null);
+				Element data = processData(null);
 				newOutput(data);
 			}
 			afterRun();
 			return;
 		}
+		return;
 	}
 
 	protected void afterRun() {		

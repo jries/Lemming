@@ -19,7 +19,6 @@ public class QuadraticFitterPanel extends ConfigurationPanel {
 	 */
 	private static final long serialVersionUID = 3081886846323191618L;
 	public static final String KEY_QUAD_WINDOW_SIZE = "QUAD_WINDOW_SIZE";
-	public static final String KEY_QUAD_QUEUE_SIZE = "QUAD_QUEUE_SIZE";
 	private JSpinner spinnerWindowSize;
 	protected File calibFile;
 	protected File camFile;

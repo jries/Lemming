@@ -1,8 +1,11 @@
 package org.lemming.modules;
 
+import java.util.List;
+
 import ij.ImagePlus;
 
 import org.lemming.pipeline.MultiRunModule;
+import org.lemming.interfaces.Element;
 
 public abstract class Renderer extends MultiRunModule {
 	
@@ -12,15 +15,23 @@ public abstract class Renderer extends MultiRunModule {
 
 	public Renderer() {
 		ip = new ImagePlus();
+		ip.setTitle(title);
 	}
 	
 	public ImagePlus getImage(){
 		return ip;
+	}
+	
+	public void resetInputStore(){
+		inputs.clear();
+		iterator=null;
 	}
 
 	@Override
 	public boolean check() {
 		return inputs.size()==1;
 	}
+	
+	public abstract void preview(List<Element> previewList);
 
 }

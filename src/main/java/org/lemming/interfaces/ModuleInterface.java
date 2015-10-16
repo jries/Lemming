@@ -9,7 +9,7 @@ import java.util.Map;
  * @author Ronny Sczech
  */
 
-public interface ModuleInterface extends Runnable{
+public interface ModuleInterface{
 	
 	public void cancel();
 	

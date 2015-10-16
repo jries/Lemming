@@ -64,7 +64,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		final F frame = (F) data;
 		if (frame == null)
 			return null;
@@ -291,6 +291,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 

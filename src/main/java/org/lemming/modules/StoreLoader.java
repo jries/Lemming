@@ -50,7 +50,7 @@ public class StoreLoader extends SingleRunModule {
 	}
 
 	@Override
-	public Element process(Element data) { // data not used here
+	public Element processData(Element data) { // data not used here
 
 		if (sCurrentLine.startsWith("#")){
 			addMetadata(sCurrentLine);

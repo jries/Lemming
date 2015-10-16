@@ -131,7 +131,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detec
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			return true;
+			return settings!=null;
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -144,6 +144,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detec
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 		

@@ -37,20 +37,18 @@ public class SaveFittedLocalizations extends SingleRunModule {
 	}
 
 	@Override
-	public Element process(Element data) {
-		FittedLocalization loc = (FittedLocalization) data;
-		if (loc == null)
-			return null;
+	public Element processData(Element data) {
 
-		if (loc.isLast()) {
+		if (data.isLast()) {
 			if (inputs.get(iterator).isEmpty()) {
 				cancel();
 				return null;
 			}
-			inputs.get(iterator).put(loc);
+			inputs.get(iterator).put(data);
 			return null;
 		}
-
+		
+		FittedLocalization loc = (FittedLocalization) data;
 		StringBuilder out = new StringBuilder();
 
 		out.append(loc.getID());

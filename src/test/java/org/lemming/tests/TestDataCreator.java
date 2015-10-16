@@ -23,7 +23,6 @@ public class TestDataCreator {
 	long id = 0;
 	long t0,t00;
 	final Random ran = new Random();
-	final static String datafile = "testTable.csv";
 	private ExtendableTable h;
 	private List<Number> colx;
 	private List<Number> coly;
@@ -45,15 +44,16 @@ public class TestDataCreator {
 		h.addNewMember("sX");
 		h.addNewMember("sY");
 		
-		bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("/Users/ronny/ownCloud/storm/testTable.csv")));
+		bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(System.getProperty("user.home")+"/ownCloud/storm/geomTable.csv")));
 	}
 
 	@Test
 	public void test() {
 		
-		double meanx = ran.nextDouble() * 10;
-		double meany = ran.nextDouble() * 10;
-		double meanz = ran.nextDouble() * 10;
+		double meanx = 5;
+		double meany = 5;
+		double meanz = 5;
+		double r = 3;
 		
 		try {
 			bw.write("x,y,z,frame,sx,sy\n");
@@ -65,12 +65,12 @@ public class TestDataCreator {
 			colsY = h.getColumn("sY");
 		
 			for (Integer i=0;i<N;i++){
-				final double gx = ran.nextGaussian() + 5 + meanx;
-				final double gy = ran.nextGaussian() + 5 + meany;
-				final double gz = ran.nextGaussian() + 5 + meanz;
-				final double sX = Math.abs(ran.nextGaussian());
-				final double sY = Math.abs(ran.nextGaussian());
-				colx.add( gx );
+				final double gx = r + Math.cos(ran.nextDouble()*2*Math.PI)*meanx;
+				final double gy = r + Math.sin(ran.nextDouble()*2*Math.PI)*meany;
+				final double gz = r * meanz;
+				final double sX = Math.abs(ran.nextGaussian()/10);
+				final double sY = Math.abs(ran.nextGaussian()/10);
+				colx.add( gx);
 				coly.add( gy);
 				colz.add( gz);
 				colf.add( i+1);

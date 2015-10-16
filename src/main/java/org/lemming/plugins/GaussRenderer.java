@@ -1,14 +1,14 @@
 package org.lemming.plugins;
 
+import java.awt.image.IndexColorModel;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import ij.IJ;
-import ij.ImagePlus;
 import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
+import ij.process.FloatProcessor;
 import net.imglib2.Point;
 
+import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
@@ -28,12 +28,11 @@ public class GaussRenderer extends Renderer {
 											+ "Gauss Renderer Plugin"
 											+ "</html>";
 	private int xBins;
-	private int xmin;
-	private int xmax;
-	private int ymin;
-	private int ymax;
-	private AtomicIntegerArray sharedPixels;
-	private short area = 10000;
+	private double xmin;
+	private double xmax;
+	private double ymin;
+	private double ymax;
+	private int area = 10000;
 	private double background = 0;
 	private double theta = 0;
 //	private double maxVal = -Float.MAX_VALUE;
@@ -49,22 +48,27 @@ public class GaussRenderer extends Renderer {
 	private double yindex;
 	private int yBins;
 	private double[] Params;
-	private short[] pixels;
+	private volatile float[] pixels;
+	private static double sqrt2 = FastMath.sqrt(2);
 
 	
-	public GaussRenderer(final int xBins, final int yBins, final int xmin, final int xmax, final int ymin, final int ymax) {
+	public GaussRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax, final int numLocs) {
 		this.xBins = xBins;
 		this.yBins = yBins;
 		this.xmin = xmin;
 		this.xmax = xmax;
 		this.ymin = ymin;
 		this.ymax = ymax;
-		this.xwidth = (double)(xmax - xmin) / xBins;
-    	this.ywidth = (double)(ymax - ymin) / yBins;
-		ImageProcessor fp = new ShortProcessor(xBins, yBins);
-		pixels = (short[]) fp.getPixels();
-		sharedPixels = new AtomicIntegerArray(xBins*yBins);
-		ip = new ImagePlus(title,fp);
+		this.xwidth = (xmax - xmin) / xBins;
+    	this.ywidth = (ymax - ymin) / yBins;
+    	this.area = numLocs;
+    	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
+    		cancel(); return;
+    	}
+    	pixels = new float[xBins*yBins];
+		ImageProcessor fp = new FloatProcessor(xBins, yBins, pixels, getDefaultColorModel());
+		ip.setProcessor(fp);
+		ip.updateAndRepaintWindow();
 	}
 	
 	@Override
@@ -73,7 +77,7 @@ public class GaussRenderer extends Renderer {
 	}
 
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		if (data==null) return null;
 		if (data.isLast()) {
 			cancel();
@@ -92,23 +96,22 @@ public class GaussRenderer extends Renderer {
 				y = map.get("y").doubleValue();
 				sigmaX = map.get("sx").doubleValue();
 				sigmaY = map.get("sy").doubleValue();
-			} catch (NullPointerException ne) {}
+			} catch (NullPointerException ne) {return null;}
 		}
 		
 		 if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-	        	xindex = (x - xmin) / xwidth;
-	        	yindex = (y - ymin) / ywidth;
-		 }
-		
-//		counter++;
-		
-		final Point[] X = getWindowPixels(xindex, yindex, xBins, yBins, sigmaX, sigmaY);
-		Params = new double[]{background, xindex, yindex, area, theta, sigmaX, sigmaY};
-		final double[] fcn = gaussian2D(X, Params);
-		for (int i=0; i<X.length;i++){
-			int idx = X[i].getIntPosition(0) + X[i].getIntPosition(1) * xBins;
-			sharedPixels.addAndGet(idx, (int) fcn[i]);
-//			maxVal = FastMath.max(pixels[idx], maxVal); 
+        	xindex = (x - xmin) / xwidth;
+        	yindex = (y - ymin) / ywidth;
+		 
+			final Point[] X = getWindowPixels(x, y, xmin,xmax, ymin,ymax, xwidth, ywidth, sigmaX, sigmaY);
+			Params = new double[]{background, xindex, yindex, area, theta, sigmaX, sigmaY};
+			final double[] fcn = gaussian2D(X, Params);
+			for (int i=0; i<X.length;i++){
+				int idx = X[i].getIntPosition(0) + X[i].getIntPosition(1) * xBins;
+				if(idx<pixels.length)
+					pixels[idx] += (float)fcn[i];
+	//			maxVal = FastMath.max(pixels[idx], maxVal); 
+			}
 		}
 		
 //		if (counter%100==0){
@@ -120,9 +123,6 @@ public class GaussRenderer extends Renderer {
 	
 	@Override
 	public void afterRun(){
-		for (int i = 0 ;i< pixels.length;i++)
-			pixels[i]=(short) sharedPixels.get(i);
-			
 		ip.updateImage();
 		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
 	}
@@ -147,20 +147,23 @@ public class GaussRenderer extends Renderer {
 		final double t16 = FastMath.sin(P[4]);
 		final double t20 = FastMath.pow(1.0 / P[5], 2);
 		final double t27 = FastMath.pow(1.0 / P[6], 2);
-		final double t2 = P[3] / (2.0 * FastMath.PI * P[5] * P[6]);
+		final double sigma = (P[5] + P[6]) / 2;
+		final double dn = FastMath.ceil( sigma * 2.5);
+		final double intcorrection = FastMath.pow(Erf.erf((dn+0.5)/sigma/sqrt2), 2);
+		final double gaussnorm = P[3] / (2.0 * FastMath.PI * P[5] * P[6] * intcorrection);
 		double dx, dy;
 		int index=0;
 		for(Point i : x2){
 			dx = i.getIntPosition(0) - P[1];
 			dy = i.getIntPosition(1) - P[2];
-			fcn[index++]= P[0] + t2*FastMath.exp(-0.5*( FastMath.pow(dx*t12 - dy*t16, 2)*t20 + FastMath.pow(dx*t16 + dy*t12, 2)*t27 ) );	
+			fcn[index++]= P[0] + gaussnorm*FastMath.exp(-0.5*( FastMath.pow(dx*t12 - dy*t16, 2)*t20 + FastMath.pow(dx*t16 + dy*t12, 2)*t27 ) );	
 		}
 		return fcn;
 	}
 	
 	/** Generates a list of pixel (x,y) values that surround a fluorophore.
 	 *  The size of the window in the x dimension is 2*(5*<code>sigmaX</code>) and 
-	 *  in the y dimension is 2*(5*<code>sigmaX</code>*<code>aspectRatio</code>), 
+	 *  in the y dimension is 2*(5*<code>sigmaY</code>), 
 	 *  i.e., a window of 5 sigma. 
 	 * 
 	 * @param x0 - the x position of the centroid
@@ -168,36 +171,33 @@ public class GaussRenderer extends Renderer {
 	 * @param imageWidth - the width of the image
 	 * @param imageHeight - the height of the image
 	 * @param sigmaX - the sigma value, in the x-direction, for a 2D Gaussian distribution
-	 * @param aspectRatio - the aspect ratio for a 2D Gaussian, i.e. sigmaY/sigmaX
+	 * @param sigmaY - the sigma value, in the y-direction, for a 2D Gaussian distribution
 	 * @return X - a list of pixels that surrounds (x0,y0) */
-	private static Point[] getWindowPixels(final double x0, final double y0, final int imageWidth, final int imageHeight, final double sigmaX, final double sigmaY){
-		
-		// Make sure that (x0, y0) is within the image
-		if(x0 > imageWidth || y0 > imageHeight) {
-			IJ.error(String.format("Warning, localization not within image. Got (%d,%d), image size is (%d,%d)", x0, y0, imageWidth, imageHeight));
-			return null;
-		}
+	private static Point[] getWindowPixels(final double x0, final double y0, final double xmin, final double xmax, 
+			final double ymin, final double ymax, final double xwidth, final double ywidth, double sigmaX, double sigmaY){
 		
 		// Automatically select a window around the fluorophore based on the 
 		// sigmax and sigmay (ie. the aspect ratio) values.
-		// 5*sigma means that 99.99994% of the fluorescene from a simulated 
+		// 5*sigma means that 99.99994% of the fluorescence from a simulated 
 		// fluorophore (for a Gaussian PSF) is within the specified window.
-		// Also, the window has to be at least 1 x 1 pixel
-		final double halfWindowX = FastMath.max(1, sigmaX*5.0); 
-		final double halfWindowY = FastMath.max(1, sigmaY*5.0);
+		final double halfWindowX = FastMath.min(xwidth, sigmaX*5.0); 
+		final double halfWindowY = FastMath.min(ywidth, sigmaY*5.0);
 		
-		// make sure that the window remains within the image
-		final long x1 = FastMath.max(0, FastMath.round(x0 - halfWindowX));
-		final long y1 = FastMath.max(0, FastMath.round(y0 - halfWindowY));
-		final long x2 = FastMath.min(imageWidth - 1, FastMath.round(x0 + halfWindowX));
-		final long y2 = FastMath.min(imageHeight - 1, FastMath.round(y0 + halfWindowY));
+		// make sure that the window remains within the ROI
+		final long x1 = FastMath.round((FastMath.max(xmin, x0 - halfWindowX)-xmin)/xwidth);
+		final long y1 = FastMath.round((FastMath.max(ymin, y0 - halfWindowY)-ymin)/ywidth);
+		final long x2 = FastMath.round((FastMath.min(xmax, x0 + halfWindowX)-xmin)/xwidth);
+		final long y2 = FastMath.round((FastMath.min(ymax, y0 + halfWindowY)-ymin)/ywidth);
 		
 		// insert the (x,y) window pixel coordinates into the X array
-		final int size = (int)((x2-x1+1)*(y2-y1+1));
+		final int size = (int) FastMath.abs((x2-x1+1)*(y2-y1+1));
+		//final int size = (int)Math.abs(((x2-x1+1)*(y2-y1+1)));
 		Point[] X = new Point[size]; 
-		for(long x=x1, y=y1, i=0; i<size; i++){
-			X[(int) i]=new Point(new long[]{x,y});
-			if (x==x2){
+		long x = x1;
+		long y = y1;
+		for(int i=0; i<size; i++){
+			X[i]=new Point(new long[]{x,y});
+			if (x>=x2){
 				x = x1;
 				y++;
 			} else {
@@ -210,6 +210,13 @@ public class GaussRenderer extends Renderer {
 	@Override
 	public boolean check() {
 		return inputs.size()==1;
+	}
+	
+	@Override
+	public void preview(List<Element> previewList) {
+		for(Element el : previewList)
+			processData(el);
+		ip.updateAndDraw();
 	}
 	
 	@Plugin( type = RendererFactory.class, visible = true )
@@ -235,29 +242,40 @@ public class GaussRenderer extends Renderer {
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
+			configPanel.setSettings(settings);
 			return settings!= null;
 		}
 
 		@Override
 		public Renderer getRenderer() {
-			final int xBins = (int) settings.get(RendererPanel.KEY_xBins);
-			final int yBins = (int) settings.get(RendererPanel.KEY_yBins);
-			final int xmin = (int) settings.get(RendererPanel.KEY_xmin);
-			final int xmax = (int) settings.get(RendererPanel.KEY_xmax);
-			final int ymin = (int) settings.get(RendererPanel.KEY_ymin);
-			final int ymax = (int) settings.get(RendererPanel.KEY_ymax);
-			final Integer width = (Integer) settings.get(RendererFactory.KEY_RENDERER_WIDTH);
-			final Integer height = (Integer) settings.get(RendererFactory.KEY_RENDERER_HEIGHT);
-			if (width != null && height != null)
-				return new GaussRenderer(width.intValue(), height.intValue(), xmin, width.intValue(), ymin, height.intValue());
-			return new GaussRenderer(xBins, yBins, xmin, xmax, ymin, ymax);
+			final int xBins = (int) settings.get(RendererFactory.KEY_xBins);
+			final int yBins = (int) settings.get(RendererFactory.KEY_yBins);
+			final double xmin = (double) settings.get(RendererFactory.KEY_xmin);
+			final double xmax = (double) settings.get(RendererFactory.KEY_xmax);
+			final double ymin = (double) settings.get(RendererFactory.KEY_ymin);
+			final double ymax = (double) settings.get(RendererFactory.KEY_ymax);
+			final int numLocs = (int) settings.get(RendererFactory.KEY_numLocs);
+			return new GaussRenderer(xBins, yBins, xmin, xmax, ymin, ymax, numLocs);
 		}
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 		
-		
 	}
+	
+	private static IndexColorModel getDefaultColorModel() {
+		byte[] r = new byte[256];
+		byte[] g = new byte[256];
+		byte[] b = new byte[256];
+		for(int i=0; i<256; i++) {
+			r[i]=(byte)i;
+			g[i]=(byte)i;
+			b[i]=(byte)i;
+		}
+		return new IndexColorModel(8, 256, r, g, b);
+	}
+
 }

@@ -178,6 +178,7 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
+			configPanel.setName(KEY);
 			return configPanel;
 		}
 		

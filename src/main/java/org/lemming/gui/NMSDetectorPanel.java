@@ -79,12 +79,12 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 	 */
 	private static final long serialVersionUID = -4601480448696314069L;
 	public static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
-	public static final String KEY_THRESHOLD = "NMS_THRESHOLD";
+	public static final String KEY_NMS_THRESHOLD = "NMS_THRESHOLD";
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		spinnerStepSize.setValue(settings.get(KEY_NMS_STEPSIZE));
-		jTextFieldThreshold.setText(""+settings.get(KEY_THRESHOLD));
+		jTextFieldThreshold.setText(""+settings.get(KEY_NMS_THRESHOLD));
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		final int stepsize = (int) spinnerStepSize.getValue();
 		final double threshold = Double.parseDouble( jTextFieldThreshold.getText() );
 		settings.put( KEY_NMS_STEPSIZE, stepsize );
-		settings.put( KEY_THRESHOLD, threshold );
+		settings.put( KEY_NMS_THRESHOLD, threshold );
 		
 		return settings;
 	}

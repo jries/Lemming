@@ -37,18 +37,16 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Element process(Element data) {
+	public Element processData(Element data) {
 		FrameElements<T> fe = (FrameElements<T>) data;
-		if (fe == null)
-			return null;
 
 		if (fe.isLast()) {
 			if (!inputs.get(iterator).isEmpty()){
 				inputs.get(iterator).put(fe);
 				return null;
 			}
-			cancel();
 			process1(fe);
+			cancel();
 		}
 		
 		process1(fe);
@@ -64,7 +62,6 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 	
 	public abstract List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber);
 
-	@SuppressWarnings({ })
 	@Override
 	protected void afterRun() {
 		Integer cc=0;
@@ -78,7 +75,7 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 
 	@Override
 	public boolean check() {
-		return inputs.size()==1 && outputs.size()>=1;
+		return inputs.size()==1;
 	}
 	
 	protected static Roi cropRoi(Rectangle imageRoi, Rectangle curRect) {
