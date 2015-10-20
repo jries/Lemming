@@ -201,7 +201,7 @@ public class HistogramPanel extends JPanel
 		key = allKeys.get( jComboBoxFeature.getSelectedIndex() );
 		NumericHistogram histogram = new NumericHistogram();
 		histogram.allocate(maxBins);
-		final List<Number> col = table.getColumn(key);
+		final List<Number> col = table.getColumn(key); 
 		final int nRows = table.getNumberOfRows();
 		for (int i = 0 ; i < Math.min(maxCount, nRows); i++){
 			Number rowD = col.get(rnd.nextInt(nRows));

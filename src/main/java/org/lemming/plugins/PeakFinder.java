@@ -24,7 +24,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
+public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
 
 	public static final String NAME = "Peak Finder";
 

@@ -19,7 +19,7 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
-public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
+public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
 	
 	public static final String NAME = "NMS Detector";
 

@@ -49,7 +49,11 @@ public class GaussRenderer extends Renderer {
 	private int yBins;
 	private double[] Params;
 	private volatile float[] pixels;
+	private double[] template;
 	private static double sqrt2 = FastMath.sqrt(2);
+	private static int sizeGauss = 300;
+	private static double roiks = 2.5;
+	private double factor = 1 / FastMath.pow(sizeGauss/10, 2) * 2;
 
 	
 	public GaussRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax, final int numLocs) {
@@ -74,6 +78,7 @@ public class GaussRenderer extends Renderer {
 	@Override
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
+		template = createGaussTemplate();
 	}
 
 	@Override
@@ -110,14 +115,9 @@ public class GaussRenderer extends Renderer {
 				int idx = X[i].getIntPosition(0) + X[i].getIntPosition(1) * xBins;
 				if(idx<pixels.length)
 					pixels[idx] += (float)fcn[i];
-	//			maxVal = FastMath.max(pixels[idx], maxVal); 
 			}
 		}
 		
-//		if (counter%100==0){
-//			ip.setDisplayRange(0, maxVal);
-//			window.repaint();
-//		}
 		return null;
 	}
 	
@@ -125,6 +125,30 @@ public class GaussRenderer extends Renderer {
 	public void afterRun(){
 		ip.updateImage();
 		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
+	}
+	
+	private void doWork(final double xpix, final double ypix, double sigmaX, double sigmaY){
+		double dnx = roiks*sigmaX+1;
+	    double dny = roiks*sigmaY+1;
+	    double xr = xpix+0.5;
+	    double yr = ypix+0.5;
+	    double dx = xpix-xr;
+	    double dy = ypix-yr;
+	    double intcorrectionx = (Erf.erf((dnx+0.5)/sigmaX/sqrt2));
+	    double intcorrectiony = (Erf.erf((dny+0.5)/sigmaY/sqrt2));
+	    double gaussnorm = 1/(2*FastMath.PI*sigmaX*sigmaY*intcorrectionx*intcorrectiony);
+		double xt,yt,xax,yax,yp,xp;
+		
+	    for(xax = -dnx;xax<=dnx;xax++){
+	    	xt=(xax-dx)*factor/sigmaX+sizeGauss+0.5;
+	    	for(yax=-dny;yax<=dny;yax++){
+	    		yt=(yax-dy)*factor/sigmaY+sizeGauss+0.5;
+	    		xp=xr+xax; 
+	            yp=yr+yax;
+	            // TODO boundary condition set
+	    	}
+	    }
+		
 	}
 	
 	/** A 2-dimensional, elliptical, Gaussian function.
@@ -205,6 +229,18 @@ public class GaussRenderer extends Renderer {
 			}
 		}
 		return X;
+	}
+	
+	private double[] createGaussTemplate(){
+		int w = 2 * sizeGauss + 1;
+		double[] T = new double[w];
+		int index = 0;
+		for (int yg = -sizeGauss ; yg<=sizeGauss; yg++)
+			for(int xg = -sizeGauss; xg <= sizeGauss; xg++){
+				index = xg + yg * w;
+				T[index] = FastMath.exp(-(xg*xg+yg*yg)*factor);	
+			}
+		return T;
 	}
 
 	@Override
