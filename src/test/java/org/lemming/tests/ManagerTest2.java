@@ -96,7 +96,7 @@ public class ManagerTest2 {
 
 	@Test
 	public void test() {
-		pipe.run();
+		pipe.execute();
 		assertEquals(true,storeMap.values().iterator().next().isEmpty());
 		assertEquals(true,storeMap.values().iterator().next().isEmpty());
 	}

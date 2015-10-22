@@ -61,7 +61,7 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 						ra.setPosition(new int[]{ii,jj});
 						final T first = ra.get().copy();
 						ra.setPosition(new int[]{mi,mj});
-						final T second = ra.get();
+						final T second = ra.get().copy();
 						if (first.compareTo(second) > 0){	
 							mi = ii;
 							mj = jj;
@@ -78,7 +78,7 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 								ra.setPosition(new int[]{ll,kk});
 								T first = ra.get().copy();
 								ra.setPosition(new int[]{mi,mj});
-								T second = ra.get();
+								T second = ra.get().copy();
 								if(first.compareTo(second) > 0){
 									failed = true;
 									break Outer;
@@ -89,8 +89,8 @@ public class NMSDetector <T extends RealType<T>, F extends Frame<T>> extends Det
 				}
 				if(!failed){
 					ra.setPosition(new int[]{mi,mj});
-					T first = ra.get();
-					if(first.getRealFloat() > threshold){
+					T value = ra.get().copy();
+					if(value.getRealFloat() > threshold){
 						found.add(new Localization(frame.getFrameNumber(), mi, mj));
 						counter++;
 					}

@@ -3,12 +3,15 @@ package org.lemming.gui;
 import ij.IJ;
 import ij.ImageListener;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.ImageWindow;
 import ij.gui.PointRoi;
+import ij.gui.Roi;
 import ij.gui.StackWindow;
 import ij.io.FileInfo;
 import ij.io.TiffDecoder;
+import ij.measure.Calibration;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
 import ij.plugin.frame.ContrastAdjuster;
@@ -22,8 +25,6 @@ import net.imglib2.type.numeric.RealType;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -57,11 +58,6 @@ import javax.swing.JSpinner;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import org.japura.gui.CheckComboBox;
-import org.japura.gui.event.ListCheckListener;
-import org.japura.gui.event.ListEvent;
-import org.japura.gui.model.ListCheckModel;
-import org.japura.gui.renderer.CheckListRenderer;
 import org.lemming.factories.DetectorFactory;
 import org.lemming.factories.FitterFactory;
 import org.lemming.factories.PreProcessingFactory;
@@ -73,8 +69,10 @@ import org.lemming.modules.DataTable;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
+import org.lemming.modules.SaveFittedLocalizations;
 import org.lemming.modules.ImageMath.operators;
 import org.lemming.modules.Renderer;
+import org.lemming.modules.StoreSaver;
 import org.lemming.modules.TableLoader;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ExtendableTable;
@@ -82,6 +80,7 @@ import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.Manager;
+import org.lemming.plugins.FastMedianFilter;
 import org.lemming.providers.ActionProvider;
 import org.lemming.providers.DetectorProvider;
 import org.lemming.providers.FitterProvider;
@@ -100,8 +99,6 @@ import java.awt.Component;
 import javax.swing.SpinnerNumberModel;
 
 import java.awt.Dimension;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.KeyAdapter;
 
 import javax.swing.event.ChangeListener;
@@ -115,18 +112,16 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JProgressBar;
 
 import java.awt.CardLayout;
-import java.awt.event.ComponentAdapter;
 
 
 public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  , F extends Frame<T>> extends JFrame implements 
-	ActionListener,ListCheckListener {
+	ActionListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;
 	private JTabbedPane tabbedPane;
 	private JPanel panelLoc;
 	private JPanel panelRecon;
-	private CheckComboBox jComboBoxPreprocessing;
-	private JLabel lblPreprocessing;
+	private JCheckBox checkboxPP;
 	private JLabel lblPeakDet;
 	private JComboBox<String> comboBoxPeakDet;
 	private JCheckBox chckbxROI;
@@ -146,7 +141,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	private JComboBox<String> comboBoxRenderer;
 	private JCheckBox chkboxFilter;
 	private ActionProvider actionProvider;
-	private List<String> checksPreprocessing;
 	private PreProcessingProvider preProcessingProvider;
 	private PreProcessingFactory preProcessingFactory;
 	private FitterFactory fitterFactory;
@@ -156,7 +150,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	private ExtendableTable table;
 	private ImageLoader<T> tif;
 	private Map<String,Object> settings;
-	private File saveFile;
 	private StackWindow previewerWindow;
 	private AbstractModule detector;
 	private Fitter<T,F> fitter;
@@ -233,11 +226,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		
 		JPanel panelUpper = new JPanel();
 		
-		lblPreprocessing = new JLabel("Preprocessing");
+		checkboxPP = new JCheckBox("Temporal Median Filter");
+		checkboxPP.addActionListener(this);
 		
-		jComboBoxPreprocessing = new CheckComboBox();
-		ListCheckModel preprocessingModel = jComboBoxPreprocessing.getModel();
-		preprocessingModel.addListCheckListener(this);
 		lblPeakDet = new JLabel("Peak Detector");
 		GridBagConstraints gbc_panelUpper = new GridBagConstraints();
 		gbc_panelUpper.insets = new Insets(0, 0, 5, 0);
@@ -265,9 +256,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 					.addContainerGap()
 					.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_panelUpper.createSequentialGroup()
-							.addComponent(lblPreprocessing)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(jComboBoxPreprocessing, GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
+							.addComponent(checkboxPP)
+							.addPreferredGap(ComponentPlacement.UNRELATED))
 						.addGroup(gl_panelUpper.createSequentialGroup()
 							.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
 								.addComponent(lblPeakDet)
@@ -291,8 +281,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 						.addComponent(lblFile))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_panelUpper.createParallelGroup(Alignment.BASELINE)
-						.addComponent(jComboBoxPreprocessing, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblPreprocessing, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
+						.addComponent(checkboxPP, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
 						.addComponent(comboBoxPeakDet, GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE)
@@ -445,9 +434,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			}
 		};
 		panelFilter.add(panelSecond, "SECOND");
-		
-		spinnerSkipFrames.setVisible(false);
-		lblSkipFrames.setVisible(false);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.anchor = GridBagConstraints.NORTHWEST;
 		gbc_tabbedPane.fill = GridBagConstraints.VERTICAL;
@@ -520,13 +506,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		Object s = e.getSource();
 		
 		if (s == this.chckbxROI){
-			if (this.chckbxROI.isSelected()){
-				this.lblSkipFrames.setVisible(true);
-				this.spinnerSkipFrames.setVisible(true);
-			} else {
-				this.lblSkipFrames.setVisible(false);
-				this.spinnerSkipFrames.setVisible(false);
-			}
+			setRoi();
 		}
 		
 		if (s == this.comboBoxPeakDet){
@@ -541,10 +521,14 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			chooseRenderer();
 		}
 		
+		if (s == this.checkboxPP){
+			if(checkboxPP.isSelected())
+				choosePP();
+		}
+		
 		if (s == this.chkboxFilter){
 			if (this.chkboxFilter.isSelected())
 				filterTable();
-			validate();
 		}
 		
 		if (s == this.btnReset){ 
@@ -566,21 +550,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		}
 		
 		if (s == this.btnSave){
-			if (!processed) {
-				// TODO
-			}
-			if (chkboxFilter.isSelected()){
-				
-			} else {
-				JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
-		    	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		    	fc.setDialogTitle("Save Data");
-		    	 
-		        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-		        	return;
-		        fc.getSelectedFile();
-				
-			}
+			saveLocalizations();
 		}
 	}
 
@@ -599,7 +569,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		manager.add(detector);
 
 		ImageMath<T,F> math = null;
-		if (!checksPreprocessing.isEmpty()) {
+		if (checkboxPP.isSelected()) {
 			AbstractModule pp = preProcessingFactory.getModule();
 			manager.add(pp);
 			manager.linkModules(tif, pp);
@@ -628,105 +598,24 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			processed = true;
 		}
 	}
-
-	@Override
-	public void addCheck(ListEvent event) {
-		ListCheckModel source = event.getSource();
-		if (source == this.jComboBoxPreprocessing.getModel()){
-			List<Object> checks = jComboBoxPreprocessing.getModel().getCheckeds();
-			String selected = null;
-			for (Object o : checks){
-				String s = (String) o;
-				if (!checksPreprocessing.contains(s)){
-					selected = s;
-					checksPreprocessing.add(s);
-				}				
-			}
-			List<String> visibleKeys = preProcessingProvider.getVisibleKeys();
-			String selectedKey=null;
-			for ( final String key : visibleKeys ){
-				String currentName = preProcessingProvider.getFactory( key ).getName();
-				if(currentName.contains(selected))
-					selectedKey = key;
-			}
-			if (selectedKey==null || tif == null) return;
-			
-			System.out.println("preProcessing: " + selected);
-			preProcessingFactory = preProcessingProvider.getFactory(selectedKey);
-			ConfigurationPanel panelDown = preProcessingFactory.getConfigurationPanel();
-			
-			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
-
-				@SuppressWarnings("unchecked")
-				@Override
-				public void propertyChange(PropertyChangeEvent evt) {
-					Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
-					ppPreview(value);
-				}
-			});
-			validate();
-		}
-	}
-
-	@Override
-	public void removeCheck(ListEvent event) {
-		ListCheckModel source = event.getSource();
-		if (source == this.jComboBoxPreprocessing.getModel()){
-			List<Object> checks = jComboBoxPreprocessing.getModel().getCheckeds();
-			String removalString = null;
-			for (String s : checksPreprocessing){
-				if(!checks.contains(s))
-					removalString = s;
-			}
-			if (removalString!=null)
-				checksPreprocessing.remove(removalString);	
-			this.repaint();
-		}
-	}
 	
 	//// Private Methods
 	
-	@SuppressWarnings("unchecked")
-	private void ppPreview(Map<String, Object> map) {
-		preProcessingFactory.setAndCheckSettings(map);
-		AbstractModule preProcessor = detectorFactory.getDetector();
-		int frameNumber = previewerWindow.getImagePlus().getSlice();
-		List<Element> list = new ArrayList<>();
-		
-		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
-			ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(i);
-			Img<T> curImage = LemmingUtils.wrap(ip);
-			Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
-			list.add(curFrame);
-		}
-		
-		FastStore ppResults = new FastStore();;
-		if (!list.isEmpty()){
-			FastStore previewStore = new FastStore();
-	 		Element last = list.remove(list.size()-1);
-			for (Element entry : list)	
-				previewStore.put(entry);
-			last.setLast(true);
-			previewStore.put(last);
-			preProcessor.setInput(previewStore);
-			preProcessor.setOutput(ppResults);
-			Thread preProcessingThread = new Thread(preProcessor,preProcessor.getClass().getSimpleName());
-			preProcessingThread.start();
-			try {
-				preProcessingThread.join();
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
+	private void setRoi() {
+		if (previewerWindow == null) return;
+		ImagePlus curImage = previewerWindow.getImagePlus();
+		if (chckbxROI.isSelected()){
+			Roi roi = curImage.getRoi();
+			if (roi==null){
+				Rectangle r = curImage.getProcessor().getRoi();
+				int iWidth = r.width / 2;
+	            int iHeight = r.height / 2;
+	            int iXROI = r.x + r.width / 4;
+	            int iYROI = r.y + r.height / 4;
+	            curImage.setRoi(iXROI, iYROI, iWidth, iHeight);
 			}
-		}
-		rendererWindow.repaint();
-		
-		if(ppResults.isEmpty()) return;
-		
-		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
-			Frame<T> resFrame = (Frame<T>) ppResults.get();
-			if (resFrame == null) continue;
-			ImageProcessor ip = ImageJFunctions.wrap(resFrame.getPixels(), "").getProcessor();
-			previewerWindow.getImagePlus().getStack().setProcessor(ip, i);
+		} else {
+			curImage.killRoi();
 		}
 	}
 	
@@ -769,6 +658,14 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	    		}
 	        	FileInfoVirtualStack fivs = new FileInfoVirtualStack(info[0], false);
 	        	loc_im = new ImagePlus(file.getName(),fivs);
+	        	loc_im.setOpenAsHyperStack(true);
+	        	final int[] dims = loc_im.getDimensions();
+	        	if ( dims[ 4 ] == 1 && dims[ 3 ] > 1 ){ // swap Z With T
+	        		loc_im.setDimensions( dims[ 2 ], dims[ 4 ], dims[ 3 ] );
+					final Calibration calibration = loc_im.getCalibration();
+					calibration.frameInterval = 1;
+					calibration.setTimeUnit( "frame" );
+	        	}
 	        }
 		}
         if (loc_im !=null){
@@ -789,7 +686,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		    previewerWindow.setVisible(true);
 		    lblFile.setText(loc_im.getTitle());
 		    validate();
-		    repaint();
         }
 	}
 	
@@ -833,6 +729,79 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			}	
 	}
 	
+	private void choosePP() {
+		if (tif == null){
+			if (previewerWindow != null)
+				previewerWindow.getImagePlus().killRoi();
+			return;
+		}
+		preProcessingFactory = preProcessingProvider.getFactory(FastMedianFilter.KEY);
+		cardsFirst.show(panelLower, FastMedianFilter.KEY);
+		ConfigurationPanel panelDown = getConfigSettings(panelLower);
+		panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
+				ppPreview(value);
+			}
+		});
+		ppPreview(panelDown.getSettings());
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void ppPreview(Map<String, Object> map) {
+		preProcessingFactory.setAndCheckSettings(map);
+		AbstractModule preProcessor = preProcessingFactory.getModule();
+		int frameNumber = previewerWindow.getImagePlus().getSlice();
+		List<Element> list = new ArrayList<>();
+		ImageStack stack = previewerWindow.getImagePlus().getImageStack();
+		int stackSize = stack.getSize();
+		
+		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
+			if (i < stackSize){
+				ImageProcessor ip = previewerWindow.getImagePlus().getStack().getProcessor(i);
+				Img<T> curImage = LemmingUtils.wrap(ip);
+				Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int)curImage.dimension(0), (int)curImage.dimension(1), curImage);
+				list.add(curFrame);		
+			}
+		}
+		
+		FastStore ppResults = new FastStore();;
+		if (!list.isEmpty()){
+			FastStore previewStore = new FastStore();
+	 		Element last = list.remove(list.size()-1);
+			for (Element entry : list)	
+				previewStore.put(entry);
+			last.setLast(true);
+			previewStore.put(last);
+			preProcessor.setInput(previewStore);
+			preProcessor.setOutput(ppResults);
+			Thread preProcessingThread = new Thread(preProcessor,preProcessor.getClass().getSimpleName());
+			preProcessingThread.start();
+			try {
+				preProcessingThread.join();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		if(ppResults.isEmpty()) return;
+		
+		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++){
+			Frame<T> resFrame = (Frame<T>) ppResults.get();
+			if (resFrame == null) continue;
+			ImageProcessor ip = ImageJFunctions.wrap(resFrame.getPixels(), "").getProcessor();
+			if (i < stackSize){
+				ImageProcessor stackip  = stack.getProcessor(i);
+				stackip.setPixels(ip.getPixels());
+			}
+		}
+		preProcessor.reset();
+		previewerWindow.repaint();
+	}
+	
 	private void chooseDetector(){
 		final int index = comboBoxPeakDet.getSelectedIndex() - 1;
 		if (index<0 || tif == null){
@@ -847,7 +816,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		final String key = detectorProvider.getVisibleKeys().get( index );
 		detectorFactory = detectorProvider.getFactory(key);
 		cardsFirst.show(panelLower, key);
-		validate();
 		System.out.println("Detector_"+index+" : "+key);
 		
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
@@ -882,6 +850,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	
 	@SuppressWarnings("unchecked")
 	private void detectorPreview(Map<String, Object> map){
+		// TODO constrain to current ROI
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
 		int frameNumber = previewerWindow.getImagePlus().getSlice();
@@ -905,7 +874,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		final String key = fitterProvider.getVisibleKeys().get( index );
 		fitterFactory = fitterProvider.getFactory(key);
 		cardsFirst.show(panelLower, key);
-		validate();
 		System.out.println("Fitter_"+index+" : "+key);
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
 		panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener(){
@@ -1081,8 +1049,31 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 					settings.put(key, curSet.get(key));
 			if (renderer != null)
 				rendererShow(settings);
-			validate();
 		}		
+	}
+	
+	private void saveLocalizations() {
+		JFileChooser fc = new JFileChooser(System.getProperty("user.home")+"/ownCloud/storm");
+    	fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    	fc.setDialogTitle("Save Data");
+    	 
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+        	return;
+        File file = fc.getSelectedFile();
+        if(this.chkboxFilter.isSelected()){
+        	ExtendableTable tableToProcess = filteredTable == null ? table : filteredTable;	
+        	Store s = tableToProcess.getFIFO();
+        	StoreSaver tSaver = new StoreSaver(file);
+        	tSaver.putMetadata(settings);
+        	tSaver.setInput(s);
+        	tSaver.run();
+        } else {
+        	if (fitter != null){
+	        	SaveFittedLocalizations saver = new SaveFittedLocalizations(file);
+	        	manager.add(saver);
+	        	manager.linkModules(fitter,saver);
+        	}
+        }
 	}
 	
 	private void createDetectorProvider(){
@@ -1104,21 +1095,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 	
 	private void createPreProcessingProvider() {
 		preProcessingProvider = new PreProcessingProvider();
-		checksPreprocessing = new ArrayList<>();
-		jComboBoxPreprocessing.setTextFor(CheckComboBox.NONE, "none"); 
-		jComboBoxPreprocessing.setTextFor(CheckComboBox.MULTIPLE, "multiple"); 
-		jComboBoxPreprocessing.setTextFor(CheckComboBox.ALL, "all");
-		ListCheckModel model = jComboBoxPreprocessing.getModel();
 		final List< String > visibleKeys = preProcessingProvider.getVisibleKeys();
 		final List< String > infoTexts = new ArrayList<>();
 		for ( final String key : visibleKeys ){
 			PreProcessingFactory factory = preProcessingProvider.getFactory( key );
-			String currentName = factory.getName();
 			infoTexts.add( factory.getInfoText() );
-			model.addElement(currentName);
 			panelLower.add(factory.getConfigurationPanel(),key);
 		}
-		jComboBoxPreprocessing.setRenderer(new ToolTipCheckListRenderer(infoTexts));
 	}
 	
 	private void createFitterProvider() {
@@ -1166,27 +1149,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 			infoTexts.add( actionProvider.getFactory( key ).getInfoText() );
 		}
 		String[] names = actionNames.toArray(new String[] {});
-	}
-	
-	private class ToolTipCheckListRenderer extends CheckListRenderer{
-		private static final long serialVersionUID = 1L;
-		
-		List<String> tooltips;
-		
-		public ToolTipCheckListRenderer(List<String> tooltips){
-			 this.tooltips = tooltips;
-		}
-		
-		@SuppressWarnings("rawtypes")
-		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus){
-			
-			JComponent comp = (JComponent) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-	        if (0 < index && null != value && null != tooltips) 
-	                    list.setToolTipText(tooltips.get(index-1));
-	        return comp;
-		}
 	}
 	
 	private class ToolTipRenderer extends DefaultListCellRenderer {

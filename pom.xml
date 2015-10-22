@@ -106,24 +106,10 @@
 			<artifactId>commons-math3</artifactId>
 			</dependency>
 		<dependency>
-			<groupId>org.japura</groupId>
-			<artifactId>japura-gui</artifactId>
-			<version>7.5.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.0</version>
-		</dependency>
+		
 	</dependencies>	
 	<build>
 	<plugins>

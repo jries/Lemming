@@ -9,6 +9,10 @@ import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JCheckBox;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class FastMedianPanel extends ConfigurationPanel {
 
@@ -27,9 +31,19 @@ public class FastMedianPanel extends ConfigurationPanel {
 		JLabel lblFrames = new JLabel("Frames");
 		
 		spinnerFrames = new JSpinner();
+		spinnerFrames.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				fireChanged();
+			}
+		});
 		spinnerFrames.setModel(new SpinnerNumberModel(new Integer(50), null, null, new Integer(1)));
 		
 		chckbxInterpolating = new JCheckBox("Interpolation");
+		chckbxInterpolating.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				fireChanged();
+			}
+		});
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)

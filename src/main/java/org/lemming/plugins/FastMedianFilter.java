@@ -302,7 +302,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 		@Override
 		public int processingFrames() {
-			int procFrames = (int) ((int) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (int) settings.get(FastMedianPanel.KEY_FRAMES) == 0); 
+			int procFrames = (Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(FastMedianPanel.KEY_FRAMES); 
 			return procFrames;
 		}
 		

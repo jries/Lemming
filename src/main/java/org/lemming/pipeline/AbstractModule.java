@@ -31,6 +31,12 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		this.service = service;
 	}
 	
+	public void reset(){
+		inputs.clear();
+		outputs.clear();
+		iterator = null;
+	}
+	
 	protected void newOutput(final Element data) {
 		if (outputs.isEmpty()) throw new NullPointerException("No Output Mappings!");
 		if (data == null) return;
@@ -44,7 +50,6 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	protected Element nextInput() {
 		return getInput(iterator);
 	}
-
 
 	@Override
 	public void cancel() {
