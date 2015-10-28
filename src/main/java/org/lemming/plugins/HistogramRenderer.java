@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
-import org.lemming.gui.RendererPanel;
+import org.lemming.gui.HistogramRendererPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
@@ -127,7 +127,7 @@ public class HistogramRenderer extends Renderer {
 	@Plugin( type = RendererFactory.class, visible = true )
 	public static class Factory implements RendererFactory{
 
-		private RendererPanel configPanel = new RendererPanel();
+		private HistogramRendererPanel configPanel = new HistogramRendererPanel();
 		private Map<String, Object> settings;
 
 		@Override
@@ -167,6 +167,11 @@ public class HistogramRenderer extends Renderer {
 			this.settings = settings;
 			configPanel.setSettings(settings);
 			return settings != null;
+		}
+
+		@Override
+		public Map<String, Object> getInitialSettings() {
+			return configPanel.getInitialSettings();
 		}
 		
 	}

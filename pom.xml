@@ -69,10 +69,6 @@
 			</dependency>
 		<dependency>
 			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-algorithm</artifactId>
 		</dependency>
 		<dependency>
@@ -88,20 +84,6 @@
 			<artifactId>imglib2-ij</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.scif</groupId>
-			<artifactId>scifio</artifactId>
-		</dependency>
-		<dependency>
-        	<groupId>org.javolution</groupId>
-        	<artifactId>javolution-core-java</artifactId>
-        	<version>6.1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>bio-formats_plugins</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			</dependency>
@@ -109,7 +91,16 @@
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.javolution</groupId>
+			<artifactId>javolution-core-java</artifactId>
+			<version>6.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
 	</dependencies>	
 	<build>
 	<plugins>
@@ -132,7 +123,7 @@
                          <ignore>true</ignore>
                      </action>
                   </pluginexecution>
-	              <pluginExecution>
+	             <pluginExecution>
 	                <pluginExecutionFilter>
 	                  <groupId>org.apache.maven.plugins</groupId>
 	                  <artifactId>maven-enforcer-plugin</artifactId>
@@ -160,67 +151,58 @@
     	<plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>native-maven-plugin</artifactId>
+          <version>1.0-alpha-8</version>
           <configuration>
 	          <compilerStartOptions>
 	            <compilerStartOption>${commonCompilerOptions}</compilerStartOption>
 	          </compilerStartOptions>
           </configuration>
         </plugin>
+				
 		<plugin>
-		    <groupId>org.apache.maven.plugins</groupId>
-		    <artifactId>maven-javadoc-plugin</artifactId>
-		    <configuration>
-		        <!-- bootclasspath required by Sun's JVM -->
-		        <bootclasspath>${sun.boot.class.path}</bootclasspath>
-		        <!-- General Javadoc settings -->
-		        <doctitle>${project.name} (${project.version})</doctitle>
-		        <show>private</show>
-		        <!-- Styling -->
-				<!-- Stylesheet -->
-		        <stylesheetfile>${basedir}/Scripts/Javadoc/style/jboss/api/stylesheet.css</stylesheetfile>
-				<!-- Directory containing the styling resources (pics, ...) -->
-		        <javadocDirectory>${basedir}/Scripts/Javadoc/style/jboss/api</javadocDirectory>
-				<!-- true to include styling resources into generated site -->
-		        <docfilessubdirs>true</docfilessubdirs>
-		        <!-- Apple's JVM sometimes requires more memory -->
-		        <additionalJOption>-J-Xmx1024m</additionalJOption>
-		        <verbose>true</verbose>
-		    </configuration>
-		</plugin>
-  
-		<plugin>
-		    <groupId>org.apache.maven.plugins</groupId>
-		    <artifactId>maven-javadoc-plugin</artifactId>
-		    <configuration>
-		        <!-- Doclet -->
-		        <doclet>ydoc.doclets.YStandard</doclet>
-		        <docletArtifact>
-		            <groupId>com.yworks</groupId>
-		            <artifactId>umldoclet</artifactId>
-		            <version>3.0.02</version>
-		        </docletArtifact>
-		        <additionalparam>
-		            -umlautogen
-		            -resourcepath ${yworks.uml.path}/resources
-		        </additionalparam>
-		        <!-- bootclasspath required by Sun's JVM -->
-		        <bootclasspath>${sun.boot.class.path}</bootclasspath>
-		        <!-- General Javadoc settings -->
-		        <doctitle>${project.name} (${project.version})</doctitle>
-		        <show>private</show>
-		        <!-- Styling -->
-		        <stylesheetfile>${basedir}/doc/stylesheet.css</stylesheetfile>
-		        <javadocDirectory>${basedir}/doc</javadocDirectory>
-		        <stylesheetfile>${basedir}/Scripts/Javadoc/style/jboss/api/stylesheet.css</stylesheetfile>
-		        <javadocDirectory>${basedir}/Scripts/Javadoc/style/jboss/api</javadocDirectory>
-		        <docfilessubdirs>true</docfilessubdirs>
-		        <!-- Apple's JVM sometimes requires more memory -->
-		        <additionalJOption>-J-Xmx1024m</additionalJOption>
-		        <verbose>true</verbose>
-		    </configuration>
-		</plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/deploy</outputDirectory>
+							<resources>
+								<resource>
+									<directory>resources</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/deploy/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		
 	</plugins>
-	
+
 	<pluginManagement>
 	    <plugins>
 	      <plugin>

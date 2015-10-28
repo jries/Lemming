@@ -12,7 +12,7 @@ import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
 import org.lemming.factories.RendererFactory;
 import org.lemming.gui.ConfigurationPanel;
-import org.lemming.gui.RendererPanel;
+import org.lemming.gui.GaussRendererPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
@@ -27,50 +27,45 @@ public class GaussRenderer extends Renderer {
 	public static final String INFO_TEXT = "<html>"
 											+ "Gauss Renderer Plugin"
 											+ "</html>";
-	private int xBins;
 	private double xmin;
 	private double xmax;
 	private double ymin;
 	private double ymax;
-	private int area = 10000;
-	private double background = 0;
-	private double theta = 0;
+//	private int area = 10000;
+//	private double background = 0;
+//	private double theta = 0;
 //	private double maxVal = -Float.MAX_VALUE;
 //	private int counter = 0;
 	private long start;
-	private double x;
-	private double y;
-	private double sigmaX;
-	private double sigmaY;
 	private double xwidth;
 	private double ywidth;
 	private double xindex;
 	private double yindex;
-	private int yBins;
-	private double[] Params;
+	//private double[] Params;
 	private volatile float[] pixels;
 	private double[] template;
 	private static double sqrt2 = FastMath.sqrt(2);
-	private static int sizeGauss = 300;
+	private static int sizeGauss = 500;
 	private static double roiks = 2.5;
-	private double factor = 1 / FastMath.pow(sizeGauss/10, 2) * 2;
+	private double sigmaTemplate = sizeGauss/(8*roiks);
+	private int xbins;
+	private int ybins;
 
 	
-	public GaussRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax, final int numLocs) {
-		this.xBins = xBins;
-		this.yBins = yBins;
+	public GaussRenderer(final double xmin, final double xmax, final double ymin, final double ymax, final double pSizeX, final double pSizeY) {
 		this.xmin = xmin;
 		this.xmax = xmax;
 		this.ymin = ymin;
 		this.ymax = ymax;
-		this.xwidth = (xmax - xmin) / xBins;
-    	this.ywidth = (ymax - ymin) / yBins;
-    	this.area = numLocs;
-    	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
+		this.xwidth = pSizeX;
+		this.ywidth = pSizeY;
+		this.xbins = (int) Math.ceil((xmax - xmin) / pSizeX);
+    	this.ybins = (int) Math.ceil((ymax - ymin) / pSizeY);
+    	if (Runtime.getRuntime().freeMemory()<(pSizeX*pSizeY*4)){ 
     		cancel(); return;
     	}
-    	pixels = new float[xBins*yBins];
-		ImageProcessor fp = new FloatProcessor(xBins, yBins, pixels, getDefaultColorModel());
+    	pixels = new float[xbins*ybins];
+		ImageProcessor fp = new FloatProcessor(xbins, ybins, pixels, getDefaultColorModel());
 		ip.setProcessor(fp);
 		ip.updateAndRepaintWindow();
 	}
@@ -87,12 +82,17 @@ public class GaussRenderer extends Renderer {
 		if (data.isLast()) {
 			cancel();
 		}
+		
+		double x = 0, y = 0, sigmaX = 0, sigmaY = 0;
+		
 		if (data instanceof Localization){
 			FittedLocalization loc = (FittedLocalization) data;
-			x = loc.getX();
-			y = loc.getY();
-			sigmaX = loc.getsX();
-			sigmaY = loc.getsY();
+			try{
+				x = loc.getX();
+				y = loc.getY();
+				sigmaX = loc.getsX();
+				sigmaY = loc.getsY();
+			} catch (NullPointerException ne) {return null;}
 		}
 		if (data instanceof ElementMap){
 			ElementMap map = (ElementMap) data;
@@ -107,15 +107,17 @@ public class GaussRenderer extends Renderer {
 		 if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
         	xindex = (x - xmin) / xwidth;
         	yindex = (y - ymin) / ywidth;
-		 
-			final Point[] X = getWindowPixels(x, y, xmin,xmax, ymin,ymax, xwidth, ywidth, sigmaX, sigmaY);
-			Params = new double[]{background, xindex, yindex, area, theta, sigmaX, sigmaY};
-			final double[] fcn = gaussian2D(X, Params);
-			for (int i=0; i<X.length;i++){
-				int idx = X[i].getIntPosition(0) + X[i].getIntPosition(1) * xBins;
-				if(idx<pixels.length)
-					pixels[idx] += (float)fcn[i];
-			}
+        	doWork(xindex, yindex, sigmaX / xwidth, sigmaY / xwidth);
+        
+//		 
+//			final Point[] X = getWindowPixels(x, y, xmin,xmax, ymin,ymax, xwidth, ywidth, sigmaX, sigmaY);
+//			Params = new double[]{background, xindex, yindex, area, theta, sigmaX, sigmaY};
+//			final double[] fcn = gaussian2D(X, Params);
+//			for (int i=0; i<X.length;i++){
+//				int idx = X[i].getIntPosition(0) + X[i].getIntPosition(1) * pSizeX;
+//				if(idx<pixels.length)
+//					pixels[idx] += (float)fcn[i];
+//			}
 		}
 		
 		return null;
@@ -123,29 +125,39 @@ public class GaussRenderer extends Renderer {
 	
 	@Override
 	public void afterRun(){
-		ip.updateImage();
+		ip.setDisplayRange(0, 1);
+		ip.updateAndDraw();
 		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
 	}
 	
-	private void doWork(final double xpix, final double ypix, double sigmaX, double sigmaY){
-		double dnx = roiks*sigmaX+1;
-	    double dny = roiks*sigmaY+1;
-	    double xr = xpix+0.5;
-	    double yr = ypix+0.5;
+	private void doWork(final double xpix, final double ypix, double sigmaX_, double sigmaY_){
+		int w = 2 * sizeGauss + 1;
+		double sigmaX = FastMath.max(sigmaX_, sigmaTemplate/sizeGauss);
+		double sigmaY = FastMath.max(sigmaY_, sigmaTemplate/sizeGauss);
+		long dnx = (long) FastMath.ceil(roiks*sigmaX);
+	    long dny = (long) FastMath.ceil(roiks*sigmaY);
+	    long xr = FastMath.round(xpix);
+	    long yr = FastMath.round(ypix);
 	    double dx = xpix-xr;
 	    double dy = ypix-yr;
-	    double intcorrectionx = (Erf.erf((dnx+0.5)/sigmaX/sqrt2));
-	    double intcorrectiony = (Erf.erf((dny+0.5)/sigmaY/sqrt2));
+	    double intcorrectionx = Erf.erf(dnx/sigmaX/sqrt2);
+	    double intcorrectiony = Erf.erf(dny/sigmaY/sqrt2);
 	    double gaussnorm = 1/(2*FastMath.PI*sigmaX*sigmaY*intcorrectionx*intcorrectiony);
-		double xt,yt,xax,yax,yp,xp;
+	    int idx, t_idx;
+		long xt,yt,xax,yax,yp,xp;
 		
 	    for(xax = -dnx;xax<=dnx;xax++){
-	    	xt=(xax-dx)*factor/sigmaX+sizeGauss+0.5;
+	    	xt=FastMath.round((xax+dx)*sigmaTemplate/sigmaX)+sizeGauss;
 	    	for(yax=-dny;yax<=dny;yax++){
-	    		yt=(yax-dy)*factor/sigmaY+sizeGauss+0.5;
+	    		yt=FastMath.round((yax+dy)*sigmaTemplate/sigmaY)+sizeGauss;
 	    		xp=xr+xax; 
 	            yp=yr+yax;
-	            // TODO boundary condition set
+	            if (xp>=0 && yp>=0 && xt>=0 && yt>=0 && xt<w && yt<w && xp<xbins && yp<ybins){
+	            	idx = (int) (xp + yp * xbins);
+	            	t_idx = (int) (xt + yt * w);
+	            	double value = template[t_idx] * gaussnorm;
+	            	pixels[idx] += value;
+	            }
 	    	}
 	    }
 		
@@ -197,6 +209,7 @@ public class GaussRenderer extends Renderer {
 	 * @param sigmaX - the sigma value, in the x-direction, for a 2D Gaussian distribution
 	 * @param sigmaY - the sigma value, in the y-direction, for a 2D Gaussian distribution
 	 * @return X - a list of pixels that surrounds (x0,y0) */
+	@SuppressWarnings("unused")
 	private static Point[] getWindowPixels(final double x0, final double y0, final double xmin, final double xmax, 
 			final double ymin, final double ymax, final double xwidth, final double ywidth, double sigmaX, double sigmaY){
 		
@@ -233,12 +246,15 @@ public class GaussRenderer extends Renderer {
 	
 	private double[] createGaussTemplate(){
 		int w = 2 * sizeGauss + 1;
-		double[] T = new double[w];
+		double[] T = new double[w*w];
 		int index = 0;
+		double value = 0;
+		double factor = 0.5/Math.pow(sigmaTemplate, 2);
 		for (int yg = -sizeGauss ; yg<=sizeGauss; yg++)
 			for(int xg = -sizeGauss; xg <= sizeGauss; xg++){
-				index = xg + yg * w;
-				T[index] = FastMath.exp(-(xg*xg+yg*yg)*factor);	
+				index = (xg+sizeGauss) + (yg+sizeGauss) * w;
+				value = Math.exp(-(xg*xg+yg*yg)*factor);
+				T[index] = value;
 			}
 		return T;
 	}
@@ -259,7 +275,7 @@ public class GaussRenderer extends Renderer {
 	public static class Factory implements RendererFactory{
 
 		private Map<String, Object> settings;
-		private RendererPanel configPanel = new RendererPanel();
+		private GaussRendererPanel configPanel = new GaussRendererPanel();
 
 		@Override
 		public String getInfoText() {
@@ -284,20 +300,24 @@ public class GaussRenderer extends Renderer {
 
 		@Override
 		public Renderer getRenderer() {
-			final int xBins = (int) settings.get(RendererFactory.KEY_xBins);
-			final int yBins = (int) settings.get(RendererFactory.KEY_yBins);
-			final double xmin = (double) settings.get(RendererFactory.KEY_xmin);
-			final double xmax = (double) settings.get(RendererFactory.KEY_xmax);
-			final double ymin = (double) settings.get(RendererFactory.KEY_ymin);
-			final double ymax = (double) settings.get(RendererFactory.KEY_ymax);
-			final int numLocs = (int) settings.get(RendererFactory.KEY_numLocs);
-			return new GaussRenderer(xBins, yBins, xmin, xmax, ymin, ymax, numLocs);
+			final int pSizeX = (Integer) settings.get(RendererFactory.KEY_pSizeX);
+			final int pSizeY = (Integer) settings.get(RendererFactory.KEY_pSizeY);
+			final double xmin = (Double) settings.get(RendererFactory.KEY_xmin);
+			final double xmax = (Double) settings.get(RendererFactory.KEY_xmax);
+			final double ymin = (Double) settings.get(RendererFactory.KEY_ymin);
+			final double ymax = (Double) settings.get(RendererFactory.KEY_ymax);
+			return new GaussRenderer(xmin, xmax, ymin, ymax, pSizeX, pSizeY);
 		}
 
 		@Override
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+
+		@Override
+		public Map<String, Object> getInitialSettings() {
+			return configPanel.getInitialSettings();
 		}
 		
 	}

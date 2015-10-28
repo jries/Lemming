@@ -533,7 +533,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>  
 		
 		if (s == this.btnReset){ 
 			if (rendererFactory!=null){
-				Map<String, Object> initialMap = ((RendererPanel) rendererFactory.getConfigurationPanel()).getInitialSettings();
+				Map<String, Object> initialMap = rendererFactory.getInitialSettings();
 				rendererShow(initialMap);
 			}
 		}

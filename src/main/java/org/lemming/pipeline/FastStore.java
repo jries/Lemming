@@ -59,7 +59,7 @@ public class FastStore implements Store {
 	
 	@Override
 	public  Collection<Element> view(){
-		return q.immutable().value();
+		return q.unmodifiable();
 	}
 
 }
