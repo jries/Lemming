@@ -10,6 +10,7 @@ import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.lemming.math.Calibrator;
+import org.lemming.tools.WaitForKeyListener;
 
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JButton;
@@ -18,8 +19,11 @@ import javax.swing.JFileChooser;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
+
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 public class FitterPanel extends ConfigurationPanel {
 
@@ -28,7 +32,7 @@ public class FitterPanel extends ConfigurationPanel {
 	 */
 	private static final long serialVersionUID = 3081886846323191618L;
 	public static final String KEY_WINDOW_SIZE = "WINDOW_SIZE";
-	public static final String KEY_QUEUE_SIZE = "QUEUE_SIZE";
+	public static final String KEY_CENTROID_THRESHOLD = "CENTROID_THRESHOLD";
 	public static final String KEY_CALIBRATION_FILENAME = "CALIBRATION_FILENAME";
 	public static final String KEY_CAMERA_FILENAME = "CAMERA_FILENAME";
 	private JSpinner spinnerWindowSize;
@@ -42,6 +46,8 @@ public class FitterPanel extends ConfigurationPanel {
 	protected int default_step = 10;
 	protected Calibrator calibrator;
 	private JButton btnNewCalibration;
+	private JLabel lblThreshold;
+	private JTextField textFieldThreshold;
 
 	public FitterPanel() {
 		setBorder(null);
@@ -100,29 +106,41 @@ public class FitterPanel extends ConfigurationPanel {
 			}
 		});
 		
+		lblThreshold = new JLabel("Threshold");
+		
+		textFieldThreshold = new JTextField();
+		textFieldThreshold.setHorizontalAlignment(SwingConstants.TRAILING);
+		textFieldThreshold.setText("100");
+		textFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged();
+			}}));
+		textFieldThreshold.setColumns(10);
+		
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addGroup(groupLayout.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(lblWindowSize)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addComponent(lblWindowSize)
+								.addComponent(lblThreshold))
 							.addGap(7)
-							.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, 62, GroupLayout.PREFERRED_SIZE))
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+								.addComponent(textFieldThreshold, 0, 0, Short.MAX_VALUE)
+								.addComponent(spinnerWindowSize, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addContainerGap()
 							.addComponent(btnCamera, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addContainerGap()
 							.addComponent(btnCalibration, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addContainerGap()
-							.addComponent(btnNewCalibration)))
+						.addComponent(btnNewCalibration))
 					.addContainerGap(148, Short.MAX_VALUE))
 		);
 		groupLayout.setVerticalGroup(
@@ -132,17 +150,21 @@ public class FitterPanel extends ConfigurationPanel {
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblWindowSize)
 						.addComponent(spinnerWindowSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(9)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(textFieldThreshold, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblThreshold, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnCamera)
-						.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
+						.addComponent(lblCamera, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE)
+						.addComponent(btnCamera))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(btnCalibration)
 						.addComponent(lblCalibration, GroupLayout.PREFERRED_SIZE, 27, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(btnNewCalibration)
-					.addContainerGap(161, Short.MAX_VALUE))
+					.addGap(124))
 		);
 		setLayout(groupLayout);
 	}
@@ -156,7 +178,6 @@ public class FitterPanel extends ConfigurationPanel {
 		calibFile = (File) settings.get(CalibrationDialog.KEY_CALIBRATION_FILE);
 		if (calibFile!=null)
 			lblCalibration.setText(calibFile.getName());
-		validate();
 		repaint();
 		fireChanged();
 	}
@@ -166,9 +187,9 @@ public class FitterPanel extends ConfigurationPanel {
 		spinnerWindowSize.setValue(settings.get(KEY_WINDOW_SIZE));
 		camFile = (File) settings.get(KEY_CAMERA_FILENAME);
 		lblCamera.setText(camFile.getName());
+		textFieldThreshold.setText(String.valueOf(settings.get(KEY_CENTROID_THRESHOLD)));
 		calibFile = (File) settings.get(KEY_CALIBRATION_FILENAME);
 		lblCalibration.setText(calibFile.getName());
-		validate();
 		repaint();
 	}
 
@@ -176,6 +197,7 @@ public class FitterPanel extends ConfigurationPanel {
 	public Map<String, Object> getSettings() {
 		final Map< String, Object > settings = new HashMap<>( 4 );
 		settings.put(KEY_WINDOW_SIZE, spinnerWindowSize.getValue());
+		settings.put(KEY_CENTROID_THRESHOLD, Double.parseDouble(textFieldThreshold.getText()));
 		if (calibFile == null){
 			return settings;
 		}

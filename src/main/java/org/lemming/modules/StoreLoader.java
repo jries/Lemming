@@ -6,11 +6,14 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.MapElement;
+import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.SingleRunModule;
 
 import ij.IJ;
@@ -25,6 +28,8 @@ public class StoreLoader extends SingleRunModule {
 	private long start;
 	private Locale curLocale;
 	private Map<String,Object> metaData = new HashMap<>();
+	private Set<String> header = new LinkedHashSet<>();
+	private String[] nameArray = null;
 
 	public StoreLoader(File f, String d){
 		this.file = f;
@@ -44,6 +49,15 @@ public class StoreLoader extends SingleRunModule {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));	
 			sCurrentLine = br.readLine();	
 			if (sCurrentLine==null) throw new NullPointerException("first line is null!");
+			while (sCurrentLine.startsWith("#")){
+				sCurrentLine = br.readLine();
+				addMetadata(sCurrentLine);
+			}
+			StringTokenizer s = new StringTokenizer(sCurrentLine,String.valueOf(delimiter));
+			while(s.hasMoreTokens())
+				header.add(s.nextToken().trim());
+			nameArray  = header.toArray(new String[]{});	
+			sCurrentLine = br.readLine();
 		} catch (IOException e) {
 			IJ.error(e.getMessage());
 		}
@@ -52,27 +66,18 @@ public class StoreLoader extends SingleRunModule {
 	@Override
 	public Element processData(Element data) { // data not used here
 
-		if (sCurrentLine.startsWith("#")){
-			addMetadata(sCurrentLine);
-			try {
-				sCurrentLine = br.readLine();
-			} catch (IOException e1) {
-				IJ.error(e1.getMessage());
-			}
-			return null;
-		}
 		String[] s = sCurrentLine.split(delimiter);
-		Map<String,Object> row = new HashMap<>(s.length);
+		Map<String,Number> row = new HashMap<>(s.length);
 		
 		for (int i = 0; i < s.length; i++){
 			String c = s[i].trim();
-			if (c.split(".").length >1)
-				row.put("col"+i, Double.parseDouble(c));
+			if (c.contains("."))
+				row.put(nameArray[i], Double.parseDouble(c));
 			else
-				row.put("col"+i, Integer.parseInt(c));
+				row.put(nameArray[i], Integer.parseInt(c));
 		}
 							
-		MapElement me = new MapElement(row);
+		ElementMap me = new ElementMap(row);
 		
 		try {
 			sCurrentLine = br.readLine();

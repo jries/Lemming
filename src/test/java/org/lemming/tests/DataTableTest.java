@@ -7,7 +7,7 @@ import java.io.File;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.DataTable;
-import org.lemming.modules.ReadFittedLocalizations;
+import org.lemming.modules.ReadLocalizationPrecision3D;
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.Pipeline;
@@ -23,7 +23,7 @@ public class DataTableTest {
 		pipe = new Pipeline("test");
 		locs = new FastStore();
 		
-		ReadFittedLocalizations reader = new ReadFittedLocalizations(new File("/home/ronny/Bilder/fitted.csv"),",");
+		ReadLocalizationPrecision3D reader = new ReadLocalizationPrecision3D(new File("/home/ronny/Bilder/fitted.csv"),",");
 		reader.setOutput(locs);
 		pipe.add(reader);
 		

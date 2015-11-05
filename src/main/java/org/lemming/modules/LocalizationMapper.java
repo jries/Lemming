@@ -1,16 +1,17 @@
 package org.lemming.modules;
 
 import org.lemming.interfaces.Element;
+import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.MapElement;
 import org.lemming.pipeline.SingleRunModule;
 
 public class LocalizationMapper extends SingleRunModule {
 
 	private long start;
+	private String[] nameArray;
 
-	public LocalizationMapper() {
-		
+	public LocalizationMapper(String[] nameArray) {
+		this.nameArray = nameArray;
 	}
 	@Override
 	public void beforeRun() {
@@ -18,17 +19,18 @@ public class LocalizationMapper extends SingleRunModule {
 	}
 	@Override
 	public boolean check() {
-		return inputs.size()==1;
+		return inputs.size()==1 && nameArray.length>3;
 	}
 
 	@Override
 	public Element processData(Element data) {
 		try{
-			MapElement me = (MapElement) data;
-			long col1 = (long) me.get().get("col1");
-			double col2 = (double) me.get().get("col2");
-			double col3 = (double) me.get().get("col3");
-			Localization loc = new Localization(col1, col2, col3);
+			ElementMap me = (ElementMap) data; 
+			double col1 = (Double) me.get(nameArray[0]);
+			double col2 = (Double) me.get(nameArray[1]);
+			double col3 = (Double) me.get(nameArray[2]);
+			long col4 = (Long) me.get(nameArray[3]);
+			Localization loc = new Localization(col1, col2, col3,col4);
 			return loc;
 		} catch (ClassCastException | NullPointerException e){
 			return null;

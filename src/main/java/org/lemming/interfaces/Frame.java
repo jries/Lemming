@@ -19,4 +19,9 @@ public interface Frame<T> extends Element, Comparable<Frame<T>> {
 	/**  
 	 * @return Return the height of this frame */
 	public int getHeight();
+	
+	/**  
+	 * @return Return the pixel size */
+	public double getPixelDepth();
+	
 }

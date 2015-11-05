@@ -44,8 +44,10 @@ public class ReadLocalizations extends SingleRunModule {
 		for (int i = 0; i < s.length; i++)
 			s[i] = s[i].trim();
 		if (s.length > 3) {
-			Localization localization = new Localization(Long.parseLong(s[1]),
-					Double.parseDouble(s[2]), Double.parseDouble(s[3]));
+			Localization localization = new Localization(Double.parseDouble(s[0]), 
+					Double.parseDouble(s[1]),
+					Double.parseDouble(s[2]),
+					Long.parseLong(s[3]));
 			try {
 				sCurrentLine = br.readLine();
 			} catch (IOException e1) {

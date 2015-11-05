@@ -1,21 +1,23 @@
 package org.lemming.math;
 
 import net.imglib2.Cursor;
-import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccess;
+import net.imglib2.RealPoint;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface  {
 	
-	private IterableInterval<T> op;
+	private IntervalView<T> op;
 	private double thresh;
-	double[] center;
+	RealPoint center;
 
-	public CentroidFitterRA(IterableInterval<T> op_, double threshold_){
+	public CentroidFitterRA(IntervalView<T> op_, double threshold_){
 		op = op_;
 		thresh = threshold_;
-		center = new double[op.numDimensions()];
+		center = new RealPoint(op.numDimensions());
 		for (int d=0; d<op.numDimensions();++d)
-			center[d] = op.min(d)+(op.dimension(d)/2);		
+			center.setPosition(op.min(d)+(op.dimension(d)/2), d);		
 	}
 	
 	@Override
@@ -24,7 +26,7 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 		Cursor<T> c = op.cursor();
 		int n = op.numDimensions();
 		
-		double [] r = new double[n*2];
+		double [] r = new double[n*2+1];
 		double sum = 0;
 		
 		while (c.hasNext()){
@@ -34,7 +36,7 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 			 if (s>0){
 				 for (int i = 0; i < n; i++){
 					 int pos = c.getIntPosition(i);
-					 r[i] += (center[i] - pos) * s;
+					 r[i] += (center.getDoublePosition(i) - pos) * s;
 				 }
 				 sum = sum + s;
 			 }
@@ -43,7 +45,7 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 		if (sum == 0) return null;
 		
 		for (int i = 0; i < n; i++) 
-			r[i] = (r[i] / sum) + center[i];
+			r[i] = (r[i] / sum) + center.getDoublePosition(i);
 		
 		double[] dev = new double[n];
 		c.reset();
@@ -59,6 +61,11 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 		for (int i = 0; i < n; i++) 
 			r[i+n] = Math.sqrt(dev[i]/sum);
 		
+		RandomAccess<T> ra = op.randomAccess();
+		for (int i = 0; i < n; i++){
+			ra.setPosition(StrictMath.round(r[i]), i);
+		}
+		r[n*2] = ra.get().getRealDouble();
 		return r;		
 	}
 }

@@ -2,6 +2,7 @@ package org.lemming.pipeline;
 
 import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import org.lemming.interfaces.Element;
@@ -13,6 +14,11 @@ public class ElementMap extends AbstractMap<String,Number> implements Element {
 	
 	public ElementMap(Set<Entry<String, Number>> set){
 		this.entrySet = set;
+	}
+
+
+	public ElementMap(Map<String, Number> map) {
+		this.entrySet = map.entrySet();
 	}
 
 

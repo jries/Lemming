@@ -2,7 +2,6 @@ package org.lemming.plugins;
 
 import ij.process.ShortProcessor;
 
-import java.awt.image.IndexColorModel;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +11,8 @@ import org.lemming.gui.HistogramRendererPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
-import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.LocalizationPrecision3D;
+import org.lemming.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
 
 public class HistogramRenderer extends Renderer {
@@ -37,12 +37,16 @@ public class HistogramRenderer extends Renderer {
 	private volatile short[] values; // volatile keyword keeps the array on the heap available
 	private double xmax;
 	private double ymax;
+	private double z;
+	private double zmin;
+	private double zmax;
 
 	public HistogramRenderer(){
-		this(256,256,0,256,0,256);
+		this(256,256,0,256,0,256,0,255);
 	}
 
-	public HistogramRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax) {
+	public HistogramRenderer(final int xBins, final int yBins, final double xmin, final double xmax, 
+			final double ymin, final double ymax, final double zmin, final double zmax) {
 		this.xBins = xBins;
 		this.xmin = xmin;
 		this.ymin = ymin;
@@ -50,11 +54,13 @@ public class HistogramRenderer extends Renderer {
 		this.ymax = ymax;
 		this.xwidth = (xmax - xmin) / xBins;
     	this.ywidth = (ymax - ymin) / yBins;
+    	this.zmin = zmin;
+    	this.zmax = zmax;
     	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
     		cancel(); return;
     	}
     	values = new short[xBins*yBins];
-		ShortProcessor sp = new ShortProcessor(xBins, yBins,values,getDefaultColorModel());
+		ShortProcessor sp = new ShortProcessor(xBins, yBins,values, LemmingUtils.Fire());
 		ip.setProcessor(sp);
 		ip.updateAndRepaintWindow();
 	}
@@ -69,51 +75,43 @@ public class HistogramRenderer extends Renderer {
 		if(data == null) return null;
 		if(data.isLast())
 				cancel();
-		if (data instanceof Localization){
-			Localization loc = (Localization) data;
+		if (data instanceof LocalizationPrecision3D){
+			LocalizationPrecision3D loc = (LocalizationPrecision3D) data;
 			x = (float) loc.getX();
 			y = (float) loc.getY();
+			z = (float) loc.getZ();
 		}
 		if (data instanceof ElementMap){
 			ElementMap map = (ElementMap) data;
 			try{
-				x = map.get("x").floatValue();
-				y = map.get("y").floatValue();
-			} catch (NullPointerException ne) { return null;}
+				x = map.get("x").doubleValue();
+				y = map.get("y").doubleValue();
+				z = map.get("z").doubleValue();
+			} catch (NullPointerException ne) {return null;}
 		}
+		long rz = StrictMath.round((z - zmin) / (zmax-zmin) * 256);
 		
-		synchronized(this){
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-	    	xindex = Math.round((x - xmin) / xwidth);
-	    	yindex = Math.round((y - ymin) / ywidth);
-	    	index = (int) (xindex+yindex*xBins);
-	    	if (index>=0 && index<values.length)
-	    		values[index]++;
-		
-			} 
+        	synchronized(this){
+		    	xindex = StrictMath.round((x - xmin) / xwidth);
+		    	yindex = StrictMath.round((y - ymin) / ywidth);
+		    	index = (int) (xindex+yindex*xBins);
+		    	if (index>=0 && index<values.length){
+		    		if (values[index] > 0)
+		    			values[index] = (short)((values[index]+rz)/2);
+		    		else
+		    			values[index] = (short) rz;
+		    	} 
+        	}
         }   
 		return null;
 	}
 	
 	@Override
 	public void afterRun(){
-		ip.getProcessor().setMinAndMax(0, 3);
 		ip.updateAndDraw();
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
-		//while(ip.isVisible()) pause(10);
-	}
-	
-	private static IndexColorModel getDefaultColorModel() {
-		byte[] r = new byte[256];
-		byte[] g = new byte[256];
-		byte[] b = new byte[256];
-		for(int i=0; i<256; i++) {
-			r[i]=(byte)i;
-			g[i]=(byte)i;
-			b[i]=(byte)i;
-		}
-		return new IndexColorModel(8, 256, r, g, b);
 	}
 
 	@Override
@@ -153,7 +151,9 @@ public class HistogramRenderer extends Renderer {
 			final double xmax = (double) settings.get(RendererFactory.KEY_xmax);
 			final double ymin = (double) settings.get(RendererFactory.KEY_ymin);
 			final double ymax = (double) settings.get(RendererFactory.KEY_ymax);
-			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax);
+			final double zmin = (double) settings.get(RendererFactory.KEY_zmin);
+			final double zmax = (double) settings.get(RendererFactory.KEY_zmax);
+			return new HistogramRenderer(xBins, yBins, xmin, xmax, ymin, ymax, zmin, zmax);
 		}
 
 		@Override

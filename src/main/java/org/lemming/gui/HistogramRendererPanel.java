@@ -119,6 +119,8 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		settings.put(RendererFactory.KEY_ymax, new Double(100));
 		settings.put(RendererFactory.KEY_xBins,new Integer(500));
 		settings.put(RendererFactory.KEY_yBins,new Integer(500));
+		settings.put(RendererFactory.KEY_zmin,new Integer(0));
+		settings.put(RendererFactory.KEY_zmax,new Integer(255));
 		initialSettings = new HashMap<>(settings);
 	}
 

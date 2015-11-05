@@ -10,6 +10,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 
 import ij.gui.Roi;
@@ -82,7 +83,6 @@ public class GaussianFitterZ implements FitterInterface {
 		double[] initialGuess = eg.getInitialGuess(ip,roi);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
-		double[] residuals;
 		try {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
@@ -95,7 +95,6 @@ public class GaussianFitterZ implements FitterInterface {
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
-			residuals = optimum.getSigma(1e-14).toArray();
 			//System.out.println("Too many evaluations:" + residuals.length);
 		} catch(TooManyEvaluationsException | ConvergenceException | SingularMatrixException e){
 			//System.out.println("Too many evaluations" + e.getMessage());
@@ -103,16 +102,17 @@ public class GaussianFitterZ implements FitterInterface {
 		}
         
 		//check bounds
-		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
+		if (!roi.contains((int)FastMath.round(fittedEG[0]), (int)FastMath.round(fittedEG[1])))
 			return null;
 		
-		double[] result = new double[5];
+		double[] result = new double[6];
 		
 		result[0] = fittedEG[0];
 		result[1] = fittedEG[1];
 		result[2] = fittedEG[2];
-		result[3] = residuals[0];
-		result[4] = residuals[1];
+		result[3] = fittedEG[3];
+		result[4] = fittedEG[4];
+		result[5] = 0.001;
 		return result;
 	}
 	
@@ -139,11 +139,11 @@ public class GaussianFitterZ implements FitterInterface {
 			double[] p = previous.getPoint();
 			double[] c = current.getPoint();
 
-			if (Math.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.1
-					&& Math.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
-					&& Math.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002
-					&& Math.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
-					&& Math.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
+			if (FastMath.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.1
+					&& FastMath.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
+					&& FastMath.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002
+					&& FastMath.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
+					&& FastMath.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
 				lastResult_ = true;
 				return true;
 			}

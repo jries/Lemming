@@ -11,8 +11,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;;
 public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 	
 	private long start;
-
-	//private volatile int counter= 0;
 	
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
@@ -35,15 +33,12 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 			cancel();
 			FrameElements<T> res = detect(frame);
 			res.setLast(true);
-			//counter += res.getList().size();
 			counterList.add(res.getList().size());
 			return res;
 		}
 		FrameElements<T> res = detect(frame);
-		//counter += res.getList().size();
-		try{
-		counterList.add(res.getList().size());
-		} catch (NullPointerException e){}
+		if (res != null)
+			counterList.add(res.getList().size());
 		return res;
 	}
 	

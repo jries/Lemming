@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.FittedLocalization;
+import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.SingleRunModule;
 
-public class SaveFittedLocalizations extends SingleRunModule {
+public class SaveLocalizationPrecision3D extends SingleRunModule {
 
 	final private Locale curLocale;
 	private File file;
@@ -17,7 +17,7 @@ public class SaveFittedLocalizations extends SingleRunModule {
 	private long start;
 	private int counter = 0;
 
-	public SaveFittedLocalizations(File file) {
+	public SaveLocalizationPrecision3D(File file) {
 		this.curLocale = Locale.getDefault();
 		this.file = file;
 	}
@@ -48,26 +48,10 @@ public class SaveFittedLocalizations extends SingleRunModule {
 			return null;
 		}
 		
-		FittedLocalization loc = (FittedLocalization) data;
-		StringBuilder out = new StringBuilder();
-
-		out.append(loc.getID());
-		out.append(", ");
-		out.append(loc.getFrame());
-		out.append(", ");
-		out.append(loc.getX());
-		out.append(", ");
-		out.append(loc.getY());
-		out.append(", ");
-		out.append(loc.getZ());
-		out.append(", ");
-		out.append(loc.getsX());
-		out.append(", ");
-		out.append(loc.getsY());
-		out.append("\n");
+		LocalizationPrecision3D loc = (LocalizationPrecision3D) data;
 
 		try {
-			w.write(out.toString());
+			w.write(loc.toString()+"\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

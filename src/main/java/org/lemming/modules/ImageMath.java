@@ -138,7 +138,8 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		default:
 		}
 		
-		return new ImgLib2Frame<>(framePair.getA().getFrameNumber(), framePair.getA().getWidth(), framePair.getA().getHeight(), intervalA);
+		return new ImgLib2Frame<>(framePair.getA().getFrameNumber(), framePair.getA().getWidth(), 
+				framePair.getA().getHeight(), framePair.getA().getPixelDepth(), intervalA);
 	}
 	
 	@Override

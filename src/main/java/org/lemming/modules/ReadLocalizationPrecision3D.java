@@ -6,11 +6,11 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.FittedLocalization;
+import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.SingleRunModule;
 
 
-public class ReadFittedLocalizations extends SingleRunModule {
+public class ReadLocalizationPrecision3D extends SingleRunModule {
 	
 	private File file;
 	private BufferedReader br;
@@ -18,7 +18,7 @@ public class ReadFittedLocalizations extends SingleRunModule {
 	private String sCurrentLine;
 	private long start;
 
-	public ReadFittedLocalizations(File f, String d){
+	public ReadLocalizationPrecision3D(File f, String d){
 		this.file = f;
 		this.delimiter = d;
 	}
@@ -43,14 +43,16 @@ public class ReadFittedLocalizations extends SingleRunModule {
 		String[] s = sCurrentLine.split(delimiter);
 		for (int i = 0; i < s.length; i++)
 			s[i] = s[i].trim();
-		if (s.length > 6) {
-			FittedLocalization localization = new FittedLocalization(
-					Long.parseLong(s[1]),
+		if (s.length > 7) {
+			LocalizationPrecision3D localization = new LocalizationPrecision3D(
+					Double.parseDouble(s[0]), 
+					Double.parseDouble(s[1]),
 					Double.parseDouble(s[2]), 
-					Double.parseDouble(s[3]),
-					Double.parseDouble(s[4]), 
-					Double.parseDouble(s[5]), 
-					Double.parseDouble(s[6]));
+					Double.parseDouble(s[3]), 
+					Double.parseDouble(s[4]),
+					Double.parseDouble(s[5]),
+					Double.parseDouble(s[6]),
+					Long.parseLong(s[1]));
 			try {
 				sCurrentLine = br.readLine();
 			} catch (IOException e1) {

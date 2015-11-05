@@ -34,8 +34,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.view.Views;
 
-public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extends Frame<T>>
-		extends SingleRunModule {
+public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extends Frame<T>> extends SingleRunModule {
 
 	private int nFrames, counter = 0;
 	private FastTable<F> frameList = new FastTable<>();
@@ -47,9 +46,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 	public static final String KEY = "FASTMEDIAN";
 
-	public static final String INFO_TEXT = "<html>"
-			+ "Fast Median Filter with the option to interpolate between blocks"
-			+ "</html>";
+	public static final String INFO_TEXT = "<html>" + "Fast Median Filter with the option to interpolate between blocks" + "</html>";
 
 	public FastMedianFilter(final int numFrames, boolean interpolating) {
 		nFrames = numFrames;
@@ -59,7 +56,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	@Override
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
-											
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -109,12 +106,11 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 	private F process(final Queue<F> list, final boolean isLast) {
 		if (list.isEmpty())
 			return null;
-		
+
 		final F firstFrame = list.peek();
 		final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
 
-		Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views
-				.iterable(firstInterval).firstElement());
+		Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views.iterable(firstInterval).firstElement());
 		Cursor<T> cursor = Views.iterable(out).cursor();
 
 		List<Cursor<T>> cursorList = new ArrayList<>();
@@ -133,12 +129,12 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 			// find the median
 
 			Integer median = QuickSelect.fastmedian(values, values.size());
-			//Integer median = QuickSelect.select(values, middle); 
+			// Integer median = QuickSelect.select(values, middle);
 			if (median != null)
 				cursor.get().setInteger(median);
 		}
-		F newFrame = (F) new ImgLib2Frame<>(firstFrame.getFrameNumber(),
-				firstFrame.getWidth(), firstFrame.getHeight(), out);
+		F newFrame = (F) new ImgLib2Frame<>(firstFrame.getFrameNumber(), firstFrame.getWidth(), firstFrame.getHeight(), 
+				firstFrame.getPixelDepth(), out);
 		if (isLast)
 			newFrame.setLast(true);
 		return newFrame;
@@ -159,8 +155,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 				if (val != null)
 					results.add(val);
 			}
-		} catch (final InterruptedException | ExecutionException
-				| CancellationException e) {
+		} catch (final InterruptedException | ExecutionException | CancellationException e) {
 			System.err.println(e.getMessage());
 		}
 
@@ -179,9 +174,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 				RandomAccessibleInterval<T> intervalB = frameB.getPixels();
 
 				for (int i = 0; i < nFrames; i++) {
-					Img<T> outFrame = new ArrayImgFactory<T>()
-							.create(intervalA, Views.iterable(intervalA)
-									.firstElement());
+					Img<T> outFrame = new ArrayImgFactory<T>().create(intervalA, Views.iterable(intervalA).firstElement());
 					Cursor<T> outCursor = outFrame.cursor();
 					Cursor<T> cursorA = Views.iterable(intervalA).cursor();
 					Cursor<T> cursorB = Views.iterable(intervalB).cursor();
@@ -190,52 +183,43 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 						cursorA.fwd();
 						cursorB.fwd();
 						outCursor.fwd();
-						outCursor.get().setInteger(
-								cursorA.get().getInteger()
-										+ Math.round((cursorB.get()
-												.getInteger() - cursorA.get()
-												.getInteger())
-												* ((float) i + 1) / nFrames));
+						outCursor.get().setInteger(cursorA.get().getInteger()
+								+ Math.round((cursorB.get().getInteger() - cursorA.get().getInteger()) * ((float) i + 1) / nFrames));
 					}
 
-					newOutput(new ImgLib2Frame<>(
-							frameA.getFrameNumber() + i, frameA.getWidth(),
-							frameA.getHeight(), outFrame));
+					newOutput(
+							new ImgLib2Frame<>(frameA.getFrameNumber() + i, frameA.getWidth(), frameA.getHeight(), frameA.getPixelDepth(), outFrame));
 				}
 				frameA = frameB;
 			}
-			if (frameB == null) return;
+			if (frameB == null)
+				return;
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
-				newOutput(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
-						frameB.getWidth(), frameB.getHeight(), frameB
-								.getPixels()));
+				newOutput(new ImgLib2Frame<>(frameB.getFrameNumber() + i, frameB.getWidth(), frameB.getHeight(), frameB.getPixelDepth(),
+						frameB.getPixels()));
 			}
 
 			// create last frame
-			ImgLib2Frame<T> lastFrame = new ImgLib2Frame<>(
-					frameB.getFrameNumber() + lastListSize, frameB.getWidth(),
-					frameB.getHeight(), frameB.getPixels());
+			ImgLib2Frame<T> lastFrame = new ImgLib2Frame<>(frameB.getFrameNumber() + lastListSize, frameB.getWidth(), frameB.getHeight(),
+					frameB.getPixelDepth(), frameB.getPixels());
 			lastFrame.setLast(true);
 			newOutput(lastFrame);
 		} else {
-			F lastElements = results.remove(results.size()-1);
+			F lastElements = results.remove(results.size() - 1);
 			for (F element : results) {
 				for (int i = 0; i < nFrames; i++)
-					newOutput(new ImgLib2Frame<>(element.getFrameNumber()
-							+ i, element.getWidth(), element.getWidth(),
+					newOutput(new ImgLib2Frame<>(element.getFrameNumber() + i, element.getWidth(), element.getWidth(), element.getPixelDepth(),
 							element.getPixels()));
 			}
 			// handle the last frames
 			for (int i = 0; i < lastListSize; i++) {
-				newOutput(new ImgLib2Frame<>(lastElements.getFrameNumber() + i,
-						lastElements.getWidth(), lastElements.getHeight(), lastElements
-								.getPixels()));
+				newOutput(new ImgLib2Frame<>(lastElements.getFrameNumber() + i, lastElements.getWidth(), lastElements.getHeight(),
+						lastElements.getPixelDepth(), lastElements.getPixels()));
 			}
 			// create last frame
-			ImgLib2Frame<T> lastFrame = new ImgLib2Frame<>(
-					lastElements.getFrameNumber() + lastListSize, lastElements.getWidth(),
-					lastElements.getHeight(), lastElements.getPixels());
+			ImgLib2Frame<T> lastFrame = new ImgLib2Frame<>(lastElements.getFrameNumber() + lastListSize, lastElements.getWidth(),
+					lastElements.getHeight(), lastElements.getPixelDepth(), lastElements.getPixels());
 			lastFrame.setLast(true);
 			newOutput(lastFrame);
 		}
@@ -245,17 +229,16 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		} catch (InterruptedException e) {
 			System.err.println(e.getMessage());
 		}
-		System.out.println("Filtering of " + counter + " images done in "
-				+ (System.currentTimeMillis() - start) + "ms.");
+		System.out.println("Filtering of " + counter + " images done in " + (System.currentTimeMillis() - start) + "ms.");
 	}
 
 	@Override
 	public boolean check() {
-		return inputs.size()==1 && outputs.size()>=1;
+		return inputs.size() == 1 && outputs.size() >= 1;
 	}
-	
-	@Plugin( type = PreProcessingFactory.class, visible = true )
-	public static class Factory implements PreProcessingFactory{
+
+	@Plugin(type = PreProcessingFactory.class, visible = true)
+	public static class Factory implements PreProcessingFactory {
 
 		private Map<String, Object> settings;
 		private FastMedianPanel configPanel = new FastMedianPanel();
@@ -284,8 +267,8 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		@SuppressWarnings("rawtypes")
 		@Override
 		public AbstractModule getModule() {
-			boolean interpolating  = (boolean) settings.get(FastMedianPanel.KEY_INTERPOLATING);
-			int frames  = (int) settings.get(FastMedianPanel.KEY_FRAMES);
+			boolean interpolating = (boolean) settings.get(FastMedianPanel.KEY_INTERPOLATING);
+			int frames = (int) settings.get(FastMedianPanel.KEY_FRAMES);
 			return new FastMedianFilter(frames, interpolating);
 		}
 
@@ -302,10 +285,10 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 		@Override
 		public int processingFrames() {
-			int procFrames = (Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(FastMedianPanel.KEY_FRAMES); 
+			int procFrames = (Integer) settings.get(FastMedianPanel.KEY_FRAMES) == 0 ? 1 : (Integer) settings.get(FastMedianPanel.KEY_FRAMES);
 			return procFrames;
 		}
-		
+
 	}
 
 }

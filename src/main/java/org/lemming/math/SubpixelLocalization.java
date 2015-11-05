@@ -3,8 +3,9 @@ package org.lemming.math;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.util.FastMath;
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.FittedLocalization;
+import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.Localization;
 
 import Jama.LUDecomposition;
@@ -58,12 +59,10 @@ import net.imglib2.util.Intervals;
  * @return r
  */
 public class SubpixelLocalization {
-	public static <T extends RealType<T>> List<Element> refinePeaks(
-			final List<Element> sliceLocs, final RandomAccessible<T> img,
-			final Interval validInterval, final boolean returnInvalidPeaks,
-			final int maxNumMoves, final boolean allowMaximaTolerance,
-			final float maximaTolerance, final boolean[] allowedToMoveInDim) {
-		
+	public static <T extends RealType<T>> List<Element> refinePeaks(final List<Element> sliceLocs, final RandomAccessible<T> img,
+			final Interval validInterval, final boolean returnInvalidPeaks, final int maxNumMoves, final boolean allowMaximaTolerance,
+			final float maximaTolerance, final boolean[] allowedToMoveInDim, final double pixelDepth) {
+
 		final List<Element> refinedPeaks = new ArrayList<>();
 
 		final int n = img.numDimensions();
@@ -80,16 +79,14 @@ public class SubpixelLocalization {
 
 		// bounds checking necessary?
 		final boolean canMoveOutside = (validInterval == null);
-		final Interval interval = canMoveOutside ? null : Intervals.expand(
-				validInterval, -1);
+		final Interval interval = canMoveOutside ? null : Intervals.expand(validInterval, -1);
 
 		// the cursor for the computation
-		final RandomAccess<T> access = canMoveOutside ? img.randomAccess()
-				: img.randomAccess(validInterval);
+		final RandomAccess<T> access = canMoveOutside ? img.randomAccess() : img.randomAccess(validInterval);
 
 		for (final Element locs : sliceLocs) {
 			Localization p = (Localization) locs;
-			currentPosition.setPosition(new long[]{(long) p.getX(),(long) p.getY()});
+			currentPosition.setPosition(new long[] { FastMath.round((p.getX()/pixelDepth)), FastMath.round((p.getY()/pixelDepth)) });
 
 			// fit n-dimensional quadratic function to the extremum and
 			// if the extremum is shifted more than 0.5 in one or more
@@ -123,11 +120,10 @@ public class SubpixelLocalization {
 				// Then we say, ok, lets keep the base position even if
 				// the subpixel location is 0.6...
 				foundStableMaxima = true;
-				final double threshold = allowMaximaTolerance ? 0.5 + numMoves
-						* maximaTolerance : 0.5;
+				final double threshold = allowMaximaTolerance ? 0.5 + numMoves * maximaTolerance : 0.5;
 				for (int d = 0; d < n; ++d) {
 					final double diff = subpixelOffset.getDoublePosition(d);
-					if (Math.abs(diff) > threshold) {
+					if (FastMath.abs(diff) > threshold) {
 						if (allowedToMoveInDim[d]) {
 							// move to another base location
 							currentPosition.move(diff > 0 ? 1 : -1, d);
@@ -142,18 +138,14 @@ public class SubpixelLocalization {
 
 			if (foundStableMaxima) {
 				// set the results if everything went well
-				final double sx = Math.abs(subpixelOffset.getDoublePosition(0));
-				final double sy = Math.abs(subpixelOffset.getDoublePosition(1));
+				final double sx = FastMath.pow(subpixelOffset.getDoublePosition(0),2);
+				final double sy = FastMath.pow(subpixelOffset.getDoublePosition(1),2);
+				access.setPosition(currentPosition);
 				subpixelOffset.move(currentPosition);
-				refinedPeaks.add(new FittedLocalization(p.getID(),p.getFrame(),
-						subpixelOffset.getDoublePosition(0),
-						subpixelOffset.getDoublePosition(1), 
-						0, sx, sy));
+				refinedPeaks.add(new LocalizationPrecision3D(subpixelOffset.getDoublePosition(0) * pixelDepth,
+						subpixelOffset.getDoublePosition(1) * pixelDepth, 0, sx * pixelDepth, sy * pixelDepth, 0, access.get().getRealDouble(), p.getFrame()));
 			} else if (returnInvalidPeaks) {
-				refinedPeaks.add(new FittedLocalization(p.getID(),p.getFrame(),
-						p.getX(),
-						p.getY(), 
-						0, 0, 0));
+				refinedPeaks.add(new LocalizationPrecision3D(p.getX(), p.getY(), 0, 0, 0, 0, access.get().getRealDouble(), p.getFrame()));
 			}
 		}
 
@@ -180,8 +172,7 @@ public class SubpixelLocalization {
 	 *            subpixel offset of extremum value <code>p</code> is stored
 	 *            here.
 	 */
-	protected static <T extends RealType<T>> void quadraticFitOffset(
-			final Localizable p, final RandomAccess<T> access, final Matrix g,
+	protected static <T extends RealType<T>> void quadraticFitOffset(final Localizable p, final RandomAccess<T> access, final Matrix g,
 			final Matrix H, final RealPositionable offset) {
 		final int n = p.numDimensions();
 

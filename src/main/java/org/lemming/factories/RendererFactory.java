@@ -34,8 +34,8 @@ public interface RendererFactory extends PluginInterface {
 	public static final String KEY_xmax = "xmax";
 	public static final String KEY_ymin = "ymin";
 	public static final String KEY_ymax = "ymax";
-	public static final String KEY_pSizeX = "pSizeX";
-	public static final String KEY_pSizeY = "pSizeY";
 	public static final String KEY_xBins = "xbins";
 	public static final String KEY_yBins = "ybins";
+	public static final String KEY_zmin = "zmin";
+	public static final String KEY_zmax = "zmax";
 }

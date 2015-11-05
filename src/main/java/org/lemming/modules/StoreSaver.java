@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.MapElement;
+import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.SingleRunModule;
 
 import ij.IJ;
@@ -55,9 +55,9 @@ public class StoreSaver extends SingleRunModule {
 	public Element processData(Element data) { // data not used here
 		
 		String converted = new String();
-		if (data instanceof MapElement){
-			MapElement me = (MapElement) data;
-			for (Entry<String, Object> entry : me.get().entrySet()){
+		if (data instanceof ElementMap){
+			ElementMap me = (ElementMap) data;
+			for (Entry<String, Number> entry : me.entrySet()){
 				converted += entry.getValue() + ",";
 			converted = converted.substring(0, converted.length()-2);
 			}

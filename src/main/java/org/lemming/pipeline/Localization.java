@@ -5,17 +5,15 @@ import org.lemming.interfaces.LocalizationInterface;
 public class Localization implements LocalizationInterface {
 
 	final private double X,Y;
-	final private long ID;
+	final protected long ID;
 	static private long curID = 0;
 	private boolean isLast;
 	final private long frame;
+	final private double intensity;
 	
-	public Localization(long ID, long frame,  double x, double y) {
-		this.X=x; this.Y=y; this.ID=ID; this.frame=frame; isLast=false;
-	}
 	
-	public Localization(long frame, double x, double y) {
-		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false;
+	public Localization(double x, double y, double intensity, long frame) {
+		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false; this.intensity = intensity;
 	}
 	
 	@Override
@@ -32,11 +30,6 @@ public class Localization implements LocalizationInterface {
 	}
 
 	@Override
-	public long getID() {
-		return ID;
-	}
-
-	@Override
 	public double getX() {
 		return X;
 	}
@@ -50,11 +43,14 @@ public class Localization implements LocalizationInterface {
 	public long getFrame() {
 		return frame;
 	}
-
+	
+	@Override
+	public double getIntensity() {
+		return intensity;
+	}
 
 	@Override
 	public String toString(){
-		return "" + getID() + "," + getFrame() + "," + getX() + "," + getY();
-	}
-
+		return "" + getX() + "\t" + getY() + "\t" + getIntensity() + "\t" + getFrame();
+	}	
 }

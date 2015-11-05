@@ -56,19 +56,9 @@ public class SaveLocalizations extends SingleRunModule {
 		
 		if (data instanceof Localization) {
 			Localization loc = (Localization) data;
-			StringBuilder out = new StringBuilder();
-
-			out.append(loc.getID());
-			out.append(", ");
-			out.append(loc.getFrame());
-			out.append(", ");
-			out.append(loc.getX());
-			out.append(", ");
-			out.append(loc.getY());
-			out.append("\n");
 			
 			try {
-				w.write(out.toString());
+				w.write(loc.toString()+"⁄n");
 			} catch (IOException e) {
 				IJ.error("SaveLocalization:"+e.getMessage());;
 			}

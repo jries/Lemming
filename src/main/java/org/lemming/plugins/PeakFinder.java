@@ -24,15 +24,13 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Detector<T,F> {
+public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T, F> {
 
 	public static final String NAME = "Peak Finder";
 
 	public static final String KEY = "PEAKFINDER";
 
-	public static final String INFO_TEXT = "<html>"
-											+ "Peak Finder Plugin"
-											+ "</html>";
+	public static final String INFO_TEXT = "<html>" + "Peak Finder Plugin" + "</html>";
 	private int size;
 	private double threshold;
 	private int counter;
@@ -43,7 +41,7 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 	 * @param size
 	 *            - kernel size
 	 */
-	public PeakFinder( final double threshold, final int size) {
+	public PeakFinder(final double threshold, final int size) {
 		setThreshold(threshold);
 		this.size = size;
 	}
@@ -52,7 +50,6 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 		this.threshold = threshold;
 	}
 
-	
 	@Override
 	public FrameElements<T> detect(final F frame) {
 		Interval interval = Intervals.expand(frame.getPixels(), -size);
@@ -62,11 +59,10 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 		final Cursor<T> center = Views.iterable(source).cursor();
 
 		final RectangleShape shape = new RectangleShape(size, true);
-		
+
 		List<Element> found = new ArrayList<>();
 
-		for (final Neighborhood<T> localNeighborhood : shape
-				.neighborhoods(source)) {
+		for (final Neighborhood<T> localNeighborhood : shape.neighborhoods(source)) {
 			// what is the value that we investigate?
 			// (the center cursor runs over the image in the same iteration
 			// order as neighborhood)
@@ -89,10 +85,12 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 				}
 			}
 
-			if (isMaximum){
-				found.add(new Localization(frame.getFrameNumber(), 
-						center.getIntPosition(0), center.getIntPosition(1)));
-				counter++; 
+			if (isMaximum) {
+				found.add(new Localization(center.getIntPosition(0) * frame.getPixelDepth(),
+						center.getIntPosition(1) * frame.getPixelDepth(),
+						centerValue.getRealDouble(),
+						frame.getFrameNumber()));
+				counter++;
 			}
 		}
 		return new FrameElements<>(found, frame);
@@ -104,11 +102,10 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 	public double getThreshold() {
 		return threshold;
 	}
-	
-	@Plugin( type = DetectorFactory.class, visible = true )
-	public static class Factory implements DetectorFactory{
 
-		
+	@Plugin(type = DetectorFactory.class, visible = true)
+	public static class Factory implements DetectorFactory {
+
 		private Map<String, Object> settings;
 		private PeakFinderPanel configPanel = new PeakFinderPanel();
 
@@ -127,18 +124,17 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 			return NAME;
 		}
 
-
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			return settings!=null;
+			return settings != null;
 		}
 
 		@SuppressWarnings("rawtypes")
 		@Override
 		public AbstractModule getDetector() {
-			final double threshold = ( Double ) settings.get( PeakFinderPanel.KEY_THRESHOLD );
-			final int kernelSize = ( Integer ) settings.get( PeakFinderPanel.KEY_KERNEL_SIZE );
+			final double threshold = (Double) settings.get(PeakFinderPanel.KEY_THRESHOLD);
+			final int kernelSize = (Integer) settings.get(PeakFinderPanel.KEY_KERNEL_SIZE);
 			return new PeakFinder(threshold, kernelSize);
 		}
 
@@ -147,6 +143,6 @@ public class PeakFinder <T extends RealType<T>, F extends Frame<T>> extends Dete
 			configPanel.setName(KEY);
 			return configPanel;
 		}
-		
+
 	}
 }

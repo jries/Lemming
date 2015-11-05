@@ -1,7 +1,6 @@
 package org.lemming.modules;
 
 import ij.ImagePlus;
-import ij.process.ImageProcessor;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
@@ -17,10 +16,12 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	private ImagePlus img;
 	private int stackSize;
 	private long start;
+	private double pixelDepth;
 	
 	public ImageLoader(ImagePlus img) {
 		this.img = img;
 		stackSize = img.getStackSize();
+		pixelDepth = img.getCalibration().pixelDepth == 0 ? 1 : img.getCalibration().pixelDepth;
 	}
 	
 	@Override
@@ -31,11 +32,10 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 
 	@Override
 	public Element processData(Element data) {		
-		ImageProcessor ip = img.getStack().getProcessor(++curSlice);
+		Object ip = img.getImageStack().getPixels(++curSlice);
 		
-		Img<T> theImage = LemmingUtils.wrap(ip);
-		
-		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, ip.getWidth(), ip.getHeight(), theImage);
+		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
+		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
 		if (curSlice >= stackSize){
 			frame.setLast(true);
 			cancel(); 

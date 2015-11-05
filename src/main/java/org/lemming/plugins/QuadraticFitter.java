@@ -19,35 +19,33 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
 public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
-	
+
 	public static final String NAME = "Quadratic Fitter";
 
 	public static final String KEY = "QUADRATICFITTER";
 
-	public static final String INFO_TEXT = "<html>"
-			+ "Quadratic Fitter Plugin (without z-direction)"
-			+ "</html>";
-
+	public static final String INFO_TEXT = "<html>" + "Quadratic Fitter Plugin (without z-direction)" + "</html>";
 
 	public QuadraticFitter(int windowSize) {
 		super(windowSize);
 	}
 
 	@Override
-	public List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber) {
+	public List<Element> fit(final List<Element> sliceLocs, final RandomAccessibleInterval<T> pixels, final long windowSize, final long frameNumber,
+			final double pixelDepth) {
 		final RandomAccessible<T> ra = Views.extendBorder(pixels);
-		final boolean[] allowedToMoveInDim = new boolean[ ra.numDimensions() ];
-		Arrays.fill( allowedToMoveInDim, true );
-		
-		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, size, true, 0.01f, allowedToMoveInDim);
+		final boolean[] allowedToMoveInDim = new boolean[ra.numDimensions()];
+		Arrays.fill(allowedToMoveInDim, true);
+
+		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, size, true, 0.01f, allowedToMoveInDim,
+				pixelDepth);
 
 		return refined;
 	}
-	
-	@Plugin( type = FitterFactory.class, visible = true )
-	public static class Factory implements FitterFactory{
 
-		
+	@Plugin(type = FitterFactory.class, visible = true)
+	public static class Factory implements FitterFactory {
+
 		private Map<String, Object> settings;
 		private QuadraticFitterPanel configPanel = new QuadraticFitterPanel();
 
@@ -66,17 +64,16 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 			return NAME;
 		}
 
-
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			return settings!=null;
+			return settings != null;
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Fitter getFitter() {
-			final int windowSize = (int) settings.get( QuadraticFitterPanel.KEY_QUAD_WINDOW_SIZE );
+			final int windowSize = (int) settings.get(QuadraticFitterPanel.KEY_QUAD_WINDOW_SIZE);
 			return new QuadraticFitter(windowSize);
 		}
 
@@ -85,7 +82,7 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 			configPanel.setName(KEY);
 			return configPanel;
 		}
-		
+
 	}
 
 }

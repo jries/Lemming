@@ -39,13 +39,13 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		
 		lblY = new JLabel("0");
 		
-		JLabel lblXBins = new JLabel("Pixel size X [nm]");
+		JLabel lblXBins = new JLabel("xBins");
 		
-		JLabel lblYBins = new JLabel("Pixel size Y [nm]");
+		JLabel lblYBins = new JLabel("yBins");
 		
 		textXBins = new JTextField();
 		textXBins.setHorizontalAlignment(SwingConstants.TRAILING);
-		textXBins.setText("138");
+		textXBins.setText("512");
 		textXBins.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
@@ -55,7 +55,7 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		
 		textYBins = new JTextField();
 		textYBins.setHorizontalAlignment(SwingConstants.TRAILING);
-		textYBins.setText("138");
+		textYBins.setText("512");
 		textYBins.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
 			@Override
 			public void run() {
@@ -127,8 +127,8 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		settings.put(RendererFactory.KEY_ymin, new Double(0));
 		settings.put(RendererFactory.KEY_xmax, new Double(100));
 		settings.put(RendererFactory.KEY_ymax, new Double(100));
-		settings.put(RendererFactory.KEY_pSizeX,new Integer(138));
-		settings.put(RendererFactory.KEY_pSizeY,new Integer(138));
+		settings.put(RendererFactory.KEY_xBins,new Integer(512));
+		settings.put(RendererFactory.KEY_yBins,new Integer(512));
 		initialSettings = new HashMap<>(settings);
 	}
 
@@ -138,8 +138,8 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		lblY.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymin)));
 		labelX2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmax)));
 		labelY2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymax)));
-		textXBins.setText(String.valueOf(settings.get(RendererFactory.KEY_pSizeX)));
-		textYBins.setText(String.valueOf(settings.get(RendererFactory.KEY_pSizeY)));
+		textXBins.setText(String.valueOf(settings.get(RendererFactory.KEY_xBins)));
+		textYBins.setText(String.valueOf(settings.get(RendererFactory.KEY_yBins)));
 		for (String key : settings.keySet())
 			this.settings.put(key, settings.get(key));
 		revalidate();
