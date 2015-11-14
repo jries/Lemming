@@ -19,7 +19,8 @@ public abstract class SingleRunModule extends AbstractModule {
 					break;
 				Element data = nextInput();
 				if (data != null) 
-					newOutput(processData(data));
+					processData(data);
+				else pause(10);
 			}
 			afterRun();
 			return;
@@ -37,6 +38,7 @@ public abstract class SingleRunModule extends AbstractModule {
 				Element data = nextInput();
 				if (data != null) 
 					processData(data);
+				else pause(10);
 			}
 			afterRun();
 			return;
@@ -59,6 +61,7 @@ public abstract class SingleRunModule extends AbstractModule {
 	}
 
 	protected void beforeRun() {
+		start = System.currentTimeMillis();
 	}
 	
 }

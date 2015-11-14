@@ -15,7 +15,6 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	private int curSlice = 0;
 	private ImagePlus img;
 	private int stackSize;
-	private long start;
 	private double pixelDepth;
 	
 	public ImageLoader(ImagePlus img) {
@@ -46,7 +45,7 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	
 	@Override
 	public void afterRun(){
-		System.out.println("Loading done in " + (System.currentTimeMillis()-start) + "ms.");
+		System.out.println("Loading of " + stackSize +" done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 	
 	public void show(){

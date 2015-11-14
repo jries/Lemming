@@ -9,9 +9,7 @@ import org.lemming.pipeline.MultiRunModule;
 import java.util.concurrent.ConcurrentLinkedQueue;;
 
 public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
-	
-	private long start;
-	
+		
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
 	public Detector() {

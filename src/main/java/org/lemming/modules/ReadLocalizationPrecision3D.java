@@ -16,7 +16,6 @@ public class ReadLocalizationPrecision3D extends SingleRunModule {
 	private BufferedReader br;
 	private String delimiter;
 	private String sCurrentLine;
-	private long start;
 
 	public ReadLocalizationPrecision3D(File f, String d){
 		this.file = f;

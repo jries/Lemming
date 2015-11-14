@@ -178,7 +178,7 @@ public class FitterPanel extends ConfigurationPanel {
 		calibFile = (File) settings.get(CalibrationDialog.KEY_CALIBRATION_FILE);
 		if (calibFile!=null)
 			lblCalibration.setText(calibFile.getName());
-		repaint();
+		revalidate();
 		fireChanged();
 	}
 
@@ -190,7 +190,7 @@ public class FitterPanel extends ConfigurationPanel {
 		textFieldThreshold.setText(String.valueOf(settings.get(KEY_CENTROID_THRESHOLD)));
 		calibFile = (File) settings.get(KEY_CALIBRATION_FILENAME);
 		lblCalibration.setText(calibFile.getName());
-		repaint();
+		revalidate();
 	}
 
 	@Override

@@ -38,7 +38,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 
 	private int nFrames, counter = 0;
 	private FastTable<F> frameList = new FastTable<>();
-	private long start;
 	private FastTable<Callable<F>> callables = new FastTable<>();
 	private int lastListSize = 0;
 	private boolean interpolating;
@@ -53,11 +52,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>, F extend
 		this.interpolating = interpolating;
 	}
 
-	@Override
-	protected void beforeRun() {
-		start = System.currentTimeMillis();
-
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override

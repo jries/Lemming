@@ -16,7 +16,6 @@ public class ReadLocalizations extends SingleRunModule {
 	private BufferedReader br;
 	private String delimiter;
 	private String sCurrentLine;
-	private long start;
 
 	public ReadLocalizations(File f, String d){
 		this.file = f;

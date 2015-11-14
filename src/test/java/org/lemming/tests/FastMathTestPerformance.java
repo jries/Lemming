@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+@SuppressWarnings("static-method")
 public class FastMathTestPerformance {
 	
 	private static final int RUNS = Integer.parseInt(System.getProperty("testRuns","10000000"));
@@ -49,7 +50,7 @@ public class FastMathTestPerformance {
     }
 
 	
-	    @Test
+		@Test
 	    public void testLog() {
 	        double x = 0;
 	        long time = System.nanoTime();

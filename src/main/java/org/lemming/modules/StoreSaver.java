@@ -20,7 +20,6 @@ public class StoreSaver extends SingleRunModule {
 	
 	private File file;
 	private BufferedWriter br;
-	private long start;
 	private Locale curLocale;
 	private Map<String,Object> metaData;
 

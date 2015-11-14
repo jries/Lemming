@@ -9,16 +9,11 @@ import org.lemming.pipeline.SingleRunModule;
 
 public class UnpackElements<T> extends SingleRunModule {
 
-	private long start;
 	private int counter;
 
 	public UnpackElements() {
 	}
 	
-	@Override
-	protected void beforeRun(){
-		start = System.currentTimeMillis();
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override

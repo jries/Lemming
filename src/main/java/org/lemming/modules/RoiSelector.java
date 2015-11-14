@@ -11,7 +11,6 @@ import org.lemming.pipeline.SingleRunModule;
 public class RoiSelector<T> extends SingleRunModule {
 	
 	private RectangleRegionOfInterest roi;
-	private long start;
 	private int counter=0;
 	private int skipFrames;
 
@@ -22,11 +21,6 @@ public class RoiSelector<T> extends SingleRunModule {
 	
 	public RoiSelector(final double[] origin, final double[] extent){
 		roi = new RectangleRegionOfInterest(origin, extent);
-	}
-	
-	@Override
-	protected void beforeRun(){ 
-		start = System.currentTimeMillis();		
 	}
 	
 	@SuppressWarnings("unchecked")

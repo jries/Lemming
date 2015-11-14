@@ -24,7 +24,6 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 
 	private operators operator;
 	private int counter;
-	private long start;
 	private Store inputA;
 	private Store inputB;
 	private Store output;

@@ -11,7 +11,7 @@ public abstract class Renderer extends MultiRunModule {
 	
 	
 	protected ImagePlus ip;
-	final protected String title = "Renderer WindowS"; // title of the image
+	final protected String title = "Renderer Window"; // title of the image
 
 	public Renderer() {
 		ip = new ImagePlus();
@@ -32,6 +32,15 @@ public abstract class Renderer extends MultiRunModule {
 		return inputs.size()==1;
 	}
 	
+	@Override
+	public void afterRun(){
+		double max = ip.getStatistics().histMax;
+		ip.getProcessor().setMinAndMax(0, max);
+		ip.updateAndRepaintWindow();;
+		System.out.println("Rendering done in "
+				+ (System.currentTimeMillis() - start) + "ms.");
+	}
+	
 	public void show(){
 		if (ip!=null){
 			ip.show();
@@ -40,6 +49,12 @@ public abstract class Renderer extends MultiRunModule {
 		}
 	}
 	
-	public abstract void preview(List<Element> previewList);
+	public void preview(List<Element> previewList) {
+		for (Element el : previewList)
+			processData(el);
+		double max = ip.getStatistics().histMax;
+		ip.getProcessor().setMinAndMax(0, max);
+		ip.updateAndRepaintWindow();
+	}
 
 }

@@ -25,7 +25,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JPanel;
+
 import java.awt.FlowLayout;
+
 import javax.swing.BoxLayout;
 
 public class FilterPanel extends ConfigurationPanel implements ChangeListener {
@@ -34,7 +36,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	 * 
 	 */
 	private static final long serialVersionUID = -2042228716255813527L;
-	
+	public static final String KEY = "FILTER";
 	private JButton btnAdd;
 	private JButton btnRemove;
 	private JScrollPane scrollPane;

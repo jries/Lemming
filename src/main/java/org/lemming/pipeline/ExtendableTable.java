@@ -20,7 +20,6 @@ import javolution.util.function.Predicate;
  */
 public class ExtendableTable {
 	
-	private int nRows = 0;
 	private Map<String, List<Number>> table = new LinkedHashMap<>();
 	public Map<String, Predicate<Number>> filtersCollection = new HashMap<>();
 	private Map<String, String> names = new LinkedHashMap<>();
@@ -116,7 +115,6 @@ public class ExtendableTable {
 		for (Entry<String,Number> e : row.entrySet()){
 			add(e.getKey(),e.getValue());
 		}
-		nRows++;
 	}
 	
 	/**
@@ -144,7 +142,7 @@ public class ExtendableTable {
 	 */
 	public Object getData(String col, int row){
 		List<Number> c = table.get(col);
-		if(c != null && row < nRows)
+		if(c != null && row < getNumberOfRows())
 			return c.get(row);
 		
 		System.err.println("unknown column or row");
@@ -158,8 +156,6 @@ public class ExtendableTable {
 	public void add(String member, Number o){
 		List<Number> t = table.get(member);
 		if (t!=null){
-			if (t.size() == nRows) 
-				nRows++;
 			t.add(o);
 			return;
 		}
@@ -171,9 +167,7 @@ public class ExtendableTable {
 	 * @return number of rows
 	 */
 	public int getNumberOfRows() {
-		if (nRows < table.values().iterator().next().size())
-			nRows = table.values().iterator().next().size();
-		return nRows;
+		return table.values().iterator().next().size();
 	}
 	
 	/**
@@ -205,26 +199,28 @@ public class ExtendableTable {
 				return lastRow >= getNumberOfRows();
 			}
 			
-			@SuppressWarnings("unchecked")
 			@Override
-			public void put(Element el) {
-				if (el instanceof Map){
-					Map<String,Number> em = (Map<String,Number>) el;
+			public synchronized void put(Element el) {
+				if (el instanceof ElementMap){
+					final ElementMap em = (ElementMap) el;
 					addRow(em);
-					nRows++;
 				}
 			}
 
 			@Override
-			public Element get() {
-				ElementMap em = new ElementMap(getRow(lastRow++).entrySet());
-				if (isEmpty())	
+			public synchronized Element get() {
+				ElementMap em = null;
+				if (!isEmpty())	
+					em = new ElementMap(getRow(lastRow++).entrySet());
+				else{
+					em = new ElementMap(getRow(lastRow-1).entrySet());
 					em.setLast(true);
+				}
 				return em;
 			}
 
 			@Override
-			public Element peek() {
+			public synchronized Element peek() {
 				return new ElementMap(getRow(lastRow).entrySet());
 			}
 

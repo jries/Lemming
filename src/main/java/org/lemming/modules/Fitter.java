@@ -17,7 +17,6 @@ import ij.gui.Roi;
 
 public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 
-	private long start;
 	protected int size;
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
@@ -40,14 +39,10 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 		FrameElements<T> fe = (FrameElements<T>) data;
 
 		if (fe.isLast()) {
-			if (!inputs.get(iterator).isEmpty()) {
-				inputs.get(iterator).put(fe);
-				return null;
-			}
-			process1(fe);
 			cancel();
+			process1(fe);
+			return null;
 		}
-
 		process1(fe);
 		return null;
 	}

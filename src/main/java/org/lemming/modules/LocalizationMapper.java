@@ -7,16 +7,12 @@ import org.lemming.pipeline.SingleRunModule;
 
 public class LocalizationMapper extends SingleRunModule {
 
-	private long start;
 	private String[] nameArray;
 
 	public LocalizationMapper(String[] nameArray) {
 		this.nameArray = nameArray;
 	}
-	@Override
-	public void beforeRun() {
-		start = System.currentTimeMillis();
-	}
+
 	@Override
 	public boolean check() {
 		return inputs.size()==1 && nameArray.length>3;

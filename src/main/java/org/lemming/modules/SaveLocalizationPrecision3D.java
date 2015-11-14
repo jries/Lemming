@@ -14,7 +14,6 @@ public class SaveLocalizationPrecision3D extends SingleRunModule {
 	final private Locale curLocale;
 	private File file;
 	private FileWriter w;
-	private long start;
 	private int counter = 0;
 
 	public SaveLocalizationPrecision3D(File file) {

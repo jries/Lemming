@@ -9,12 +9,12 @@ import org.junit.Test;
 import org.lemming.modules.ReadLocalizations;
 import org.lemming.modules.RoiSelector;
 import org.lemming.pipeline.FastStore;
-import org.lemming.pipeline.Pipeline;
+import org.lemming.pipeline.Manager;
 	
 @SuppressWarnings("rawtypes")
 public class RoiSelectorTest {
 
-	private Pipeline pipe;
+	private Manager pipe;
 	private ReadLocalizations reader;
 	private FastStore locs;
 	private RoiSelector selector;
@@ -22,7 +22,7 @@ public class RoiSelectorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline("test");
+		pipe = new Manager();
 		locs = new FastStore();
 		reader = new ReadLocalizations(new File("/home/ronny/Bilder/out.csv"),",");
 		reader.setOutput(locs);

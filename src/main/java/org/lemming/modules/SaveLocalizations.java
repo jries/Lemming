@@ -16,7 +16,6 @@ public class SaveLocalizations extends SingleRunModule {
 	final private Locale curLocale;
 	private File file;
 	private FileWriter w;
-	private long start;
 	private int counter=0;
 
 	public SaveLocalizations(File file) {

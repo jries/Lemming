@@ -18,7 +18,6 @@ public class DataTable extends SingleRunModule {
 
 	private ExtendableTable table;
 	private List<PropertyDescriptor> descriptors;
-	private long start;
 
 	public DataTable() {
 		table = new ExtendableTable();

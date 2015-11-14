@@ -100,14 +100,14 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 
 	}
 
-	private double calcIterZ(double SxSy, double start, double end, double precision) {
-		double zStep = Math.abs(end - start) / 10;
-		double curveWx = valuesWith(start)[0];
-		double curveWy = valuesWith(start)[1];
+	private double calcIterZ(double SxSy, double start_, double end, double precision) {
+		double zStep = Math.abs(end - start_) / 10;
+		double curveWx = valuesWith(start_)[0];
+		double curveWy = valuesWith(start_)[1];
 		double calib = curveWx * curveWx - curveWy * curveWy;
 		double distance = Math.abs(calib - SxSy);
-		double idx = start;
-		for (double c = start + zStep; c <= end; c += zStep) {
+		double idx = start_;
+		for (double c = start_ + zStep; c <= end; c += zStep) {
 			curveWx = valuesWith(c)[0];
 			curveWy = valuesWith(c)[1];
 			calib = curveWx * curveWx - curveWy * curveWy;

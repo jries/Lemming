@@ -35,13 +35,14 @@ public abstract class MultiRunModule extends AbstractModule{
 							Element data = nextInput();
 							if (data != null) 
 								newOutput(processData(data));
+							else
+								pause(10);
 						}
 						return null;
 					}
 
 				};
-				if (!service.isShutdown() || !service.isTerminated())
-					futures.add(service.submit(r));
+				futures.add(service.submit(r));
 			}
 
 			for (final Future<Void> f : futures) {
@@ -76,13 +77,13 @@ public abstract class MultiRunModule extends AbstractModule{
 							Element data = nextInput();
 							if (data != null) 
 								processData(data);
+							else pause(10);
 						}
 						return null;
 					}
 
 				};
-				if (!service.isShutdown() || !service.isTerminated())
-					futures.add(service.submit(r));
+				futures.add(service.submit(r));
 			}
 
 			for (final Future<Void> f : futures) {
@@ -112,6 +113,7 @@ public abstract class MultiRunModule extends AbstractModule{
 	protected void afterRun() {		
 	}
 
-	protected void beforeRun() {		
+	protected void beforeRun() {
+		start = System.currentTimeMillis();
 	}
 }

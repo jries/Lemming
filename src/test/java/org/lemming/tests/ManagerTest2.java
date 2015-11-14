@@ -11,13 +11,9 @@ import org.lemming.interfaces.Store;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizationPrecision3D;
-import org.lemming.modules.SaveLocalizations;
-import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.Manager;
-import org.lemming.pipeline.Settings;
 import org.lemming.plugins.CentroidFitter;
-import org.lemming.plugins.PeakFinder;
-
+import org.lemming.plugins.NMSDetector;
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
@@ -49,29 +45,23 @@ public class ManagerTest2 {
 		
 		ImageLoader tif = new ImageLoader(loc_im);
 
-		PeakFinder peak = new PeakFinder(700,4);
+		NMSDetector peak = new NMSDetector(700,7);
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
 		//Fitter fitter = new Fitter(7, Settings.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
 		Fitter fitter = new CentroidFitter(10, 700);
 
-		UnpackElements unpacker = new UnpackElements();
 		SaveLocalizationPrecision3D saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted2.csv"));
-		SaveLocalizations saver2 = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/outOrig.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
 		pipe.add(peak);
 		pipe.add(fitter);
-		pipe.add(unpacker);
 		pipe.add(saver);
-		pipe.add(saver2);
 		
 		pipe.linkModules(tif, peak, true);
 		pipe.linkModules(peak,fitter);
 		pipe.linkModules(fitter,saver);
-		pipe.linkModules(peak,unpacker);
-		pipe.linkModules(unpacker,saver2);
 		storeMap = pipe.getMap();
 	}
 

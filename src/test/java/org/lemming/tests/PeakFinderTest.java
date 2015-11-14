@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.FastStore;
-import org.lemming.pipeline.Pipeline;
+import org.lemming.pipeline.Manager;
 import org.lemming.plugins.PeakFinder;
 
 import ij.ImagePlus;
@@ -17,7 +17,7 @@ import ij.ImagePlus;
 @SuppressWarnings("rawtypes")
 public class PeakFinderTest {
 
-	private Pipeline pipe;
+	private Manager pipe;
 	private FastStore frames;
 	private ImageLoader tif;
 	private FastStore localizations;
@@ -26,7 +26,7 @@ public class PeakFinderTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Pipeline("test");	
+		pipe = new Manager();	
 		frames = new FastStore();
 		//tif = new IJTiffLoader("/home/ronny/Bilder/TubulinAF647.tif");
 		tif = new ImageLoader(new ImagePlus("/home/ronny/ownCloud/storm/p500ast.tif"));

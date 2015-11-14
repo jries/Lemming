@@ -1,7 +1,6 @@
 package org.lemming.plugins;
 
 import java.awt.image.IndexColorModel;
-import java.util.List;
 import java.util.Map;
 
 import ij.process.ImageProcessor;
@@ -17,7 +16,6 @@ import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.LocalizationPrecision3D;
-import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
 public class GaussRenderer extends Renderer {
@@ -31,11 +29,8 @@ public class GaussRenderer extends Renderer {
 	private double xmax;
 	private double ymin;
 	private double ymax;
-	private long start;
 	private double xwidth;
 	private double ywidth;
-	private double xindex;
-	private double yindex;
 	private volatile float[] pixels;
 	private double[] template;
 	private static double sqrt2 = FastMath.sqrt(2);
@@ -45,7 +40,6 @@ public class GaussRenderer extends Renderer {
 	private double sigmaTemplate = sizeGauss/(8*roiks);
 	private int xbins;
 	private int ybins;
-	private double x = 0, y = 0, sX = 0, sY = 0;
 
 	
 	public GaussRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax) {
@@ -74,33 +68,33 @@ public class GaussRenderer extends Renderer {
 
 	@Override
 	public Element processData(Element data) {
-		if (data==null) return null;
-		if (data.isLast()) {
-			cancel();
-		}
-		
-		if (data instanceof Localization){
+		final double x, y, sX, sY;
+		if (data instanceof LocalizationPrecision3D){
 			LocalizationPrecision3D loc = (LocalizationPrecision3D) data;
-			try{
-				x = loc.getX();
-				y = loc.getY();
-				sX = loc.getsX();
-				sY = loc.getsY();
-			} catch (NullPointerException ne) {return null;}
-		}
-		if (data instanceof ElementMap){
+			x = loc.getX();
+			y = loc.getY();
+			sX = loc.getsX();
+			sY = loc.getsY();
+			
+		} else if (data instanceof ElementMap){
 			ElementMap map = (ElementMap) data;
 			try{
 				x = map.get("x").doubleValue();
 				y = map.get("y").doubleValue();
 				sX = map.get("sx").doubleValue();
 				sY = map.get("sy").doubleValue();
-			} catch (NullPointerException ne) {return null;}
+			} catch (NullPointerException ne) {
+				return null;
+			}
+		} else {
+			return null;
 		}
+		if (data.isLast())
+			cancel();
 		
 		 if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	xindex = (x - xmin) / xwidth;
-        	yindex = (y - ymin) / ywidth;
+        	final double xindex = (x - xmin) / xwidth;
+        	final double yindex = (y - ymin) / ywidth;
         	doWork(xindex, yindex, sX / xwidth, sY / xwidth);
 		}
 		
@@ -115,21 +109,19 @@ public class GaussRenderer extends Renderer {
 		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
 	}
 	
-	private void doWork(final double xpix, final double ypix, double sigmaX_, double sigmaY_){
-		int w = 2 * sizeGauss + 1;
-		double sigmaX = Math.max(sigmaX_, sigmaTemplate/sizeGauss);
-		double sigmaY = Math.max(sigmaY_, sigmaTemplate/sizeGauss);
-		long dnx = (long) Math.ceil(roiks*sigmaX);
-	    long dny = (long) Math.ceil(roiks*sigmaY);
-	    dnx = Math.min(maxKernel, dnx);
-	    dny = Math.min(maxKernel, dny);
-	    long xr = StrictMath.round(xpix);
-	    long yr = StrictMath.round(ypix);
-	    double dx = xpix-xr;
-	    double dy = ypix-yr;
-	    double intcorrectionx = Erf.erf((dnx+0.5)/sigmaX/sqrt2);
-	    double intcorrectiony = Erf.erf((dny+0.5)/sigmaY/sqrt2);
-	    double gaussnorm = 10/(2*Math.PI*sigmaX*sigmaY*intcorrectionx*intcorrectiony);
+	private void doWork(double xpix, double ypix, double sigmaX_, double sigmaY_){
+		final int w = 2 * sizeGauss + 1;
+		final double sigmaX = Math.max(sigmaX_, sigmaTemplate/sizeGauss);
+		final double sigmaY = Math.max(sigmaY_, sigmaTemplate/sizeGauss);
+		final long dnx = (long) Math.min(Math.ceil(roiks*sigmaX), maxKernel) ;
+		final long dny = (long) Math.min(Math.ceil(roiks*sigmaY), maxKernel);
+	    final long xr = StrictMath.round(xpix);
+	    final long yr = StrictMath.round(ypix);
+	    final double dx = xpix-xr;
+	    final double dy = ypix-yr;
+	    final double intcorrectionx = Erf.erf((dnx+0.5)/sigmaX/sqrt2);
+	    final double intcorrectiony = Erf.erf((dny+0.5)/sigmaY/sqrt2);
+	    final double gaussnorm = 10/(2*Math.PI*sigmaX*sigmaY*intcorrectionx*intcorrectiony);
 	    int idx, t_idx;
 		long xt,yt,xax,yax,yp,xp;
 		
@@ -142,7 +134,7 @@ public class GaussRenderer extends Renderer {
 	            if (xp>=0 && yp>=0 && xt>=0 && yt>=0 && xt<w && yt<w && xp<xbins && yp<ybins){
 	            	idx = (int) (xp + yp * xbins);
 	            	t_idx = (int) (xt + yt * w);
-	            	double value = template[t_idx] * gaussnorm;
+	            	final double value = template[t_idx] * gaussnorm;
 	            	pixels[idx] += value;
 	            }
 	    	}
@@ -151,11 +143,11 @@ public class GaussRenderer extends Renderer {
 	}
 	
 	private double[] createGaussTemplate(){
-		int w = 2 * sizeGauss + 1;
-		double[] T = new double[w*w];
+		final int w = 2 * sizeGauss + 1;
+		final double[] T = new double[w*w];
 		int index = 0;
 		double value = 0;
-		double factor = 0.5/Math.pow(sigmaTemplate, 2);
+		final double factor = 0.5/Math.pow(sigmaTemplate, 2);
 		for (int yg = -sizeGauss ; yg<=sizeGauss; yg++)
 			for(int xg = -sizeGauss; xg <= sizeGauss; xg++){
 				index = (xg+sizeGauss) + (yg+sizeGauss) * w;
@@ -169,13 +161,7 @@ public class GaussRenderer extends Renderer {
 	public boolean check() {
 		return inputs.size()==1;
 	}
-	
-	@Override
-	public void preview(List<Element> previewList) {
-		for(Element el : previewList)
-			processData(el);
-		ip.updateAndDraw();
-	}
+
 	
 	@Plugin( type = RendererFactory.class, visible = true )
 	public static class Factory implements RendererFactory{

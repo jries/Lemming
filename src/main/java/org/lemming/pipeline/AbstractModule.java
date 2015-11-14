@@ -16,15 +16,17 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	
 	protected int numTasks;
 	protected int numThreads = Runtime.getRuntime().availableProcessors()-1;
-	protected ExecutorService service= Executors.newCachedThreadPool();
+	protected ExecutorService service;
 	protected Map<Integer, Store> inputs = new LinkedHashMap<>();
 	protected Map<Integer, Store> outputs = new LinkedHashMap<>();
-	
+	protected long start;
 	protected volatile boolean running = true;
 	protected Integer iterator;
 	
 	
 	public AbstractModule(){
+		if(service == null)
+			service = Executors.newCachedThreadPool();
 	}
 	
 	public void setService(ExecutorService service){

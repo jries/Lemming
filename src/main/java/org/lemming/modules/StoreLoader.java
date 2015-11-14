@@ -25,7 +25,6 @@ public class StoreLoader extends SingleRunModule {
 	private BufferedReader br;
 	private String delimiter;
 	private String sCurrentLine;
-	private long start;
 	private Locale curLocale;
 	private Map<String,Object> metaData = new HashMap<>();
 	private Set<String> header = new LinkedHashSet<>();
