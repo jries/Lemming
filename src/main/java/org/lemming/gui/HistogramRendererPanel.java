@@ -28,8 +28,7 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	private JLabel lblY;
 	private JLabel labelX2;
 	private JLabel labelY2;
-	private Map<String, Object> settings = new HashMap<>();
-	private Map<String, Object> initialSettings;;
+	private double zmin,zmax;
 
 	public HistogramRendererPanel() {
 		setBorder(null);
@@ -113,15 +112,8 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 					.addContainerGap(182, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
-		settings.put(RendererFactory.KEY_xmin, new Double(0));
-		settings.put(RendererFactory.KEY_ymin, new Double(0));
-		settings.put(RendererFactory.KEY_xmax, new Double(100));
-		settings.put(RendererFactory.KEY_ymax, new Double(100));
-		settings.put(RendererFactory.KEY_xBins,new Integer(500));
-		settings.put(RendererFactory.KEY_yBins,new Integer(500));
-		settings.put(RendererFactory.KEY_zmin,new Integer(0));
-		settings.put(RendererFactory.KEY_zmax,new Integer(255));
-		initialSettings = new HashMap<>(settings);
+		zmin=0;
+		zmax=255;
 	}
 
 	@Override
@@ -132,18 +124,35 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		labelY2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymax)));
 		textXBins.setText(String.valueOf(settings.get(RendererFactory.KEY_xBins)));
 		textYBins.setText(String.valueOf(settings.get(RendererFactory.KEY_yBins)));
-		for (String key : settings.keySet())
-			this.settings.put(key, settings.get(key));
-		revalidate();
+		zmin = (Double) settings.get(RendererFactory.KEY_zmin);
+		zmax = (Double) settings.get(RendererFactory.KEY_zmax);
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
+		final Map<String, Object> settings = new HashMap<>(8);
+		settings.put(RendererFactory.KEY_xmin, Double.parseDouble(lblX.getText()));
+		settings.put(RendererFactory.KEY_ymin, Double.parseDouble(lblY.getText()));
+		settings.put(RendererFactory.KEY_xmax, Double.parseDouble(labelX2.getText()));
+		settings.put(RendererFactory.KEY_ymax, Double.parseDouble(labelY2.getText()));
+		settings.put(RendererFactory.KEY_xBins, Integer.parseInt(textXBins.getText()));
+		settings.put(RendererFactory.KEY_yBins, Integer.parseInt(textYBins.getText()));
+		settings.put(RendererFactory.KEY_zmin, zmin);
+		settings.put(RendererFactory.KEY_zmax, zmax);
 		return settings;
 	}
 	
-	public Map<String, Object> getInitialSettings(){
-		return initialSettings;
+	public static Map<String, Object> getInitialSettings(){
+		final Map<String, Object> settings = new HashMap<>(8);
+		settings.put(RendererFactory.KEY_xmin, new Double(0));
+		settings.put(RendererFactory.KEY_ymin, new Double(0));
+		settings.put(RendererFactory.KEY_xmax, new Double(100));
+		settings.put(RendererFactory.KEY_ymax, new Double(100));
+		settings.put(RendererFactory.KEY_xBins,new Integer(500));
+		settings.put(RendererFactory.KEY_yBins,new Integer(500));
+		settings.put(RendererFactory.KEY_zmin,new Double(0));
+		settings.put(RendererFactory.KEY_zmax,new Double(255));
+		return settings;
 	}
 	/**
 	 * Display this JPanel inside a new JFrame.

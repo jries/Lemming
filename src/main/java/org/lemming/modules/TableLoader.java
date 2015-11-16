@@ -13,7 +13,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.tools.CharBufferedReader;
 import org.lemming.tools.FloatingDecimal;

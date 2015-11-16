@@ -1,6 +1,7 @@
 package org.lemming.plugins;
 
 import ij.process.ByteProcessor;
+
 import java.util.Map;
 
 import org.lemming.factories.RendererFactory;
@@ -79,7 +80,7 @@ public class HistogramRenderer extends Renderer {
 		}
 		if (data.isLast())
 			cancel();
-		long rz = StrictMath.round((z - zmin) / (zmax-zmin) * 256);
+		long rz = StrictMath.round((z - zmin) / (zmax - zmin) * 256) + 1;
 		
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
         	final long xindex = StrictMath.round((x - xmin) / xwidth);
@@ -144,7 +145,7 @@ public class HistogramRenderer extends Renderer {
 
 		@Override
 		public Map<String, Object> getInitialSettings() {
-			return configPanel.getInitialSettings();
+			return HistogramRendererPanel.getInitialSettings();
 		}
 		
 	}

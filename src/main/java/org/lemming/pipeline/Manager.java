@@ -6,10 +6,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import javax.swing.SwingWorker;
 
 import org.lemming.interfaces.Store;
@@ -20,7 +16,6 @@ public class Manager extends SwingWorker<Void,Void> {
 	
 	private Map<Integer,Store> storeMap = new LinkedHashMap<>();
 	private Map<Integer,AbstractModule> modules = new LinkedHashMap<>();
-	private final ExecutorService service = Executors.newCachedThreadPool();
 	private boolean done = false;
 	private int maximum = 1;
 
@@ -45,7 +40,6 @@ public class Manager extends SwingWorker<Void,Void> {
 		}
 		AbstractModule well = modules.get(to.hashCode());
 		if (well==null) throw new NullPointerException("Wrong linkage!");
-		well.setService(service);
 		Store s = new FastStore();
 		well.setInput(s);
 		AbstractModule source = modules.get(from.hashCode());
@@ -80,7 +74,7 @@ public class Manager extends SwingWorker<Void,Void> {
 					setProgress((int) evt.getNewValue());
 			}});
 		sm.execute();
-		final List<Future<?>> threads= new ArrayList<>();
+		final List<Thread> threads= new ArrayList<>();
 		
 		for(AbstractModule starter:modules.values()){
 			if (!starter.check()) {
@@ -88,8 +82,9 @@ public class Manager extends SwingWorker<Void,Void> {
 				break;
 			}	
 
-			starter.setService(service);
-			threads.add(service.submit(starter));
+			Thread t = new Thread(starter, starter.getClass().getSimpleName());
+			t.start();
+			threads.add(t);
 			
 			try {
 				Thread.sleep(100); 						// HACK : give the module some time to start working
@@ -98,8 +93,8 @@ public class Manager extends SwingWorker<Void,Void> {
 			}
 		}
 		try {
-			for(Future<?> joiner:threads)
-				joiner.get();
+			for(Thread joiner:threads)
+				joiner.join();
 		} catch (InterruptedException e) {
 			System.err.println(e.getMessage());
 		}
@@ -111,7 +106,6 @@ public class Manager extends SwingWorker<Void,Void> {
 	@Override
 	public void done(){
 		setProgress(0);
-		service.shutdown();
 	}
 
 

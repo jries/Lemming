@@ -46,12 +46,11 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	private JPanel panelHolder;
 	private JPanel panelButtons;
 	
-	public FilterPanel(ExtendableTable table) {
+	public FilterPanel() {
 		setBorder(null);
 		setMinimumSize(new Dimension(295, 315));
 		setPreferredSize(new Dimension(300, 340));
 		setName("FILTER");
-		this.table = table;
 		
 		scrollPane = new JScrollPane();
 		scrollPane.setPreferredSize(new Dimension(290, 300));
@@ -90,6 +89,11 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 				removePanel();
 			}
 		});
+		table = new ExtendableTable();
+	}
+	
+	public void setTable(ExtendableTable table){
+		this.table = new ExtendableTable(table);
 	}
 
 	protected void removePanel() {
@@ -103,7 +107,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	}
 
 	protected void addPanel() {
-		if (table==null) return;
+		if (table.getNames().isEmpty()) return;
 		HistogramPanel hPanel = new HistogramPanel(table);
 		hPanel.addChangeListener(this);
 		panelStack.add(hPanel);
@@ -131,7 +135,8 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 		loader.readCSV(',');
 		
 		// Create GUI
-		final FilterPanel tp = new FilterPanel( loader.getTable());
+		final FilterPanel tp = new FilterPanel();
+		tp.setTable(loader.getTable());
 		final JFrame frame = new JFrame();
 		frame.getContentPane().add( tp );
 		frame.setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );

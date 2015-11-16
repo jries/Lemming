@@ -20,20 +20,31 @@ import javolution.util.function.Predicate;
  */
 public class ExtendableTable {
 	
-	private Map<String, List<Number>> table = new LinkedHashMap<>();
-	public Map<String, Predicate<Number>> filtersCollection = new HashMap<>();
-	private Map<String, String> names = new LinkedHashMap<>();
+	private Map<String, List<Number>> table;
+	public Map<String, Predicate<Number>> filtersCollection;
+	private Map<String, String> names;
 	
 	/**
 	 * 
 	 */
 	public ExtendableTable(){
+		names = new LinkedHashMap<>();
+		filtersCollection = new HashMap<>();
+		table = new LinkedHashMap<>();
 	}
 	
 	public ExtendableTable(Map<String, List<Number>> table){
 		this.table = table;
+		this.filtersCollection = new HashMap<>();
+		this.names = new LinkedHashMap<>();
 		for(String key : table.keySet())
 			names.put(key,key);
+	}
+	
+	public ExtendableTable(ExtendableTable et){
+		this.table = et.getTable();
+		this.filtersCollection = et.filtersCollection;
+		this.names = et.getNames();
 	}
 	
 		
@@ -54,9 +65,12 @@ public class ExtendableTable {
 		addNewMember("y");
 	}
 	
-	
 	public Set<String> columnNames(){
 		return table.keySet();
+	}
+	
+	public Map<String, List<Number>> getTable(){
+		return table;
 	}
 	
 	public ExtendableTable filter(){

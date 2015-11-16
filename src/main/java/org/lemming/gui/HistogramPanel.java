@@ -53,13 +53,16 @@ import javax.swing.DefaultComboBoxModel;
 public class HistogramPanel extends JPanel
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6491446979855209762L;
+
 	static final Font FONT = new Font( "Arial", Font.PLAIN, 11 );
 
 	static final Font SMALL_FONT = FONT.deriveFont( 10f );
 
 	private static final Color annotationColor = new java.awt.Color( 252, 117, 0 );
-
-	private static final long serialVersionUID = 1L;
 
 	private static final String DATA_SERIES_NAME = "Data";
 

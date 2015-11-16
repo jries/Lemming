@@ -93,6 +93,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.awt.Component;
 
 import javax.swing.SpinnerNumberModel;
@@ -156,22 +161,20 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private StackWindow previewerWindow;
 	private AbstractModule detector;
 	private Fitter<T, F> fitter;
-	protected ContrastAdjuster contrastAdjuster;
+	private ContrastAdjuster contrastAdjuster;
 	private Renderer renderer;
 	private FrameElements<T> detResults;
 	private List<Element> fitResults;
 	private ImageWindow rendererWindow;
-	protected int widgetSelection = 0;
+	private int widgetSelection = 0;
 	private boolean processed = false;
-	protected ExtendableTable filteredTable = null;
-	protected static int DETECTOR = 1;
-	protected static int FITTER = 2;
+	private ExtendableTable filteredTable = null;
+	private static int DETECTOR = 1;
+	private static int FITTER = 2;
 	private JProgressBar progressBar;
 	private JButton btnReset;
 	private JPanel panelLower;
 	private JPanel panelFilter;
-	private TitledBorder borderFirst;
-	private TitledBorder borderSecond;
 	private Locale curLocale;
 	private JPanel panelProgress;
 	private JLabel lblEta;
@@ -338,8 +341,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		panelMiddle.setLayout(gl_panelMiddle);
 
 		panelLower = new JPanel();
-		borderFirst = new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205));
-		panelLower.setBorder(borderFirst);
+		panelLower.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", 
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205)));
+		
 		GridBagConstraints gbc_panelLower = new GridBagConstraints();
 		gbc_panelLower.fill = GridBagConstraints.BOTH;
 		gbc_panelLower.gridx = 0;
@@ -352,9 +356,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		tabbedPane.addTab("Reconstruct", null, panelRecon, null);
 		GridBagLayout gbl_panelRecon = new GridBagLayout();
 		gbl_panelRecon.columnWidths = new int[] { 300 };
-		gbl_panelRecon.rowHeights = new int[] {85, 305};
+		gbl_panelRecon.rowHeights = new int[] {75, 305};
 		gbl_panelRecon.columnWeights = new double[] { 1.0 };
-		gbl_panelRecon.rowWeights = new double[] { 1.0, 1.0 };
+		gbl_panelRecon.rowWeights = new double[] { 0.0, 1.0 };
 		panelRecon.setLayout(gbl_panelRecon);
 
 		JPanel panelRenderer = new JPanel();
@@ -397,8 +401,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		panelRenderer.setLayout(gl_panelRenderer);
 
 		panelFilter = new JPanel();
-		borderSecond = new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205));
-		panelFilter.setBorder(borderSecond);
+		panelFilter.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 205)), "none", 
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 205)));
 		GridBagConstraints gbc_panelFilter = new GridBagConstraints();
 		gbc_panelFilter.fill = GridBagConstraints.BOTH;
 		gbc_panelFilter.gridx = 0;
@@ -468,7 +472,11 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	}
 
 	private void init() {
+		this.curLocale = Locale.getDefault();
+		final Locale usLocale = new Locale("en", "US"); // setting us locale
+		Locale.setDefault(usLocale);
 		settings = new HashMap<>();
+		table = new ExtendableTable();
 		manager = new Manager();
 		manager.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
@@ -493,12 +501,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 				}
 			}
 		});
+		createInitialPanels();
 		createDetectorProvider();
 		createPreProcessingProvider();
 		createFitterProvider();
 		createRendererProvider();
 		createActionProvider();
-		createInitialPanels();
 		ImagePlus.addImageListener(new ImageListener() {
 
 			@Override
@@ -511,9 +519,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 			@Override
 			public void imageUpdated(ImagePlus ip) {
-				if (ip == previewerWindow.getImagePlus() && widgetSelection == DETECTOR)
+				if (widgetSelection == 0) return;
+				else
+				if (widgetSelection == DETECTOR && ip == previewerWindow.getImagePlus() )
 					detectorPreview(getConfigSettings(panelLower).getSettings());
-				if (ip == previewerWindow.getImagePlus() && widgetSelection == FITTER)
+				else
+				if (widgetSelection == FITTER && ip == previewerWindow.getImagePlus() )
 					fitterPreview(getConfigSettings(panelLower).getSettings());
 			}
 		});
@@ -556,6 +567,14 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		if (s == this.btnReset) {
 			if (rendererFactory != null) {
 				Map<String, Object> initialMap = rendererFactory.getInitialSettings();
+				if (previewerWindow != null) {
+					initialMap.put(RendererFactory.KEY_xmax, previewerWindow.getImagePlus().getWidth()
+							* previewerWindow.getImagePlus().getCalibration().pixelDepth);
+					initialMap.put(RendererFactory.KEY_ymax, previewerWindow.getImagePlus().getHeight()
+							* previewerWindow.getImagePlus().getCalibration().pixelDepth);
+				}
+				for ( Entry<String, Object> entry : initialMap.entrySet())
+					settings.put(entry.getKey(), entry.getValue());
 				rendererShow(initialMap);
 			}
 		}
@@ -621,7 +640,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			DataTable dt = new DataTable();
 			manager.add(dt);
 			manager.linkModules(fitter, dt);
-			table = dt.getTable();
+			table = new ExtendableTable(dt.getTable());
 		}
 		start = System.currentTimeMillis();
 		manager.execute();
@@ -718,7 +737,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 		TableLoader tl = new TableLoader(file);
 		tl.readCSV(',');
-		table = tl.getTable();
+		table = new ExtendableTable(tl.getTable());
 
 		lblFile.setText(file.getName());
 		processed = true;
@@ -727,8 +746,10 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private static ConfigurationPanel getConfigSettings(JPanel cardPanel) {
 		ConfigurationPanel s = null;
 		for (Component comp : cardPanel.getComponents()) {
-			if (comp.isVisible())
+			if (comp.isVisible()){
 				s = ((ConfigurationPanel) comp);
+				break;
+			}
 		}
 		return s;
 	}
@@ -751,7 +772,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			return;
 		}
 		preProcessingFactory = preProcessingProvider.getFactory(FastMedianFilter.KEY);
-		borderFirst.setTitle(preProcessingFactory.getName());
+		((TitledBorder) panelLower.getBorder()).setTitle(preProcessingFactory.getName());
 		((CardLayout) panelLower.getLayout()).show(panelLower, FastMedianFilter.KEY);
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
 		ppPreview(panelDown.getSettings());
@@ -819,7 +840,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 				previewerWindow.getImagePlus().killRoi();
 			detector = null;
 			widgetSelection = 0;
-			borderFirst.setTitle("none");
+			((TitledBorder) panelLower.getBorder()).setTitle("none");
 			((CardLayout) panelLower.getLayout()).first(panelLower);
 			return;
 		}
@@ -827,12 +848,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 		final String key = detectorProvider.getVisibleKeys().get(index);
 		detectorFactory = detectorProvider.getFactory(key);
-		borderFirst.setTitle(detectorFactory.getName());
+		((TitledBorder) panelLower.getBorder()).setTitle(detectorFactory.getName());
 		((CardLayout) panelLower.getLayout()).show(panelLower, key);
 		System.out.println("Detector_" + index + " : " + key);
 
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
 		detectorPreview(panelDown.getSettings());
+		repaint();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -856,7 +878,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private void chooseFitter() {
 		final int index = comboBoxFitter.getSelectedIndex() - 1;
 		if (index < 0 || tif == null || detector == null) {
-			borderFirst.setTitle("none");
+			((TitledBorder) panelLower.getBorder()).setTitle("none");
 			((CardLayout) panelLower.getLayout()).show(panelLower, "FIRST");
 			widgetSelection = 0;
 			fitter = null;
@@ -866,7 +888,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 		final String key = fitterProvider.getVisibleKeys().get(index);
 		fitterFactory = fitterProvider.getFactory(key);
-		borderFirst.setTitle(fitterFactory.getName());
+		((TitledBorder) panelLower.getBorder()).setTitle(fitterFactory.getName());
 		((CardLayout) panelLower.getLayout()).show(panelLower, key);
 		System.out.println("Fitter_" + index + " : " + key);
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
@@ -901,58 +923,58 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	}
 	
 	// set a new Renderer
-		private void initRenderer() {
-			rendererWindow = new ImageWindow(renderer.getImage());
-			rendererWindow.addKeyListener(new KeyAdapter() {
-				@Override
-				public void keyPressed(KeyEvent e) {
-					if (e.getKeyChar() == 'C') {
-						contrastAdjuster = new ContrastAdjuster();
-						contrastAdjuster.run("B&C");
+	private void initRenderer() {
+		rendererWindow = new ImageWindow(renderer.getImage());
+		rendererWindow.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyChar() == 'C') {
+					contrastAdjuster = new ContrastAdjuster();
+					contrastAdjuster.run("B&C");
+				}
+			}
+		});
+		rendererWindow.getCanvas().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					if (!processed) {
+						IJ.showMessage(getTitle(), "Zoom only works if you press Process first!");
+						return;
+					}
+					try {
+						Rectangle rect = renderer.getImage().getRoi().getBounds();
+
+						final double xmin = (Double) settings.get(RendererFactory.KEY_xmin);
+						final double xmax = (Double) settings.get(RendererFactory.KEY_xmax);
+						final double ymin = (Double) settings.get(RendererFactory.KEY_ymin);
+						final double ymax = (Double) settings.get(RendererFactory.KEY_ymax);
+						final int xbins = (Integer) settings.get(RendererFactory.KEY_xBins);
+						final int ybins = (Integer) settings.get(RendererFactory.KEY_yBins);
+
+						final double new_xmin = (xmax - xmin) * rect.getMinX() / xbins + xmin;
+						final double new_ymin = (ymax - ymin) * rect.getMinY() / ybins + ymin;
+						final double new_xmax = (xmax - xmin) * rect.getMaxX() / xbins + xmin;
+						final double new_ymax = (ymax - ymin) * rect.getMaxY() / ybins + ymin;
+						final double factx = rect.getWidth() / rect.getHeight();
+						final double facty = rect.getHeight() / rect.getWidth();
+						final double ar = Math.min(factx, facty);
+						final int new_xbins = (int) (Math.round(xbins * ar));
+						final int new_ybins = (int) (Math.round(ybins * ar));
+
+						settings.put(RendererFactory.KEY_xmin, new_xmin);
+						settings.put(RendererFactory.KEY_ymin, new_ymin);
+						settings.put(RendererFactory.KEY_xmax, new_xmax);
+						settings.put(RendererFactory.KEY_ymax, new_ymax);
+						settings.put(RendererFactory.KEY_xBins, new_xbins);
+						settings.put(RendererFactory.KEY_yBins, new_ybins);
+						rendererShow(settings);
+					} catch (NullPointerException ne) {
 					}
 				}
-			});
-			rendererWindow.getCanvas().addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 2) {
-						if (table == null) {
-							IJ.showMessage(getTitle(), "Zoom only works if you press Process first!");
-							return;
-						}
-						try {
-							Rectangle rect = renderer.getImage().getRoi().getBounds();
-
-							final double xmin = (Double) settings.get(RendererFactory.KEY_xmin);
-							final double xmax = (Double) settings.get(RendererFactory.KEY_xmax);
-							final double ymin = (Double) settings.get(RendererFactory.KEY_ymin);
-							final double ymax = (Double) settings.get(RendererFactory.KEY_ymax);
-							final int xbins = (Integer) settings.get(RendererFactory.KEY_xBins);
-							final int ybins = (Integer) settings.get(RendererFactory.KEY_yBins);
-
-							final double new_xmin = (xmax - xmin) * rect.getMinX() / xbins + xmin;
-							final double new_ymin = (ymax - ymin) * rect.getMinY() / ybins + ymin;
-							final double new_xmax = (xmax - xmin) * rect.getMaxX() / xbins + xmin;
-							final double new_ymax = (ymax - ymin) * rect.getMaxY() / ybins + ymin;
-							final double factx = rect.getWidth() / rect.getHeight();
-							final double facty = rect.getHeight() / rect.getWidth();
-							final double ar = Math.min(factx, facty);
-							final int new_xbins = (int) (Math.round(xbins * ar));
-							final int new_ybins = (int) (Math.round(ybins * ar));
-
-							settings.put(RendererFactory.KEY_xmin, new_xmin);
-							settings.put(RendererFactory.KEY_ymin, new_ymin);
-							settings.put(RendererFactory.KEY_xmax, new_xmax);
-							settings.put(RendererFactory.KEY_ymax, new_ymax);
-							settings.put(RendererFactory.KEY_xBins, new_xbins);
-							settings.put(RendererFactory.KEY_yBins, new_ybins);
-							rendererShow(settings);
-						} catch (NullPointerException ne) {
-						}
-					}
-				}
-			});
-		}
+			}
+		});
+	}
 
 	private void chooseRenderer() {
 		final int index = comboBoxRenderer.getSelectedIndex() - 1;
@@ -962,7 +984,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		final String key = rendererProvider.getVisibleKeys().get(index);
 		rendererFactory = rendererProvider.getFactory(key);
 		System.out.println("Renderer_" + index + " : " + key);
-		borderSecond.setTitle(rendererFactory.getName());
+		((TitledBorder) panelFilter.getBorder()).setTitle(rendererFactory.getName());
 		((CardLayout) panelFilter.getLayout()).show(panelFilter, key);
 		
 		Map<String, Object> rendererSettings = rendererFactory.getConfigurationPanel().getSettings();
@@ -1011,7 +1033,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	}
 
 	private void filterTable() {
-		// TODO
+		// TODO  
 		if (!processed) {
 			if (IJ.showMessageWithCancel("Filter", "Pipeline not yet processed.\nDo you want to process it now?"))
 				process(false);
@@ -1019,37 +1041,26 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 				return;
 			if (fitter == null)
 				return;
+			final ExecutorService executor = Executors.newSingleThreadExecutor();
 			start = System.currentTimeMillis();
-			manager.execute();
-			return;
-		}
-		if (table == null)
-			return;
-		if (table.getNames().isEmpty())
-			return;
-	
-		panelFilter.add(new FilterPanel(table), FilterPanel.KEY);
-		borderSecond.setTitle("Filter");
-		((CardLayout) panelFilter.getLayout()).show(panelFilter, FilterPanel.KEY);
-		final ConfigurationPanel panelReconDown = getConfigSettings(panelFilter);
-		panelReconDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (table.filtersCollection.isEmpty()) {
-					filteredTable = null;
-				} else {
-					filteredTable = table.filter();
-				}
-				if (renderer != null)
-					rendererShow(settings);
+			Future<?> f = executor.submit(manager);
+			try {
+				f.get();
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();return;
 			}
-		});
+		}
+		 
+		((TitledBorder) panelFilter.getBorder()).setTitle("Filter");
+		((CardLayout) panelFilter.getLayout()).show(panelFilter, FilterPanel.KEY);
 		repaint();
+		FilterPanel comp = (FilterPanel) getConfigSettings(panelFilter);
+		comp.setTable(table);
+		
 		if (renderer != null)
 			rendererShow(settings);
 		else
 			IJ.showMessage(getTitle(), "No renderer chosen!\n No data will be displayed.");
-		
 	}
 
 	private void saveLocalizations() {
@@ -1113,6 +1124,20 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			}
 		};
 		panelFilter.add(panelSecond, "SECOND");
+		final FilterPanel fp = new FilterPanel();
+		fp.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (table.filtersCollection.isEmpty()) {
+					filteredTable = null;
+				} else {
+					filteredTable = table.filter();
+				}
+				if (renderer != null)
+					rendererShow(settings);
+			}
+		});
+		panelFilter.add(fp, FilterPanel.KEY);
 	}
 
 	private void createDetectorProvider() {
@@ -1126,7 +1151,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			detectorNames.add(detectorProvider.getFactory(key).getName());
 			infoTexts.add(detectorProvider.getFactory(key).getInfoText());
 			final ConfigurationPanel panelDown = factory.getConfigurationPanel();
-			panelDown.addPropertyChangeListener(new PropertyChangeListener() {
+			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
 				@SuppressWarnings("unchecked")
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -1149,7 +1174,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			final PreProcessingFactory factory = preProcessingProvider.getFactory(key);
 			infoTexts.add(factory.getInfoText());
 			final ConfigurationPanel panelDown = factory.getConfigurationPanel();
-			panelDown.addPropertyChangeListener(new PropertyChangeListener() {
+			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
 				@SuppressWarnings("unchecked")
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -1172,7 +1197,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			fitterNames.add(factory.getName());
 			infoTexts.add(factory.getInfoText());
 			final ConfigurationPanel panelDown = factory.getConfigurationPanel();
-			panelDown.addPropertyChangeListener(new PropertyChangeListener() {
+			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
 				@SuppressWarnings("unchecked")
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -1198,7 +1223,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			rendererNames.add(factory.getName());
 			infoTexts.add(factory.getInfoText());
 			final ConfigurationPanel panelDown = factory.getConfigurationPanel();
-			panelDown.addPropertyChangeListener(new PropertyChangeListener() {
+			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
 				@SuppressWarnings("unchecked")
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -1209,7 +1234,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 						rendererPreview(map);
 				}
 			});
-			panelLower.add(panelDown, key);
+			panelFilter.add(panelDown, key);
 		}
 		String[] names = rendererNames.toArray(new String[] {});
 		comboBoxRenderer.setModel(new DefaultComboBoxModel<>(names));
@@ -1229,7 +1254,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		System.out.println(names.toString());
 	}
 
-	class ToolTipRenderer extends DefaultListCellRenderer {
+	
+class ToolTipRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 1L;
 		List<String> tooltips;
 
@@ -1246,7 +1272,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 				list.setToolTipText(tooltips.get(index - 1));
 			return comp;
 		}
-
 	}
 
 }
