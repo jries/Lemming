@@ -27,8 +27,8 @@ public class ImageMathTest {
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Manager();
-		
-		tif = new ImageLoader(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"));
+		final ImagePlus image = new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif");
+		tif = new ImageLoader(image);
 		pipe.add(tif);
 	
 		fmf = new FastMedianFilter(50, true);
@@ -38,7 +38,7 @@ public class ImageMathTest {
 		im.setOperator(ImageMath.operators.SUBSTRACTION);
 		pipe.add(im);
 		
-		pipe.linkModules(tif, fmf, true);
+		pipe.linkModules(tif, fmf, true, image.getStackSize());
 		pipe.linkModules(tif, im);
 		pipe.linkModules(fmf, im);
 		map = pipe.getMap();

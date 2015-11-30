@@ -1,6 +1,5 @@
 package org.lemming.pipeline;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -205,7 +204,11 @@ public class ExtendableTable {
 	 */
 	public Store getFIFO() {
 		
-		return new Store () {
+		return new LinkedStore (128) {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -3367144778920105825L;
 			int lastRow = 0;
 						
 			@Override
@@ -222,7 +225,7 @@ public class ExtendableTable {
 			}
 
 			@Override
-			public synchronized Element get() {
+			public synchronized Element poll() {
 				ElementMap em = null;
 				if (!isEmpty())	
 					em = new ElementMap(getRow(lastRow++).entrySet());
@@ -239,14 +242,9 @@ public class ExtendableTable {
 			}
 
 			@Override
-			public int getLength() {
+			public int size() {
 				return lastRow;
-			}
-
-			@Override
-			public Collection<Element> view() {
-				return this.view();
-			}			
+			}		
 
 		};
 	}

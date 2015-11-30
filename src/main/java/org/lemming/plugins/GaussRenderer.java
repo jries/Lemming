@@ -68,13 +68,16 @@ public class GaussRenderer extends Renderer {
 
 	@Override
 	public Element processData(Element data) {
-		final double x, y, sX, sY;
+		final double x;
+		final double y;
+		final double sX;
+		final double sY;
 		if (data instanceof LocalizationPrecision3D){
 			LocalizationPrecision3D loc = (LocalizationPrecision3D) data;
-			x = loc.getX();
-			y = loc.getY();
-			sX = loc.getsX();
-			sY = loc.getsY();
+			x = loc.getX().doubleValue();
+			y = loc.getY().doubleValue();
+			sX = loc.getsX().doubleValue();
+			sY = loc.getsY().doubleValue();
 			
 		} else if (data instanceof ElementMap){
 			ElementMap map = (ElementMap) data;

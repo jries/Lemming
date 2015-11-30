@@ -8,12 +8,13 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
-import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizationPrecision3D;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.CentroidFitter;
 import org.lemming.plugins.NMSDetector;
+
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
@@ -43,15 +44,15 @@ public class ManagerTest2 {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		ImageLoader tif = new ImageLoader(loc_im);
+		AbstractModule tif = new ImageLoader(loc_im);
 
-		NMSDetector peak = new NMSDetector(700,7);
+		AbstractModule peak = new NMSDetector(700,7);
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
 		//Fitter fitter = new Fitter(7, Settings.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
-		Fitter fitter = new CentroidFitter(10, 700);
+		AbstractModule fitter = new CentroidFitter(10, 700);
 
-		SaveLocalizationPrecision3D saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted2.csv"));
+		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted2.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
@@ -59,9 +60,9 @@ public class ManagerTest2 {
 		pipe.add(fitter);
 		pipe.add(saver);
 		
-		pipe.linkModules(tif, peak, true);
+		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
 		pipe.linkModules(peak,fitter);
-		pipe.linkModules(fitter,saver);
+		pipe.linkModules(fitter,saver,false, 100);
 		storeMap = pipe.getMap();
 	}
 

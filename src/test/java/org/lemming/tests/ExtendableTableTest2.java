@@ -1,8 +1,6 @@
 package org.lemming.tests;
 
 import java.io.File;
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.DataTable;
@@ -11,10 +9,7 @@ import org.lemming.pipeline.Manager;
 import org.lemming.plugins.PeakFinder;
 import org.lemming.plugins.QuadraticFitter;
 
-import ij.IJ;
 import ij.ImagePlus;
-import ij.io.FileInfo;
-import ij.io.TiffDecoder;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
 
@@ -29,31 +24,16 @@ public class ExtendableTableTest2 {
 	public void setUp() throws Exception {
 		pipe = new Manager();
 		
-File file = new File("/Users/ronny/ownCloud/storm/p500ast.tif");
+		File file = new File("/Users/ronny/ownCloud/storm/p500ast.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
         	fo.openAsVirtualStack(true);
         	loc_im = fo.openFolder(file.getAbsolutePath());
-        }
+        } 
         
         if (file.isFile()){
-        	File dir = file.getParentFile();
-        	TiffDecoder td = new TiffDecoder(dir.getAbsolutePath(), file.getName());
-        	FileInfo[] info;
-			try {info = td.getTiffInfo();}
-    		catch (IOException e) {
-    			String msg = e.getMessage();
-    			if (msg==null||msg.equals("")) msg = ""+e;
-    			IJ.error("TiffDecoder", msg);
-    			return;
-    		}
-    		if (info==null || info.length==0) {
-    			IJ.error("Virtual Stack", "This does not appear to be a TIFF stack");
-    			return;
-    		}
-        	FileInfoVirtualStack fivs = new FileInfoVirtualStack(info[0], false);
-        	loc_im = new ImagePlus(file.getName(),fivs);
+        	loc_im = FileInfoVirtualStack.openVirtual(file.getAbsolutePath());
         }
 	
 	    if (loc_im ==null)
@@ -70,7 +50,7 @@ File file = new File("/Users/ronny/ownCloud/storm/p500ast.tif");
 		pipe.add(fitter);
 		pipe.add(dt);
 		
-		pipe.linkModules(tif, peak, true);
+		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
 		pipe.linkModules(peak,fitter);
 		pipe.linkModules(fitter,dt);
 		

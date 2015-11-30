@@ -75,9 +75,9 @@ import org.lemming.modules.StoreSaver;
 import org.lemming.modules.TableLoader;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.ExtendableTable;
-import org.lemming.pipeline.FastStore;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.ImgLib2Frame;
+import org.lemming.pipeline.LinkedStore;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.FastMedianFilter;
 import org.lemming.providers.ActionProvider;
@@ -93,7 +93,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -160,7 +159,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private Map<String, Object> settings;
 	private StackWindow previewerWindow;
 	private AbstractModule detector;
-	private Fitter<T, F> fitter;
+	private Fitter<T> fitter;
 	private ContrastAdjuster contrastAdjuster;
 	private Renderer renderer;
 	private FrameElements<T> detResults;
@@ -205,7 +204,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			IJ.error(e1.getMessage());
 		}
 		setTitle("Lemming");
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 320, 500);
 		JPanel contentPane = new JPanel();
 		setContentPane(contentPane);
@@ -495,8 +493,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 					StateValue value = (StateValue) evt.getNewValue();
 					if (value == StateValue.DONE) {
 						processed = true;
-						if (rendererWindow != null)
-							rendererWindow.repaint();
+						if (rendererWindow != null) rendererWindow.repaint();
 					}
 				}
 			}
@@ -573,9 +570,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 					initialMap.put(RendererFactory.KEY_ymax, previewerWindow.getImagePlus().getHeight()
 							* previewerWindow.getImagePlus().getCalibration().pixelDepth);
 				}
-				for ( Entry<String, Object> entry : initialMap.entrySet())
-					settings.put(entry.getKey(), entry.getValue());
-				rendererShow(initialMap);
+				filteredTable = null;
+				settings.putAll(initialMap);
+				rendererShow(settings);
 			}
 		}
 
@@ -597,7 +594,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 	private void process(boolean b) {
 		// Manager
-
+		final int elements = previewerWindow != null ? previewerWindow.getImagePlus().getStackSize() : 100;
 		if (tif == null) {
 			IJ.error("Please load images first!");
 			return;
@@ -613,21 +610,25 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		if (checkboxPP.isSelected()) {
 			AbstractModule pp = preProcessingFactory.getModule();
 			manager.add(pp);
-			manager.linkModules(tif, pp);
+			manager.linkModules(tif, pp, true, elements);
 			operators op = preProcessingFactory.getOperator();
 			math = new ImageMath<>();
 			math.setOperator(op);
 			manager.add(math);
-			manager.linkModules(tif, math);
+			manager.linkModules(tif, math, true, elements);
 			manager.linkModules(pp, math);
 			manager.linkModules(math, detector);
 		} else {
-			manager.linkModules(tif, detector);
+			manager.linkModules(tif, detector, true, elements);
 		}
 
 		if (fitter != null) {
 			manager.add(fitter);
 			manager.linkModules(detector, fitter);
+			DataTable dt = new DataTable();
+			manager.add(dt);
+			manager.linkModules(fitter, dt);
+			table = dt.getTable();
 		}
 		if (b) {
 			if (saver == null) {
@@ -636,11 +637,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		}
 		if (renderer != null) {
 			manager.add(renderer);
-			manager.linkModules(fitter, renderer, false);
-			DataTable dt = new DataTable();
-			manager.add(dt);
-			manager.linkModules(fitter, dt);
-			table = new ExtendableTable(dt.getTable());
+			manager.linkModules(fitter, renderer, false, elements);
 		}
 		start = System.currentTimeMillis();
 		manager.execute();
@@ -797,21 +794,23 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			}
 		}
 
-		FastStore ppResults = new FastStore();
+		final Store ppResults = new LinkedStore(128);
 		if (!list.isEmpty()) {
-			final FastStore previewStore = new FastStore();
+			final Store previewStore = new LinkedStore(128);
 			final Element last = list.remove(list.size() - 1);
-			for (Element entry : list)
-				previewStore.put(entry);
-			last.setLast(true);
-			previewStore.put(last);
+			try {
+				for (Element entry : list)
+					previewStore.put(entry);
+				last.setLast(true);
+				previewStore.put(last);
+			} catch (InterruptedException e) {}
 			preProcessor.setInput(previewStore);
 			preProcessor.setOutput(ppResults);
-			final Thread preProcessingThread = new Thread(preProcessor, preProcessor.getClass().getSimpleName());
-			preProcessingThread.start();
+			final ExecutorService service = Executors.newSingleThreadExecutor();
+			Future<?> future = service.submit(preProcessor);
 			try {
-				preProcessingThread.join();
-			} catch (InterruptedException e1) {
+				future.get();
+			} catch (InterruptedException | ExecutionException e1) {
 				e1.printStackTrace();
 			}
 		}
@@ -820,7 +819,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			return;
 
 		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++) {
-			final Frame<T> resFrame = (Frame<T>) ppResults.get();
+			final Frame<T> resFrame = (Frame<T>) ppResults.poll();
 			if (resFrame == null)
 				continue;
 			final ImageProcessor ip = ImageJFunctions.wrap(resFrame.getPixels(), "").getProcessor();
@@ -854,7 +853,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
 		detectorPreview(panelDown.getSettings());
-		repaint();
+		panelLower.repaint();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -870,7 +869,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
-		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), pixelSize);
+		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), (float)pixelSize);
 		PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
@@ -893,14 +892,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		System.out.println("Fitter_" + index + " : " + key);
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
 		final Map<String, Object> fitterSettings = panelDown.getSettings();
-
-		if (fitterSettings != null) {
-			final Object calibFile = settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
-			if (calibFile != null)
-				fitterSettings.put(FitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
-			fitterPreview(fitterSettings);
-		}
-		repaint();
+		
+		final Object calibFile = settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
+		if (calibFile != null)
+			fitterSettings.put(FitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
+		fitterPreview(fitterSettings);
+		
+		panelLower.repaint();
 	}
 
 	private void fitterPreview(Map<String, Object> map) {
@@ -917,7 +915,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber, pixelSize);
-		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, (float)pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
@@ -997,6 +995,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		settings.putAll(rendererSettings);
 		rendererFactory.setAndCheckSettings(rendererSettings);
 		renderer = rendererFactory.getRenderer();
+		panelFilter.repaint();
 
 		initRenderer();
 		
@@ -1039,7 +1038,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 				process(false);
 			else
 				return;
-			if (fitter == null)
+			if (table == null)
 				return;
 			final ExecutorService executor = Executors.newSingleThreadExecutor();
 			start = System.currentTimeMillis();
@@ -1053,7 +1052,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		 
 		((TitledBorder) panelFilter.getBorder()).setTitle("Filter");
 		((CardLayout) panelFilter.getLayout()).show(panelFilter, FilterPanel.KEY);
-		repaint();
+		panelFilter.repaint();
 		FilterPanel comp = (FilterPanel) getConfigSettings(panelFilter);
 		comp.setTable(table);
 		
@@ -1084,7 +1083,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			if (fitter != null) {
 				saver = new SaveLocalizationPrecision3D(file);
 				manager.add(saver);
-				manager.linkModules(fitter, saver, false);
+				manager.linkModules(fitter, saver, false, 100);
 			} else {
 				IJ.showMessage(getTitle(), "No Fitter chosen!");
 			}

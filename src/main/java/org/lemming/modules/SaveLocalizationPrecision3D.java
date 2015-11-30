@@ -43,7 +43,9 @@ public class SaveLocalizationPrecision3D extends SingleRunModule {
 				cancel();
 				return null;
 			}
-			inputs.get(iterator).put(data);
+			try {
+				inputs.get(iterator).put(data);
+			} catch (InterruptedException e) {}
 			return null;
 		}
 		

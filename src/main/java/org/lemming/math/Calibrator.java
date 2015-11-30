@@ -74,7 +74,7 @@ public class Calibrator {
 	// 1D and 2D fits
 	public void fitStack() {
 
-		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors());
+		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors()-1);
 		final AtomicInteger ai = new AtomicInteger(0);
 
 		for (int ithread = 0; ithread < threads.length; ithread++) {
@@ -84,13 +84,12 @@ public class Calibrator {
 				public void run() {
 					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
 						ImageProcessor ip = is.getProcessor(i + 1);
-						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 100, 100);
+						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 200, 200);
 						double[] results = gf.fit();
 						if (results!=null){
 							Wx[i]=results[2];
 							Wy[i]=results[3];
 						}
-
 					}
 				}
 			};
@@ -212,9 +211,9 @@ public class Calibrator {
     	double[] rangedWx = new double[rEnd-rStart+1];
     	double[] rangedWy = new double[rEnd-rStart+1];
     	
-    	java.lang.System.arraycopy(z, rStart, rangedZ, 0, rEnd-rStart+1);
-    	java.lang.System.arraycopy(wx, rStart, rangedWx, 0, rEnd-rStart+1);
-    	java.lang.System.arraycopy(wy, rStart, rangedWy, 0, rEnd-rStart+1); 
+    	System.arraycopy(z, rStart, rangedZ, 0, rEnd-rStart+1);
+    	System.arraycopy(wx, rStart, rangedWx, 0, rEnd-rStart+1);
+    	System.arraycopy(wy, rStart, rangedWy, 0, rEnd-rStart+1); 
     	
         final CalibrationCurve problem = new CalibrationCurve(rangedZ,rangedWx, rangedWy);
         
@@ -223,8 +222,6 @@ public class Calibrator {
         final Optimum optimum = optimizer.optimize(
                 builder(problem)
                         .target(problem.getTarget())
-                        //.checkerPair(new SimplePointChecker(10e-5, 10e-5))
-                        //.parameterValidator(new ParamValidatorCalibCurves())
                         .start(problem.getInitialGuess())
                         .maxIterations(maxIter)
                         .maxEvaluations(maxEval)

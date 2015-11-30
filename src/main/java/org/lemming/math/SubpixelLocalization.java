@@ -86,7 +86,8 @@ public class SubpixelLocalization {
 
 		for (final Element locs : sliceLocs) {
 			Localization p = (Localization) locs;
-			currentPosition.setPosition(new long[] { FastMath.round((p.getX()/pixelDepth)), FastMath.round((p.getY()/pixelDepth)) });
+			currentPosition.setPosition(new long[] { FastMath.round((p.getX().doubleValue()/pixelDepth)), 
+					FastMath.round((p.getY().doubleValue()/pixelDepth)) });
 
 			// fit n-dimensional quadratic function to the extremum and
 			// if the extremum is shifted more than 0.5 in one or more

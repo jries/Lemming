@@ -25,7 +25,7 @@ public class HistogramRendererTest {
 		
 		histo = new HistogramRenderer(1024, 1024, -3, 10, -3, 10, 0, 100);
 		pipe.add(histo);
-		pipe.linkModules(reader, histo, true);
+		pipe.linkModules(reader, histo, true, 100);
 		
 	}
 

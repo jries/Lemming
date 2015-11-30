@@ -1,10 +1,7 @@
 package org.lemming.math;
 
-import java.util.Arrays;
-
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
-import ij.process.ImageStatistics;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
@@ -16,8 +13,6 @@ public class EllipticalGaussian implements OptimizationData {
 	private int[] xgrid, ygrid;
 	double[] params;
 	double[] initialGuess;
-	
-	boolean calibration = false;
 
 	private static int INDEX_X0 = 0;
 	private static int INDEX_Y0 = 1;
@@ -27,8 +22,6 @@ public class EllipticalGaussian implements OptimizationData {
 	private static int INDEX_Bg = 5;
 	private static int PARAM_LENGTH = 6;
 	private static double sqrt2 = Math.sqrt(2);
-	
-	//private static double defaultSigma = 1.5;
 	
 	public EllipticalGaussian(int[] xgrid, int[] ygrid){
 		this.xgrid = xgrid;
@@ -77,20 +70,17 @@ public class EllipticalGaussian implements OptimizationData {
  
 	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
 		initialGuess = new double[PARAM_LENGTH];
-	    Arrays.fill(initialGuess, 0);
-	    //ImageProcessor ip = ip_.duplicate();
-	    ip.setRoi(roi);
-	    //double[] centroid = CentroidFitterAlternative.fitCentroidandWidth(ip,roi, ip.getAutoThreshold());
-	    ImageStatistics stat = ip.getStatistics();
 	    
-	    initialGuess[INDEX_X0] = stat.xCenterOfMass;
-	    initialGuess[INDEX_Y0] = stat.yCenterOfMass;
+	    double[] centroid = CentroidFitterIP.fitCentroidandWidth(ip, roi, ip.getAutoThreshold());
 
-	    initialGuess[INDEX_SX] = Math.abs(stat.skewness);
-	    initialGuess[INDEX_SY] = Math.abs(stat.skewness);
+		initialGuess[INDEX_X0] = centroid[INDEX_X0];
+		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
+	    
+	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
+	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
 	        
 	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin(); 
-	    initialGuess[INDEX_Bg] = stat.median;
+	    initialGuess[INDEX_Bg] = ip.getMin();
 		
 		return initialGuess;
 	}

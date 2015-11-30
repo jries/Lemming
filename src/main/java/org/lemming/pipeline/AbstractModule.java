@@ -45,7 +45,11 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		Iterator<Integer> it = outputs.keySet().iterator();
 		while(it.hasNext()){
 			Integer key = it.next();
-			outputs.get(key).put(data);
+			try {
+				outputs.get(key).put(data);
+			} catch (InterruptedException e) {
+				break;
+			}
 		}
 	}
 	
@@ -61,7 +65,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 
 	@Override
 	public Element getInput(Integer key) {
-		Element el = inputs.get(key).get();
+		Element el = inputs.get(key).poll();
 		return el;
 	}
 
@@ -71,14 +75,14 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		Iterator<Integer> it = inputs.keySet().iterator();
 		while(it.hasNext()){
 			Integer key = it.next();
-			outMap.put(key, inputs.get(key).get());
+			outMap.put(key, inputs.get(key).poll());
 		}
 		return outMap;
 	}
 
 	@Override
 	public Element getOutput(Integer key) {
-		return outputs.get(key).get();
+		return outputs.get(key).poll();
 	}
 
 	@Override
@@ -87,7 +91,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		Iterator<Integer> it = outputs.keySet().iterator();
 		while(it.hasNext()){
 			Integer key = it.next();
-			outMap.put(key, outputs.get(key).get());
+			outMap.put(key, outputs.get(key).poll());
 		}
 		return outMap;
 	}

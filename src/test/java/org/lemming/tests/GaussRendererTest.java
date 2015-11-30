@@ -29,7 +29,7 @@ public class GaussRendererTest {
 		gauss = new GaussRenderer(512, 512, 22.200, 22.800, 27.000, 27.600);
 		pipe.add(gauss);
 		
-		pipe.linkModules(reader, gauss, true);
+		pipe.linkModules(reader, gauss, true, 100);
 		map = pipe.getMap();
 	}
 

@@ -16,14 +16,13 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.FitterPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Frame;
 import org.lemming.math.CentroidFitterRA;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.scijava.plugin.Plugin;
 
-public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
+public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 
 	public static final String NAME = "Centroid Fitter";
 
@@ -48,8 +47,8 @@ public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends F
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			
-			double x = loc.getX()/pixelDepth;
-			double y = loc.getY()/pixelDepth;
+			double x = loc.getX().doubleValue()/pixelDepth;
+			double y = loc.getY().doubleValue()/pixelDepth;
 
 			final Interval roi = new FinalInterval(new long[] { (long) StrictMath.floor(x - halfKernel),
 					(long) StrictMath.floor(y - halfKernel) }, new long[] { (long) StrictMath.ceil(x + halfKernel),
@@ -95,12 +94,11 @@ public class CentroidFitter<T extends RealType<T>, F extends Frame<T>> extends F
 			return settings!=null;
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
-		public Fitter getFitter() {
+		public <T extends RealType<T>> Fitter<T> getFitter() {
 			final int windowSize = (Integer) settings.get(FitterPanel.KEY_WINDOW_SIZE);
 			final double threshold = (Double) settings.get(FitterPanel.KEY_CENTROID_THRESHOLD);
-			return new CentroidFitter(windowSize, threshold);
+			return new CentroidFitter<>(windowSize, threshold);
 		}
 
 		@Override

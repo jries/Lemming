@@ -1,5 +1,7 @@
 package org.lemming.interfaces;
 
-public interface Store extends StoreInterface<Element> {
-	
+import java.util.concurrent.BlockingQueue;
+
+public interface Store extends BlockingQueue<Element>{
+
 }

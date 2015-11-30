@@ -33,7 +33,7 @@ public class RoiSelector<T> extends SingleRunModule {
 		
 		for ( Element el : fe.getList()){
 			Localization loc = (Localization) el;
-				if (roi.contains(new double[]{loc.getX(),loc.getY()})){
+				if (roi.contains(new double[]{loc.getX().doubleValue(),loc.getY().doubleValue()})){
 				newOutput(loc); // put ROI to output store
 				counter++;
 			}

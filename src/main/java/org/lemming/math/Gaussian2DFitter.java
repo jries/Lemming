@@ -15,7 +15,14 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 public class Gaussian2DFitter {
-
+	
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_SX = 2;
+	private static final int INDEX_SY = 3;
+	private static final int INDEX_I0 = 4;
+	private static final int INDEX_Bg = 5;
+	
 	private ImageProcessor ip;
 	private Roi roi;
 	private int maxIter;
@@ -23,7 +30,7 @@ public class Gaussian2DFitter {
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
-
+	
 	public Gaussian2DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
 		ip = ip_;
 		roi = roi_;
@@ -72,6 +79,7 @@ public class Gaussian2DFitter {
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
+		int iter = 0;
 		try {
 			final Optimum optimum = optimizer.optimize(
 	                builder(eg)
@@ -84,7 +92,7 @@ public class Gaussian2DFitter {
 	                .build()
 	        );
 			fittedEG = optimum.getPoint().toArray();
-	        
+			iter = optimum.getIterations();	        
 		} catch(TooManyEvaluationsException  e){
         	return null;
 		} catch(ConvergenceException e){
@@ -94,7 +102,7 @@ public class Gaussian2DFitter {
 		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
 			return null;
 		
-		double[] result = new double[7];
+		double[] result = new double[9];
 		
 		result[0] = fittedEG[0];
 		result[1] = fittedEG[1];
@@ -102,22 +110,43 @@ public class Gaussian2DFitter {
 		result[3] = fittedEG[3];
 		result[4] = fittedEG[4];
 		result[5] = fittedEG[5];
-		result[6] = 0.001;
+		result[6] = get2DErrorX(1, fittedEG);
+		result[7] = get2DErrorY(1, fittedEG);
+		result[8] = iter;
 		return result;
-	}	
+	}
+	
+	private static double get2DErrorX(int pixelsize, double[] fittedEG) {
+		double sigma2=2*fittedEG[INDEX_SX]*fittedEG[INDEX_SX];
+		double N = fittedEG[INDEX_I0];
+		double b = fittedEG[INDEX_Bg];
+		double a2 = pixelsize*pixelsize;
+		
+		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
+		
+		double errorx2 = (sigma2+a2/12)*(16/9+4*t)/N;
+		
+		return Math.sqrt(errorx2);
+	}
+
+	private static double get2DErrorY(int pixelsize, double[] fittedEG) {
+		double sigma2=2*fittedEG[INDEX_SY]*fittedEG[INDEX_SY];
+		double N = fittedEG[INDEX_I0];
+		double b = fittedEG[INDEX_Bg];
+		double a2 = pixelsize*pixelsize;
+		
+		double t = 2*Math.PI*b*(sigma2+a2/12)/(N*a2);
+		
+		double errory2 = (sigma2+a2/12)*(16/9+4*t)/N;
+		
+		return Math.sqrt(errory2);
+	}
 	
 	private class ConvChecker2DGauss implements ConvergenceChecker<PointVectorValuePair> {
 	    
 		int iteration_ = 0;
 	    boolean lastResult_ = false;
 
-		public static final int INDEX_X0 = 0;
-		public static final int INDEX_Y0 = 1;
-		public static final int INDEX_SX = 2;
-		public static final int INDEX_SY = 3;
-		public static final int INDEX_I0 = 4;
-		public static final int INDEX_Bg = 5;
-		
 		@Override
 		public boolean converged(int i, PointVectorValuePair previous, PointVectorValuePair current) {
 			if (i == iteration_)
@@ -146,25 +175,13 @@ public class Gaussian2DFitter {
 	}
 
 	private class ParamValidator2DGauss implements ParameterValidator {
-		public static final int INDEX_SX = 2;
-		public static final int INDEX_SY = 3;
-		public static final int INDEX_I0 = 4;
-		public static final int INDEX_Bg = 5;
 		
 		@Override
 		public RealVector validate(RealVector arg) {
-			if(arg.getEntry(INDEX_SX)<0){
-				arg.setEntry(INDEX_SX, -arg.getEntry(INDEX_SX));
-			}
-			if(arg.getEntry(INDEX_SY)<0){
-				arg.setEntry(INDEX_SY, -arg.getEntry(INDEX_SY));
-			}
-			if(arg.getEntry(INDEX_I0)<0){
-				arg.setEntry(INDEX_I0, -arg.getEntry(INDEX_I0));
-			}
-			if(arg.getEntry(INDEX_Bg)<0){
-				arg.setEntry(INDEX_Bg, -arg.getEntry(INDEX_Bg));
-			}
+			arg.setEntry(INDEX_SX, Math.abs(arg.getEntry(INDEX_SX)));
+			arg.setEntry(INDEX_SY, Math.abs(arg.getEntry(INDEX_SY)));
+			arg.setEntry(INDEX_I0, Math.abs(arg.getEntry(INDEX_I0)));
+			arg.setEntry(INDEX_Bg, Math.abs(arg.getEntry(INDEX_Bg)));
 			return arg;
 		}
 

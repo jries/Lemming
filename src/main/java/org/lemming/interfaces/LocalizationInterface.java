@@ -6,20 +6,20 @@ public interface LocalizationInterface extends Element {
 	/**
 	 * @return x
 	 */
-	public double getX();
+	public Number getX();
 	
 	/**
 	 * @return y
 	 */
-	public double getY();
+	public Number getY();
 	
 	/**
 	 * @return intensity
 	 */
-	public double getIntensity();
+	public Number getIntensity();
 	
 	/**
 	 * @return frame
 	 */
-	public long getFrame();
+	public Long getFrame();
 }

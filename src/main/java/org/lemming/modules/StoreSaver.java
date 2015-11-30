@@ -83,7 +83,7 @@ public class StoreSaver extends SingleRunModule {
 			IJ.error(e.getMessage());
 		}
 		Locale.setDefault(curLocale);
-		System.out.println("Reading data done in " + (System.currentTimeMillis()-start) + "ms.");
+		System.out.println("Saving data to "+ file.getName() + " done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 
 	@Override

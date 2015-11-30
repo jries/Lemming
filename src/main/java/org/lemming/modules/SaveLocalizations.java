@@ -42,11 +42,12 @@ public class SaveLocalizations extends SingleRunModule {
 		if (data.isLast()) {
 			if (data instanceof Localization) {
 				if (inputs.get(iterator).isEmpty()) {
-					counter++;
 					cancel();
 					return null;
 				}
-				inputs.get(iterator).put(data);
+				try {
+					inputs.get(iterator).put(data);
+				} catch (InterruptedException e) {}
 				return null;
 			}
 			cancel();

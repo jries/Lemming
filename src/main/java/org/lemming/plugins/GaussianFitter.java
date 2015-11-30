@@ -9,8 +9,7 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Frame;
-import org.lemming.math.GaussianFitterLM;
+import org.lemming.math.Gaussian2DFitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.Localization;
@@ -24,18 +23,14 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 
-public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
+public class GaussianFitter<T extends RealType<T>> extends Fitter<T> {
 
 	public static final String NAME = "Gaussian Fitter";
-
 	public static final String KEY = "GAUSSIANFITTER";
-
 	public static final String INFO_TEXT = "<html>" + "Gaussian Fitter Plugin (with sx and sy)" + "</html>";
 
 	private List<Double> param;
-
 	private List<Double> zgrid;
-
 	private List<Double> Calibcurve;
 
 	private static int INDEX_WX = 0;
@@ -53,7 +48,6 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 		param = cal.get("param");
 		zgrid = cal.get("zgrid");
 		Calibcurve = cal.get("Calibcurve");
-
 	}
 
 	@Override
@@ -64,19 +58,19 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 		final Rectangle imageRoi = ip.getRoi();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			double x = loc.getX() / pixelDepth;
-			double y = loc.getY() / pixelDepth;
+			double x = loc.getX().doubleValue() / pixelDepth;
+			double y = loc.getY().doubleValue() / pixelDepth;
 			final Roi origroi = new Roi(x - size, y - size, 2 * size + 1, 2 * size + 1);
 			final Roi roi = cropRoi(imageRoi, origroi.getBounds());
-			GaussianFitterLM gf = new GaussianFitterLM(ip, roi, 3000, 1000);
+			Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 1000, 1000);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null) {
 				double SxSy = result[2] * result[2] - result[3] * result[3];
-				for (int i = 0; i < result.length; i++)
+				for (int i = 0; i < 8; i++)
 					result[i] *= pixelDepth;
 				found.add(new LocalizationPrecision3D( result[0], result[1], calculateZ(SxSy)*pixelDepth, 
-						result[6], result[6], result[6], result[4], loc.getFrame()));
+					result[6], result[7], result[8], result[4]/pixelDepth, loc.getFrame()));
 			}
 		}
 		return found;
@@ -97,7 +91,6 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 			return Math.max(Calibcurve.get(0), Calibcurve.get(end));
 
 		return calcIterZ(SxSy, Math.min(zgrid.get(0), zgrid.get(end)), Math.max(zgrid.get(0), zgrid.get(end)), 1e-4);
-
 	}
 
 	private double calcIterZ(double SxSy, double start_, double end, double precision) {
@@ -166,9 +159,8 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 			return false;
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
-		public Fitter getFitter() {
+		public <T extends RealType<T>> Fitter<T> getFitter() {
 			final int windowSize = (int) settings.get(FitterPanel.KEY_WINDOW_SIZE);
 			final String calibFileName = (String) settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
 			if (calibFileName == null) {
@@ -176,7 +168,7 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 				return null;
 			}
 			Map<String, List<Double>> cal = Settings.readCSV(calibFileName);
-			return new GaussianFitter(windowSize, cal);
+			return new GaussianFitter<>(windowSize, cal);
 		}
 
 		@Override
@@ -186,5 +178,4 @@ public class GaussianFitter<T extends RealType<T>, F extends Frame<T>> extends F
 		}
 
 	}
-
 }

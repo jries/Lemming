@@ -8,7 +8,6 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.QuadraticFitterPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Frame;
 import org.lemming.math.SubpixelLocalization;
 import org.lemming.modules.Fitter;
 import org.scijava.plugin.Plugin;
@@ -18,7 +17,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends Fitter<T, F> {
+public class QuadraticFitter<T extends RealType<T>> extends Fitter<T> {
 
 	public static final String NAME = "Quadratic Fitter";
 
@@ -70,11 +69,10 @@ public class QuadraticFitter<T extends RealType<T>, F extends Frame<T>> extends 
 			return settings != null;
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
-		public Fitter getFitter() {
+		public <T extends RealType<T>> Fitter<T> getFitter() {
 			final int windowSize = (int) settings.get(QuadraticFitterPanel.KEY_QUAD_WINDOW_SIZE);
-			return new QuadraticFitter(windowSize);
+			return new QuadraticFitter<>(windowSize);
 		}
 
 		@Override

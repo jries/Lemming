@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import javax.swing.SwingWorker;
 
 import org.lemming.interfaces.Store;
@@ -18,6 +22,7 @@ public class Manager extends SwingWorker<Void,Void> {
 	private Map<Integer,AbstractModule> modules = new LinkedHashMap<>();
 	private boolean done = false;
 	private int maximum = 1;
+	private ExecutorService service = Executors.newCachedThreadPool();
 
 	public Manager() {
 	}
@@ -26,32 +31,28 @@ public class Manager extends SwingWorker<Void,Void> {
 		modules.put(module.hashCode(),module);		
 	}
 	
-	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs ){
+	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs, int maxElements ){
+		Store s = null;
 		if (noInputs){
-			Store s = new FastStore();
-			AbstractModule source = modules.get(from.hashCode());
-			if (source==null) throw new NullPointerException("Wrong linkage!");
-			source.setOutput(s);
-			AbstractModule well = modules.get(to.hashCode());
-			if (well==null) throw new NullPointerException("Wrong linkage!");
-			well.setInput(s);
-			storeMap.put(s.hashCode(), s);
-			return;
+			int n = (int) Math.min(Math.pow(2,5)*Runtime.getRuntime().availableProcessors(), maxElements*0.5); // performance tweak
+			System.out.println("Manager starts with maximal "+n+" elements" );
+			s = new LinkedStore(n);
+		} else {
+			s = new LinkedStore(maxElements);
 		}
-		AbstractModule well = modules.get(to.hashCode());
-		if (well==null) throw new NullPointerException("Wrong linkage!");
-		Store s = new FastStore();
-		well.setInput(s);
 		AbstractModule source = modules.get(from.hashCode());
 		if (source==null) throw new NullPointerException("Wrong linkage!");
 		source.setOutput(s);
+		AbstractModule well = modules.get(to.hashCode());
+		if (well==null) throw new NullPointerException("Wrong linkage!");
+		well.setInput(s);
 		storeMap.put(s.hashCode(), s);
 	}
 	
 	public void linkModules(AbstractModule from , AbstractModule to ){
 		AbstractModule source = modules.get(from.hashCode());
 		if (source==null) throw new NullPointerException("Wrong linkage!");
-		Store s = new FastStore();
+		Store s = new LinkedStore(Integer.MAX_VALUE);
 		source.setOutput(s);
 		AbstractModule well = modules.get(to.hashCode());
 		if (well==null) throw new NullPointerException("Wrong linkage!");
@@ -74,16 +75,17 @@ public class Manager extends SwingWorker<Void,Void> {
 					setProgress((int) evt.getNewValue());
 			}});
 		sm.execute();
-		final List<Thread> threads= new ArrayList<>();
+		final List<Object> threads= new ArrayList<>();
 		
 		for(AbstractModule starter:modules.values()){
 			if (!starter.check()) {
 				IJ.error("Module not linked properly " + starter.getClass().getSimpleName());
 				break;
 			}	
-
-			Thread t = new Thread(starter, starter.getClass().getSimpleName());
-			t.start();
+			starter.setService(service);
+			Future<?> t = service.submit(starter);
+			//Thread t = new Thread(starter, starter.getClass().getSimpleName());
+			//t.start();
 			threads.add(t);
 			
 			try {
@@ -93,8 +95,8 @@ public class Manager extends SwingWorker<Void,Void> {
 			}
 		}
 		try {
-			for(Thread joiner:threads)
-				joiner.join();
+			for(Object joiner:threads)
+				((Future<?>) joiner).get();
 		} catch (InterruptedException e) {
 			System.err.println(e.getMessage());
 		}
@@ -128,7 +130,7 @@ public class Manager extends SwingWorker<Void,Void> {
 				int max = 0;
 				int n = 0;
 				for(Integer key : storeMap.keySet()){
-					n = storeMap.get(key).getLength();
+					n = storeMap.get(key).size();
 					max= Math.max(n, max);
 				}
 				if (max > maximum)

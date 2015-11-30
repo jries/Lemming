@@ -3,8 +3,6 @@ package org.lemming.math;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
-import java.util.Arrays;
-
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.OptimizationData;
@@ -85,7 +83,6 @@ public class EllipticalGaussianZ implements OptimizationData {
 
 	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
 		initialGuess = new double[PARAM_LENGTH];
-		Arrays.fill(initialGuess, 0);
 
 		double[] centroid = CentroidFitterIP.fitCentroidandWidth(ip, roi, ip.getAutoThreshold());
 

@@ -93,7 +93,7 @@ public class FilterPanel extends ConfigurationPanel implements ChangeListener {
 	}
 	
 	public void setTable(ExtendableTable table){
-		this.table = new ExtendableTable(table);
+		this.table = table;
 	}
 
 	protected void removePanel() {

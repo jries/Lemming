@@ -61,9 +61,6 @@ public class CalibrationCurve {
 	    initialGuess[INDEX_C] = 0.5*Math.abs(zgrid[minIndexx])-Math.abs(zgrid[minIndexy]);
 	    initialGuess[INDEX_D] = Math.max(zgrid[minIndexx],zgrid[minIndexy])-Math.min(zgrid[minIndexx],zgrid[minIndexy]);		
 	    initialGuess[INDEX_Mp] = Math.abs(zgrid[minIndexx])-Math.abs(zgrid[minIndexy])+Math.min(zgrid[minIndexx], zgrid[minIndexy]);	
-        //System.out.println(initialGuess[INDEX_D]);	
-        //System.out.println(minIndexx);	
-        //System.out.println(minIndexy);
 
 		return initialGuess;
 	}

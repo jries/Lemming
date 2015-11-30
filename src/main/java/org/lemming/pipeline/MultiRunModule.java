@@ -33,7 +33,7 @@ public abstract class MultiRunModule extends AbstractModule{
 							if (Thread.currentThread().isInterrupted())
 								break;
 							Element data = nextInput();
-							if (data != null) 
+							if (data != null)
 								newOutput(processData(data));
 							else
 								pause(10);

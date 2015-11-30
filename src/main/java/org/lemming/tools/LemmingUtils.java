@@ -14,11 +14,11 @@ import ij.process.FloatPolygon;
 
 public class LemmingUtils {
 
-	public static FloatPolygon convertToPoints(List<Element> me, double pixelSize) {
+	public static FloatPolygon convertToPoints(List<Element> me, float pixelSize) {
 		FloatPolygon polygon = new FloatPolygon();
 		for (Element el : me) {
 			Localization loc = (Localization) el;
-			polygon.addPoint(loc.getX() / pixelSize, loc.getY() / pixelSize);
+			polygon.addPoint(loc.getX().floatValue() / pixelSize, loc.getY().floatValue() / pixelSize);
 		}
 		return polygon;
 	}

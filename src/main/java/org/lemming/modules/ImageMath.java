@@ -52,9 +52,9 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		boolean loop = true;
 		while(loop){									// check for equal number in the two input stores
 			for ( Integer key : inputs.keySet()){
-				if (length == inputs.get(key).getLength())
+				if (length == inputs.get(key).size())
 					loop = false;
-				length = inputs.get(key).getLength();
+				length = inputs.get(key).size();
 			}
 			pause(10);
 		}
@@ -66,38 +66,39 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	@Override
 	public Element processData(Element data) {
 		F frameB = (F) data;
-		if (frameB==null){ 
-			return null;
-		}
-		F frameA = (F) inputA.get();
-		if (frameA==null){ 
-			inputB.put(frameB);
-			return null;
-		}
-		
-		// if no match put it back to inputs
-		if (frameA.getFrameNumber() != frameB.getFrameNumber()){
-			inputB.put(frameB);
-			inputA.put(frameA);
-			return null;
-		}		
-		
-		Pair<F,F> framePair= new ValuePair<>(frameA,frameB);
-		
-		if (frameA.isLast()){ // make the poison pill
-			ImgLib2Frame<T> lastFrame = process1(framePair);
-			lastFrame.setLast(true);
-			output.put(lastFrame);
-			cancel();
+		if (frameB == null) { return null; }
+		F frameA = (F) inputA.poll();
+		try {
+			if (frameA == null) {
+				inputB.put(frameB);
+				return null;
+			}
+
+			// if no match put it back to inputs
+			if (frameA.getFrameNumber() != frameB.getFrameNumber()) {
+				inputB.put(frameB);
+				inputA.put(frameA);
+				return null;
+			}
+
+			Pair<F, F> framePair = new ValuePair<>(frameA, frameB);
+
+			if (frameA.isLast()) { // make the poison pill
+				ImgLib2Frame<T> lastFrame = process1(framePair);
+				lastFrame.setLast(true);
+				output.put(lastFrame);
+				cancel();
+				counter++;
+				return null;
+			}
+
+			output.put(process1(framePair));
 			counter++;
-			return null;
+		} catch (InterruptedException e) {
 		}
 
-		output.put(process1(framePair));
-		counter++;		
-		
-		//if (counter % 100 == 0)
-		//	System.out.println("Frames calculated:" + counter);
+		// if (counter % 100 == 0)
+		// System.out.println("Frames calculated:" + counter);
 		return null;
 	}
 

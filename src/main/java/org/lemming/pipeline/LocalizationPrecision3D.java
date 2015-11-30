@@ -2,12 +2,12 @@ package org.lemming.pipeline;
 
 public class LocalizationPrecision3D extends Localization{
 
-	final private double Z;
-	final private double sX;
-	final private double sY;
-	final private double sZ;
+	final private Number Z;
+	final private Number sX;
+	final private Number sY;
+	final private Number sZ;
 
-	public LocalizationPrecision3D(double x, double y, double z, double sx, double sy, double sz, double intensity, long frame) {
+	public LocalizationPrecision3D(Number x, Number y, Number z, Number sx, Number sy, Number sz, Number intensity, Long frame) {
 		super(x, y, intensity, frame);
 		this.Z = z;
 		this.sX = sx;
@@ -15,19 +15,19 @@ public class LocalizationPrecision3D extends Localization{
 		this.sZ = sz;
 	}
 
-	public double getZ(){
+	public Number getZ(){
 		return Z;
 	}
 	
-	public double getsX(){
+	public Number getsX(){
 		return sX;
 	}
 	
-	public double getsY(){
+	public Number getsY(){
 		return sY;
 	}
 	
-	public double getsZ(){
+	public Number getsZ(){
 		return sZ;
 	}
 	

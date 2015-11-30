@@ -8,14 +8,13 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Frame;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.MultiRunModule;
 
 import ij.gui.Roi;
 
-public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 
 	protected int size;
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
@@ -62,7 +61,7 @@ public abstract class Fitter<T extends RealType<T>, F extends Frame<T>> extends 
 		Integer cc = 0;
 		for (Integer i : counterList)
 			cc += i;
-		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 1, 1);
+		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 1, 1l);
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
 		System.out.println("Fitting of " + cc + " elements done in " + (System.currentTimeMillis() - start) + "ms");

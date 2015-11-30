@@ -29,8 +29,8 @@ public class NMSFinderTest {
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Manager();	
-		
-		tif = new ImageLoader(new ImagePlus(System.getProperty("user.home")+"/ownCloud/storm/experiment3D.tif"));
+		final ImagePlus image = new ImagePlus(System.getProperty("user.home")+"/ownCloud/storm/experiment3D.tif");
+		tif = new ImageLoader(image);
 		pipe.add(tif);
 		
 		peak = new NMSDetector(700,9);
@@ -42,11 +42,10 @@ public class NMSFinderTest {
 		saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/nmsfinder.csv"));
 		pipe.add(saver);
 		
-		pipe.linkModules(tif, peak, true);
+		pipe.linkModules(tif, peak, true, image.getStackSize());
 		pipe.linkModules(peak, unpacker);
 		pipe.linkModules(unpacker, saver);
 		map = pipe.getMap();
-		
 	}
 
 	@Test

@@ -1,6 +1,5 @@
 package org.lemming.plugins;
 
-import ij.IJ;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
@@ -16,28 +15,23 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.Element;
-import org.lemming.math.GaussianFitterZ;
+import org.lemming.math.Symmetric2DFitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
-public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
+public class SymmetricGaussianFitter<T extends RealType<T>> extends Fitter<T> {
 
-	public static final String NAME = "Astigmatism Fitter";
+	public static final String NAME = "Symmetric Gaussian Fitter";
 
-	public static final String KEY = "ASTIGFITTER";
+	public static final String KEY = "SYMMETRICFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "Astigmatism Fitter Plugin" + "</html>";
+	public static final String INFO_TEXT = "<html>" + "Representation of 2D symmetric Gaussian" + "</html>";
 
-	private final double[] params;
 
-	public AstigFitter(final int windowSize, final List<Double> list) {
+	public SymmetricGaussianFitter(final int windowSize) {
 		super(windowSize);
-		this.params = new double[list.size()];
-		for (int i = 0; i < list.size(); i++)
-			params[i] = list.get(i);
 	}
 
 	@Override
@@ -47,18 +41,18 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		List<Element> found = new ArrayList<>();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			double x = loc.getX().longValue() / pixelDepth;
-			double y = loc.getY().longValue() / pixelDepth;
+			double x = loc.getX().doubleValue() / pixelDepth;
+			double y = loc.getY().doubleValue() / pixelDepth;
 			final Roi origroi = new Roi(x - size, y - size, 2 * size + 1, 2 * size + 1);
 			final Roi roi = cropRoi(ip.getRoi(), origroi.getBounds());
-			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 100, 100, params);
+			Symmetric2DFitter gf = new Symmetric2DFitter(ip, roi, 100, 100);
 			double[] result = null;
 			result = gf.fit();
 			
 			if (result != null){
-				for (int i = 0; i < 8; i++)
+				for (int i = 0; i < 6; i++)
 					result[i] *= pixelDepth;
-				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[6], result[7], result[3]/pixelDepth, loc.getFrame()));
+				found.add(new LocalizationPrecision3D(result[0], result[1], 0, result[5], result[5], result[6], result[3]/pixelDepth, loc.getFrame()));
 			}
 		}
 		return found;
@@ -88,20 +82,13 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			if (settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null)
-				return true;
-			return false;
+			return settings!=null;
 		}
 
 		@Override
 		public <T extends RealType<T>> Fitter<T> getFitter() {
 			final int windowSize = (int) settings.get(FitterPanel.KEY_WINDOW_SIZE);
-			final String calibFileName = (String) settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
-			if (calibFileName == null) {
-				IJ.error("No Calibration File!");
-				return null;
-			}
-			return new AstigFitter<>(windowSize, Settings.readCSV(calibFileName).get("param"));
+			return new SymmetricGaussianFitter<>(windowSize);
 		}
 
 		@Override
