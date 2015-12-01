@@ -7,8 +7,13 @@ import ij.ImagePlus;
 import org.lemming.pipeline.MultiRunModule;
 import org.lemming.interfaces.Element;
 
+/**
+ * base class for all renderer plug-ins
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public abstract class Renderer extends MultiRunModule {
-	
 	
 	protected ImagePlus ip;
 	final protected String title = "Renderer Window"; // title of the image

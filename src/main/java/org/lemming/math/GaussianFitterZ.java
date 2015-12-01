@@ -16,6 +16,12 @@ import org.apache.commons.math3.util.Precision;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
+/**
+ * Fitter module for the 3D astigmatism fit including direct Z calculation
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class GaussianFitterZ implements FitterInterface {
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;

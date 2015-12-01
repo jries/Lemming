@@ -11,6 +11,12 @@ import org.lemming.interfaces.Element;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * Save 2D localizations in the ViSP format.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class SaveLocalizations extends SingleRunModule {
 
 	final private Locale curLocale;

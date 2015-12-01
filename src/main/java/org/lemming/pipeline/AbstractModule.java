@@ -12,6 +12,12 @@ import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.ModuleInterface;
 import org.lemming.interfaces.Store;
 
+/**
+ * base class for all modules handling input and output queues
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public abstract class AbstractModule implements ModuleInterface,Runnable {
 	
 	protected int numTasks;

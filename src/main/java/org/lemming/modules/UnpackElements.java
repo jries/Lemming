@@ -7,6 +7,13 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * unpack localizations from a frame dependent container
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T>
+ */
 public class UnpackElements<T> extends SingleRunModule {
 
 	private int counter;

@@ -6,6 +6,11 @@ import java.util.Random;
 
 import net.imglib2.type.numeric.RealType;
 
+/**
+ * Median algorithms QuickSort and QuickSelect
+ * @author ronny
+ *
+ */
 public class QuickSelect {
 	public static <T extends RealType<T>> Long binapprox(List<T> values) {
 		double sum = 0d;
@@ -83,6 +88,9 @@ public class QuickSelect {
 	 *            an array of Comparable items.
 	 * @param k
 	 *            the desired rank (1 is minimum) in the entire array.
+	 * @param T	
+	 * 			  data type
+	 * @return
 	 */
 	public static <T extends Comparable<T>> T three(final List<T> a, final int k) {
 		three(a, 0, a.size() - 1, k);

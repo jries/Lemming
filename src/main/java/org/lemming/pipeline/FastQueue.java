@@ -10,6 +10,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javolution.util.FastTable;
 
+/**
+ * a queue that uses the javalution FastTable as structure
+ * @see javolution.util.FastTable
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <E> - element type
+ */
 public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
 	    /** The queued items */

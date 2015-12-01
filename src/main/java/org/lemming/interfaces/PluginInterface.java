@@ -2,6 +2,13 @@ package org.lemming.interfaces;
 
 import org.scijava.plugin.SciJavaPlugin;
 
+/**
+ * Interface for Plug-ins which are registered by the SciJava Framework
+ * 
+ * @author Ronny Sczech
+ *
+ */
+
 public interface PluginInterface extends SciJavaPlugin {
 	
 	/**

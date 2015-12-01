@@ -16,6 +16,13 @@ import org.lemming.interfaces.Store;
 
 import ij.IJ;
 
+/**
+ * a swing worker class for background execution of the added modules.
+ * The needed queues for data transport are created automatically.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class Manager extends SwingWorker<Void,Void> {
 	
 	private Map<Integer,Store> storeMap = new LinkedHashMap<>();

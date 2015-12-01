@@ -6,6 +6,12 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.PluginInterface;
 import org.lemming.modules.Renderer;
 
+/**
+ * Factory for rendering localization data
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public interface RendererFactory extends PluginInterface {
 	
 	/**

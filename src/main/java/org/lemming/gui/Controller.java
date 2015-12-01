@@ -122,6 +122,14 @@ import javax.swing.border.LineBorder;
 
 import java.awt.Color;
 
+/**
+ * The GUI main class controlling all user interactions
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ * @param <F> - frame type
+ */
 public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, F extends Frame<T>> extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;

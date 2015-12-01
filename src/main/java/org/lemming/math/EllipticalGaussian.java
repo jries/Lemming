@@ -9,6 +9,12 @@ import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
 
+/**
+ * EllipticalGaussian Fitter using sigmax and sigmay intermediates to calculate Z from the calibration curve
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class EllipticalGaussian implements OptimizationData {
 	private int[] xgrid, ygrid;
 	double[] params;

@@ -14,6 +14,12 @@ import org.apache.commons.math3.util.Precision;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
+/**
+ * a fast symmetric 2D Gaussian fitter
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class Symmetric2DFitter {
 	
 	private static final int INDEX_X0 = 0;
@@ -37,7 +43,7 @@ public class Symmetric2DFitter {
 		maxEval = maxEval_;
 	}
 	
-	private static LeastSquaresBuilder builder(SimpleGaussian problem){
+	private static LeastSquaresBuilder builder(SymmetricGaussian problem){
     	LeastSquaresBuilder builder = new LeastSquaresBuilder();
     	 builder.model(problem.getModelFunction(), problem.getModelFunctionJacobian());
 		return builder;
@@ -75,7 +81,7 @@ public class Symmetric2DFitter {
 	
 	public double[] fit() {
 		createGrids();
-		SimpleGaussian eg = new SimpleGaussian(xgrid, ygrid);
+		SymmetricGaussian eg = new SymmetricGaussian(xgrid, ygrid);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		int iter = 0;

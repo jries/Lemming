@@ -9,6 +9,12 @@ import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
 
+/**
+ * EllipticalGaussian Fitter directly calculating Z with the calibration curve parameters
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class EllipticalGaussianZ implements OptimizationData {
 
 	int[] xgrid, ygrid;

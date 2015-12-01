@@ -7,6 +7,12 @@ import java.util.concurrent.Future;
 
 import org.lemming.interfaces.Element;
 
+/**
+ * multi threaded modules using Callables @see java.util.concurrent.Callables.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public abstract class MultiRunModule extends AbstractModule{
 	
 	public MultiRunModule(){

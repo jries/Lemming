@@ -8,6 +8,13 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.PluginInterface;
 import org.lemming.modules.Fitter;
 
+/**
+ * Factory for Fitter
+ * 
+ * @author Ronny Sczech
+ *
+ */
+
 public interface FitterFactory extends PluginInterface{
 
 	/**

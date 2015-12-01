@@ -8,6 +8,14 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.MultiRunModule;
 import java.util.concurrent.ConcurrentLinkedQueue;;
 
+/**
+ * base class for all detector plug-ins
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ * @param <F> - frame type
+ */
 public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
 		
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();

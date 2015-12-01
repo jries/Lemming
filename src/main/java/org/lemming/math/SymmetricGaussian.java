@@ -9,7 +9,7 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
 /** ThunderSTORM algorithm for a symmetric Gaussian*/
-public class SimpleGaussian implements OptimizationData {
+public class SymmetricGaussian implements OptimizationData {
 	private int[] xgrid, ygrid;
 	double[] params;
 	double[] initialGuess;
@@ -23,7 +23,7 @@ public class SimpleGaussian implements OptimizationData {
 	private static final int INDEX_Bg = 4;
 	private static final int PARAM_LENGTH = 5;
 
-	public SimpleGaussian(int[] xgrid, int[] ygrid) {
+	public SymmetricGaussian(int[] xgrid, int[] ygrid) {
 		this.xgrid = xgrid;
 		this.ygrid = ygrid;
 	}

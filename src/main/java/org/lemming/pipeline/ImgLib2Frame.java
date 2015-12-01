@@ -25,6 +25,7 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 	 * @param height
 	 *            - height
 	 * @param pixelDepth 
+	 * 			  - size of a pixel
 	 * @param slice
 	 *            - slice
 	 */

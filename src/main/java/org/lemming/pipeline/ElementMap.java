@@ -7,6 +7,12 @@ import java.util.Set;
 
 import org.lemming.interfaces.Element;
 
+/**
+ * a map of objects inherited from Element @see org.lemming.interfaces.Element
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class ElementMap extends AbstractMap<String,Number> implements Element {
 	
 	private boolean isLast;

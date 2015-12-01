@@ -5,6 +5,13 @@ import java.util.List;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 
+/**
+ * all objects connected to a frame
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ */
 public class FrameElements<T> implements Element {
 	
 	private boolean isLast;

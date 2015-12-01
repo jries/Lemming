@@ -32,31 +32,6 @@ import net.imglib2.util.Intervals;
  * convergence, for a maximum number of iterations, or until the integer
  * coordinates move out of the valid image.
  * 
- * @param peaks
- *            List of integer peaks.
- * @param img
- *            Pixel values.
- * @param validInterval
- *            In which interval the <code>img</code> contains valid pixels. If
- *            null, an infinite <code>img</code> is assumed. Integer peaks must
- *            lie within a 1-pixel border of this interval.
- * @param returnInvalidPeaks
- *            Whether (invalid) {@link RefinedPeak} should be created for peaks
- *            where the fitting procedure did not converge.
- * @param maxNumMoves
- *            maximum number of iterations for each peak.
- * @param allowMaximaTolerance
- *            If we allow an increasing maxima tolerance we will not change the
- *            base position that easily. Sometimes it simply jumps from left to
- *            right and back, because it is 4.51 (i.e. goto 5), then 4.49 (i.e.
- *            goto 4) Then we say, ok, lets keep the base position even if the
- *            subpixel location is 0.6...
- * @param maximaTolerance
- *            By how much to increase the tolerance per iteration.
- * @param allowedToMoveInDim
- *            specifies, per dimension, whether the base location is allowed to
- *            be moved in the iterative procedure.
- * @return r
  */
 public class SubpixelLocalization {
 	public static <T extends RealType<T>> List<Element> refinePeaks(final List<Element> sliceLocs, final RandomAccessible<T> img,
@@ -172,6 +147,8 @@ public class SubpixelLocalization {
 	 * @param offset
 	 *            subpixel offset of extremum value <code>p</code> is stored
 	 *            here.
+	 * @param <T>	
+	 * 			  data type
 	 */
 	protected static <T extends RealType<T>> void quadraticFitOffset(final Localizable p, final RandomAccess<T> access, final Matrix g,
 			final Matrix H, final RealPositionable offset) {

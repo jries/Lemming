@@ -16,6 +16,14 @@ import org.lemming.interfaces.Store;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * a module for image calculations
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ * @param <F> - frame type
+ */
 public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
 	public enum operators {

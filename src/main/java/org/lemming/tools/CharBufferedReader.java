@@ -4,6 +4,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
 
+/**
+ * A fast buffered reader for csv files working directly with chars
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class CharBufferedReader extends Reader {
 
     private Reader in;

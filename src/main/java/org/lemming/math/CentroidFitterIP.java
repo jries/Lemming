@@ -3,6 +3,12 @@ package org.lemming.math;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
+/**
+ * Calculating centroids on a {@link #ImageProcessor}
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class CentroidFitterIP {
 	
 	private static double defaultSigma = 1.5;

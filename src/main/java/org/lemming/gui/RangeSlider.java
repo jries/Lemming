@@ -18,6 +18,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
+/**
+ * a nice slider with minimum and maximum knob.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class RangeSlider extends JSlider {
 
 	/**

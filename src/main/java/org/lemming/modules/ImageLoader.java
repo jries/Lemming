@@ -10,6 +10,13 @@ import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
 import org.lemming.tools.LemmingUtils;
 
+/**
+ * loading images onto the queue
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ */
 public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice = 0;

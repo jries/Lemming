@@ -18,7 +18,12 @@ import org.lemming.pipeline.SingleRunModule;
 
 import ij.IJ;
 
-
+/**
+ * loading localizations onto a queue
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class StoreLoader extends SingleRunModule {
 	
 	private File file;

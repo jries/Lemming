@@ -14,6 +14,10 @@ import javolution.util.FastTable;
 import javolution.util.function.Predicate;
 
 /**
+ * a table implementation there columns can be easily added.
+ * The table can be filtered on each column.
+ * The table has an interface to a queue.
+ * 
  * @author Ronny Sczech
  *
  */

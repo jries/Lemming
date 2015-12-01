@@ -31,6 +31,12 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 
+/**
+ * a dialog for calibration parameters for use in 3D astigmatism fitter
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class CalibrationDialog extends JDialog {
 
 	/**

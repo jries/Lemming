@@ -7,6 +7,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A {@link #KeyListener} that waits a certain before reading the input from a widget.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class WaitForKeyListener implements KeyListener {
 	
 	private long delay = 1000;

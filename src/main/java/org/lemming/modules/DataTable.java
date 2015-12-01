@@ -14,6 +14,12 @@ import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ExtendableTable;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * converts a queue into a table
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class DataTable extends SingleRunModule {
 
 	private ExtendableTable table;

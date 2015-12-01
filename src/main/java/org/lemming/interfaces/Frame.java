@@ -1,8 +1,13 @@
 package org.lemming.interfaces;
 
-
 import net.imglib2.RandomAccessibleInterval;
 
+/**
+ * Frame holds an 2D image plus some useful metadata.
+ * @author Ronny Sczech
+ *
+ * @param <T>
+ */
 public interface Frame<T> extends Element, Comparable<Frame<T>> {
 	/** 
 	 * @return Return the frame number in the movie */

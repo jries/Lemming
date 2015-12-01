@@ -13,6 +13,12 @@ import org.jfree.chart.event.AnnotationChangeEvent;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 
+/**
+ * Utility class for painting labels on histograms
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class XYTextSimpleAnnotation extends AbstractXYAnnotation {
 	
 	private static final long serialVersionUID = 1L;

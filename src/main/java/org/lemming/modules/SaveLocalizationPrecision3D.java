@@ -9,6 +9,12 @@ import org.lemming.interfaces.Element;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * Save 3D localizations in the ViSP format.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class SaveLocalizationPrecision3D extends SingleRunModule {
 
 	final private Locale curLocale;

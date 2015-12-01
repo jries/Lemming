@@ -7,6 +7,13 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * ROI selection prior detection
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> data type
+ */
 @SuppressWarnings("deprecation")
 public class RoiSelector<T> extends SingleRunModule {
 	

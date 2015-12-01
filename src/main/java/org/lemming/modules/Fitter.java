@@ -14,6 +14,13 @@ import org.lemming.pipeline.MultiRunModule;
 
 import ij.gui.Roi;
 
+/**
+ * base clase for all Fitter plug-ins
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ */
 public abstract class Fitter<T extends RealType<T>> extends MultiRunModule {
 
 	protected int size;

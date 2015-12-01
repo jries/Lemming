@@ -14,7 +14,13 @@ import org.apache.commons.math3.util.Precision;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 
-public class Gaussian2DFitter {
+/**
+ * Fitter module for the 3D astigmatism fit calculating Z from sigmax and sigmay
+ * 
+ * @author Ronny Sczech
+ *
+ */
+public class Gaussian2DFitter implements FitterInterface {
 	
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;
@@ -74,6 +80,7 @@ public class Gaussian2DFitter {
 		}
 	}
 	
+	@Override
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);

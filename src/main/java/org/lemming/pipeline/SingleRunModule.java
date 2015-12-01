@@ -2,6 +2,12 @@ package org.lemming.pipeline;
 
 import org.lemming.interfaces.Element;
 
+/**
+ * Single threaded modules
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public abstract class SingleRunModule extends AbstractModule {
 
 	@Override

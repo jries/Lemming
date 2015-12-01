@@ -3,6 +3,12 @@ package org.lemming.math;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 
+/**
+ * Fitter for the calibration curve
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class CalibrationCurve {
 
 	public static int INDEX_WX = 0;

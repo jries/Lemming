@@ -20,6 +20,12 @@ import org.lemming.tools.FloatingDecimal;
 import ij.IJ;
 import javolution.util.FastTable;
 
+/**
+ * loading localizations into a table
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class TableLoader {
 
 	private File file;

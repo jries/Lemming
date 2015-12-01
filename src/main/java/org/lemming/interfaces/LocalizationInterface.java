@@ -1,6 +1,10 @@
 package org.lemming.interfaces;
 
-
+/**
+ * The basic interface for holding a localization following the ViSP standard
+ * @author Ronny Sczech
+ *
+ */
 public interface LocalizationInterface extends Element {
 
 	/**

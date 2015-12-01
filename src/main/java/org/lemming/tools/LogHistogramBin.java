@@ -2,6 +2,12 @@ package org.lemming.tools;
 
 import java.io.Serializable;
 
+/**
+ * A class defining bins used in logarithmic histograms
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class LogHistogramBin implements Cloneable, Serializable {
 
 	/** For serialization. */

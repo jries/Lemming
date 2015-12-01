@@ -25,6 +25,12 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
+/**
+ *  a class for handling the calibration process
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class Calibration {
 
 	public static int INDEX_WX = 0;

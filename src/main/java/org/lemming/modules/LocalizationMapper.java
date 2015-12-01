@@ -5,6 +5,12 @@ import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * 
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class LocalizationMapper extends SingleRunModule {
 
 	private String[] nameArray;

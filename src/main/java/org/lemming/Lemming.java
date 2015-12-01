@@ -6,6 +6,12 @@ import org.lemming.gui.Controller;
 
 import ij.plugin.PlugIn;
 
+/**
+ * Main entry point of the program
+ * 
+ * @author Ronny Sczech
+ *
+ */
 @SuppressWarnings("rawtypes")
 public class Lemming implements PlugIn {
 

@@ -12,6 +12,12 @@ import org.lemming.pipeline.Localization;
 
 import ij.process.FloatPolygon;
 
+/**
+ * General utility class
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class LemmingUtils {
 
 	public static FloatPolygon convertToPoints(List<Element> me, float pixelSize) {

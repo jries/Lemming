@@ -2,6 +2,12 @@ package org.lemming.tools;
 
 import java.util.Arrays;
 
+/**
+ * Parser for the char buffered reader {@link #CharBufferedReader}
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class FloatingDecimal {
 
 	private boolean isNegative;

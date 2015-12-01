@@ -6,6 +6,13 @@ import net.imglib2.RealPoint;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 
+/**
+ * Calculating centroids on a {@link #RandomAccessibleInterval}
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T>
+ */
 public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface  {
 	
 	private IntervalView<T> op;

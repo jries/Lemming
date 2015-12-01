@@ -2,6 +2,12 @@ package org.lemming.pipeline;
 
 import org.lemming.interfaces.LocalizationInterface;
 
+/**
+ * a localization implementation following the ViSP 2D format
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class Localization implements LocalizationInterface {
 
 	final private Number X;

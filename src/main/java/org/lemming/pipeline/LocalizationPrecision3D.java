@@ -1,5 +1,11 @@
 package org.lemming.pipeline;
 
+/**
+ * a localization implementation following the ViSP 3D format
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public class LocalizationPrecision3D extends Localization{
 
 	final private Number Z;

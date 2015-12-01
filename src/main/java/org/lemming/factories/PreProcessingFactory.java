@@ -6,6 +6,12 @@ import org.lemming.interfaces.PluginInterface;
 import org.lemming.modules.ImageMath.operators;
 import org.lemming.pipeline.AbstractModule;
 
+/**
+ * Factory for any pre-processing before fitting.
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public interface PreProcessingFactory extends PluginInterface {
 	
 	/**

@@ -6,6 +6,12 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.PluginInterface;
 import org.lemming.pipeline.AbstractModule;
 
+/**
+ * Factory for detectors
+ * 
+ * @author Ronny Sczech
+ *
+ */
 public interface DetectorFactory extends PluginInterface{
 
 	/**

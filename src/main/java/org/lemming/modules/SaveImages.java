@@ -11,6 +11,14 @@ import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.pipeline.SingleRunModule;
 
+/**
+ * a class for saving intermediate frames
+ * 
+ * @author Ronny Sczech
+ *
+ * @param <T> - data type
+ * @param <F> - frame type
+ */
 public class SaveImages<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
 	
 	private String filename;
