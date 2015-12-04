@@ -157,7 +157,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 
 	@Override
 	public boolean check() {
-		return inputs.size()==1 && outputs.size()>=1;
+		return inputs.size()==2 && outputs.size()>=1;
 	}
 
 }
