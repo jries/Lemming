@@ -33,7 +33,8 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 
 	public static final String KEY = "FASTMEDIAN";
 
-	public static final String INFO_TEXT = "<html>" + "Fast Median Filter with the option to interpolate between blocks" + "</html>";
+	public static final String INFO_TEXT = "<html>" + "Fast Median Filter using a 3x3 kernel times the given frames for calculating an approximate median."
+			+ "It has an option to interpolate between blocks" + "</html>";
 
 	private int nFrames;
 
@@ -122,7 +123,6 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 				values.add(currentCursor.get().getInteger());
 			}
 			// find the median
-
 			Integer median = QuickSelect.fastmedian(values, values.size());
 			// Integer median = QuickSelect.select(values, middle);
 			if (median != null)
@@ -135,6 +135,9 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 		return newFrame;
 	}
 	
+	/**
+	 * interpolate between blocks
+	 */
 	private void interpolate(){
 		RandomAccessibleInterval<T> intervalA = frameA.getPixels();
 		RandomAccessibleInterval<T> intervalB = frameB.getPixels();
@@ -177,6 +180,13 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 		lastFrame.setLast(true);
 		newOutput(lastFrame);
 	}
+	
+	/**
+	 * Factory for the Fast Median Filter implementation
+	 * 
+	 * @author Ronny Sczech
+	 *
+	 */
 	
 	@Plugin(type = PreProcessingFactory.class, visible = true)
 	public static class Factory implements PreProcessingFactory {

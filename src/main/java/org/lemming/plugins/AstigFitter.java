@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 
@@ -16,22 +15,24 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.math.GaussianFitterZ;
+import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
-public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
+public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Astigmatism Fitter";
+	public static final String NAME = "Astigmatism";
 
 	public static final String KEY = "ASTIGFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "Astigmatism Fitter Plugin" + "</html>";
+	public static final String INFO_TEXT = "<html>" + "Astigmatism Fitter with Z" + "</html>";
 
-	private final double[] params;
+	private double[] params;
 
 	public AstigFitter(final int windowSize, final List<Double> list) {
 		super(windowSize);
@@ -41,10 +42,10 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, final RandomAccessibleInterval<T> pixels, final long windowSize, final long frameNumber,
-			final double pixelDepth) {
-		ImageProcessor ip = ImageJFunctions.wrap(pixels, "").getProcessor();
-		List<Element> found = new ArrayList<>();
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+		final double pixelDepth = frame.getPixelDepth();
+		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
+		final List<Element> found = new ArrayList<>();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			double x = loc.getX().longValue() / pixelDepth;
@@ -108,6 +109,11 @@ public class AstigFitter<T extends RealType<T>> extends Fitter<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+
+		@Override
+		public int getHalfKernel() {
+			return size;
 		}
 
 	}

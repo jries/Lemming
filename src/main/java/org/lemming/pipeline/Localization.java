@@ -18,10 +18,14 @@ public class Localization implements LocalizationInterface {
 	final private Long frame;
 	final private Number intensity;
 	
-	
 	public Localization(Number x, Number y, Number intensity, Long frame) {
 		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false; this.intensity = intensity;
 	}
+	
+	public long getID() {
+		return ID;
+	}
+
 	
 	@Override
 	public boolean isLast() {

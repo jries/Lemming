@@ -32,10 +32,14 @@ public interface FitterFactory extends PluginInterface{
 	public <T extends RealType<T>> Fitter<T> getFitter();
 	
 	/**
-	 * Returns a new GUI panel able to configure the settings suitable for this
+	 * @return Returns a new GUI panel able to configure the settings suitable for this
 	 * specific detector factory.
 	 */
-
 	public ConfigurationPanel getConfigurationPanel();
+	
+	/**
+	 *  @return halfkernel size
+	 */
+	public int getHalfKernel();
 
 }

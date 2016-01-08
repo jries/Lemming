@@ -22,7 +22,7 @@ import ij.process.ImageProcessor;
  * @author Ronny Sczech
  *
  */
-public class GaussianFitterZ implements FitterInterface {
+public class GaussianFitterZ {
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;
 	private static final int INDEX_Z0 = 2;
@@ -97,7 +97,6 @@ public class GaussianFitterZ implements FitterInterface {
 		//	Ival[l] /= max;
 	}
 
-	@Override
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);

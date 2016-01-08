@@ -63,9 +63,9 @@ public class HistogramRenderer extends Renderer {
 		final double x, y, z;
 		if (data instanceof LocalizationPrecision3D) {
 			LocalizationPrecision3D loc = (LocalizationPrecision3D) data;
-			x = (float) loc.getX();
-			y = (float) loc.getY();
-			z = (float) loc.getZ();
+			x = loc.getX().doubleValue();
+			y = loc.getY().doubleValue();
+			z = loc.getZ().doubleValue();
 		} else if (data instanceof ElementMap) {
 			ElementMap map = (ElementMap) data;
 			try {

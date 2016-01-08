@@ -10,7 +10,6 @@ import org.lemming.gui.PeakFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.modules.Detector;
-import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
@@ -130,12 +129,11 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detec
 			return settings != null;
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
-		public AbstractModule getDetector() {
+		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
 			final double threshold = (Double) settings.get(PeakFinderPanel.KEY_THRESHOLD);
 			final int kernelSize = (Integer) settings.get(PeakFinderPanel.KEY_KERNEL_SIZE);
-			return new PeakFinder(threshold, kernelSize);
+			return new PeakFinder<>(threshold, kernelSize);
 		}
 
 		@Override

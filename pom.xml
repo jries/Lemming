@@ -11,7 +11,7 @@
   
   <groupId>org.lemming</groupId>
   <artifactId>lemming_</artifactId>
-  <version>0.3.3</version>
+  <version>0.3.4</version>
   <name>Lemming</name>
   <description>The ultimate localization microscopy software</description>
   
@@ -45,6 +45,11 @@
       		<id>ome.snapshots</id>
      		<url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
    		</repository>
+   		 <repository>
+    		<id>jcuda.local</id>
+            <name>JCuda</name>
+            <url>file:${project.basedir}/jars</url>
+  		</repository>
 	</repositories>
 	
 	<pluginRepositories>
@@ -91,7 +96,6 @@
 			<groupId>org.jfree</groupId>
 			<artifactId>jfreechart</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.javolution</groupId>
 			<artifactId>javolution-core-java</artifactId>
@@ -101,6 +105,11 @@
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-common</artifactId>
 		</dependency>
+		<dependency>
+            <groupId>jcuda</groupId>
+            <artifactId>jcuda</artifactId>
+            <version>0.7.5</version>
+        </dependency>
 	</dependencies>	
 	<build>
 	<plugins>

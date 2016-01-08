@@ -9,6 +9,8 @@ import ij.gui.ImageWindow;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.gui.StackWindow;
+import ij.io.OpenDialog;
+import ij.io.SaveDialog;
 import ij.measure.Calibration;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
@@ -44,7 +46,6 @@ import java.awt.FlowLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -65,6 +66,7 @@ import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.DataTable;
+import org.lemming.modules.Detector;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
@@ -106,8 +108,6 @@ import java.awt.event.KeyAdapter;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
@@ -166,7 +166,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private ImageLoader<T> tif;
 	private Map<String, Object> settings;
 	private StackWindow previewerWindow;
-	private AbstractModule detector;
+	private Detector<T,F> detector;
 	private Fitter<T> fitter;
 	private ContrastAdjuster contrastAdjuster;
 	private Renderer renderer;
@@ -274,20 +274,20 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 					.addContainerGap()
 					.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING, false)
 						.addComponent(checkboxPP)
-						.addGroup(gl_panelUpper.createSequentialGroup()
-							.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblPeakDet)
-								.addComponent(lblFitter))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelUpper.createSequentialGroup()
-									.addComponent(comboBoxFitter, 0, 195, Short.MAX_VALUE)
-									.addPreferredGap(ComponentPlacement.RELATED))
-								.addComponent(comboBoxPeakDet, GroupLayout.PREFERRED_SIZE, 199, GroupLayout.PREFERRED_SIZE)))
-						.addGroup(gl_panelUpper.createSequentialGroup()
-							.addComponent(lblDataSource)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(lblFile, GroupLayout.PREFERRED_SIZE, 187, GroupLayout.PREFERRED_SIZE)))
+						.addGroup(gl_panelUpper.createParallelGroup(Alignment.TRAILING)
+							.addGroup(gl_panelUpper.createSequentialGroup()
+								.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
+									.addComponent(lblPeakDet)
+									.addComponent(lblFitter))
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(gl_panelUpper.createParallelGroup(Alignment.LEADING)
+									.addComponent(comboBoxPeakDet, 0, 177, Short.MAX_VALUE)
+									.addComponent(comboBoxFitter, 0, 177, Short.MAX_VALUE))
+								.addPreferredGap(ComponentPlacement.RELATED))
+							.addGroup(Alignment.LEADING, gl_panelUpper.createSequentialGroup()
+								.addComponent(lblDataSource)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(lblFile, GroupLayout.PREFERRED_SIZE, 187, GroupLayout.PREFERRED_SIZE))))
 					.addGap(1))
 		);
 		gl_panelUpper.setVerticalGroup(
@@ -533,6 +533,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 					fitterPreview(getConfigSettings(panelLower).getSettings());
 			}
 		});
+		OpenDialog.setDefaultDirectory(System.getProperty("user.home"));
 	}
 
 	//// Overrides
@@ -677,16 +678,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		ImagePlus loc_im = WindowManager.getCurrentImage();
 
 		if (loc_im == null) {
-			final JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
-			fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-			fc.setDialogTitle("Import Images");
-
-			final int returnVal = fc.showOpenDialog(this);
-
-			if (returnVal != JFileChooser.APPROVE_OPTION)
-				return;
-
-			final File file = fc.getSelectedFile();
+			final OpenDialog od = new OpenDialog("Import Images");
+			if(od.getFileName()==null) return;
+			final File file = new File(od.getDirectory()+od.getFileName());
 
 			if (file.isDirectory()) {
 				final FolderOpener fo = new FolderOpener();
@@ -729,16 +723,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 	private void loadLocalizations() {
 		manager.reset();
-		JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
-		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		fc.setDialogTitle("Import Data");
-
-		int returnVal = fc.showOpenDialog(this);
-
-		if (returnVal != JFileChooser.APPROVE_OPTION)
-			return;
-
-		File file = fc.getSelectedFile();
+		final OpenDialog od = new OpenDialog("Import Data");
+		if(od.getFileName()==null) return;
+		File file = new File(od.getDirectory()+od.getFileName());
 
 		TableLoader tl = new TableLoader(file);
 		tl.readCSV(',');
@@ -869,6 +856,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		// TODO constrain to current ROI
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
+		previewerWindow.getImagePlus().killRoi();
 		int frameNumber = previewerWindow.getImagePlus().getSlice();
 		double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
 		ImageStack stack = previewerWindow.getImagePlus().getStack();
@@ -879,6 +867,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), (float)pixelSize);
 		PointRoi roi = new PointRoi(points);
+		
 		previewerWindow.getImagePlus().setRoi(roi);
 	}
 
@@ -905,24 +894,22 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		if (calibFile != null)
 			fitterSettings.put(FitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
 		fitterPreview(fitterSettings);
-		
 		panelLower.repaint();
 	}
 
 	private void fitterPreview(Map<String, Object> map) {
-		if (!fitterFactory.setAndCheckSettings(map))
-			return;
+		if (!fitterFactory.setAndCheckSettings(map)) return;
 		fitter = fitterFactory.getFitter();
-
 		previewerWindow.getImagePlus().killRoi();
 		final int frameNumber = previewerWindow.getImagePlus().getSlice();
 		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
 		final ImageStack stack = previewerWindow.getImagePlus().getStack();
 		final Object ip = stack.getPixels(frameNumber);
 		final Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
-		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+		final Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
-		fitResults = fitter.fit(detResults.getList(), curFrame.getPixels(), fitter.getWindowSize(), frameNumber, pixelSize);
+		fitResults = fitter.fit(detResults.getList(), curFrame, fitterFactory.getHalfKernel());
+		if (fitResults == null) return;
 		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, (float)pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		previewerWindow.getImagePlus().setRoi(roi);
@@ -1071,15 +1058,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	}
 
 	private void saveLocalizations() {
-		final JFileChooser fc = new JFileChooser(System.getProperty("user.home") + "/ownCloud/storm");
-		fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		fc.setDialogTitle("Save Data");
-		final FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", "csv", "CSV");
-		fc.setFileFilter(filter);
-
-		if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
-			return;
-		final File file = fc.getSelectedFile();
+		final SaveDialog sd = new SaveDialog("Import Images", "Results", ".csv");
+		if(sd.getFileName()==null) return;
+		final File file = new File(sd.getDirectory()+sd.getFileName());
 		if (this.chkboxFilter.isSelected()) {
 			ExtendableTable tableToProcess = filteredTable == null ? table : filteredTable;
 			final Store s = tableToProcess.getFIFO();
@@ -1090,6 +1071,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		} else {
 			if (fitter != null) {
 				saver = new SaveLocalizationPrecision3D(file);
+				if (!manager.getMap().containsKey(fitter.hashCode())) manager.add(fitter);
 				manager.add(saver);
 				manager.linkModules(fitter, saver, false, 100);
 			} else {
@@ -1248,6 +1230,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		comboBoxRenderer.setRenderer(new ToolTipRenderer(infoTexts));
 	}
 
+	@SuppressWarnings("unused")
 	private void createActionProvider() {
 		actionProvider = new ActionProvider();
 		final List<String> visibleKeys = actionProvider.getVisibleKeys();
@@ -1258,7 +1241,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			infoTexts.add(actionProvider.getFactory(key).getInfoText());
 		}
 		String[] names = actionNames.toArray(new String[] {});
-		System.out.println(names.toString());
+		//System.out.println(names.toString());
 	}
 
 	

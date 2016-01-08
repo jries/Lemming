@@ -13,7 +13,7 @@ import net.imglib2.view.IntervalView;
  *
  * @param <T>
  */
-public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface  {
+public class CentroidFitterRA<T extends RealType<T>>  {
 	
 	private IntervalView<T> op;
 	private double thresh;
@@ -27,7 +27,6 @@ public class CentroidFitterRA<T extends RealType<T>> implements FitterInterface 
 			center.setPosition(op.min(d)+(op.dimension(d)/2), d);		
 	}
 	
-	@Override
 	public double[] fit(){
 		
 		Cursor<T> c = op.cursor();

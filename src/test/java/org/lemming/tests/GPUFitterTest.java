@@ -12,15 +12,14 @@ import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizationPrecision3D;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
+import org.lemming.plugins.MLE_Fitter;
 import org.lemming.plugins.NMSDetector;
-import org.lemming.plugins.SymmetricGaussianFitter;
-
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
 
 @SuppressWarnings("rawtypes")
-public class GaussianFitterTest {
+public class GPUFitterTest {
 
 	private Manager pipe;
 	private Map<Integer, Store> storeMap;
@@ -47,8 +46,8 @@ public class GaussianFitterTest {
 		AbstractModule tif = new ImageLoader(loc_im);
 
 		AbstractModule peak = new NMSDetector(700,7);
-		AbstractModule fitter = new SymmetricGaussianFitter<>(7);
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/Videos/test9000_SG.csv"));
+		AbstractModule fitter = new MLE_Fitter<>(7);
+		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/Videos/test81000_GF.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

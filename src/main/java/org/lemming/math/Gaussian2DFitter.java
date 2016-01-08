@@ -20,7 +20,7 @@ import ij.process.ImageProcessor;
  * @author Ronny Sczech
  *
  */
-public class Gaussian2DFitter implements FitterInterface {
+public class Gaussian2DFitter {
 	
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;
@@ -80,7 +80,6 @@ public class Gaussian2DFitter implements FitterInterface {
 		}
 	}
 	
-	@Override
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussian eg = new EllipticalGaussian(xgrid, ygrid);

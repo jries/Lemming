@@ -14,7 +14,6 @@ import org.lemming.gui.NMSDetectorPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.modules.Detector;
-import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
@@ -127,12 +126,11 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 			return true;
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
-		public AbstractModule getDetector() {
+		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
 			final double threshold = (Double) settings.get(NMSDetectorPanel.KEY_NMS_THRESHOLD);
 			final int stepSize = (Integer) settings.get(NMSDetectorPanel.KEY_NMS_STEPSIZE);
-			return new NMSDetector(threshold, stepSize);
+			return new NMSDetector<>(threshold, stepSize);
 		}
 
 		@Override

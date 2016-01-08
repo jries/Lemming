@@ -30,7 +30,6 @@ import org.lemming.gui.DoGFinderPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.modules.Detector;
-import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
@@ -202,12 +201,11 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 			return true;
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
-		public AbstractModule getDetector() {
+		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
 			final double threshold = (Double) settings.get(DoGFinderPanel.KEY_THRESHOLD);
 			final int radius = (Integer) settings.get(DoGFinderPanel.KEY_RADIUS);
-			return new DoGFinder(threshold, radius);
+			return new DoGFinder<>(threshold, radius);
 		}
 
 		@Override

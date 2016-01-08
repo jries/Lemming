@@ -8,36 +8,37 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.QuadraticFitterPanel;
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.math.SubpixelLocalization;
+import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.scijava.plugin.Plugin;
 
 import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
-public class QuadraticFitter<T extends RealType<T>> extends Fitter<T> {
+public class QuadraticFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Quadratic Fitter";
+	public static final String NAME = "Quadratic";
 
 	public static final String KEY = "QUADRATICFITTER";
 
 	public static final String INFO_TEXT = "<html>" + "Quadratic Fitter Plugin (without z-direction)" + "</html>";
 
-	public QuadraticFitter(int windowSize) {
-		super(windowSize);
+	public QuadraticFitter(int halfkernel) {
+		super(halfkernel);
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, final RandomAccessibleInterval<T> pixels, final long windowSize, final long frameNumber,
-			final double pixelDepth) {
-		final RandomAccessible<T> ra = Views.extendBorder(pixels);
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+		
+		final RandomAccessible<T> ra = Views.extendBorder(frame.getPixels());
 		final boolean[] allowedToMoveInDim = new boolean[ra.numDimensions()];
 		Arrays.fill(allowedToMoveInDim, true);
 
-		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, pixels, true, size, true, 0.01f, allowedToMoveInDim,
-				pixelDepth);
+		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, frame.getPixels(), true, size, true, 0.01f, allowedToMoveInDim,
+				frame.getPixelDepth());
 
 		return refined;
 	}
@@ -79,6 +80,11 @@ public class QuadraticFitter<T extends RealType<T>> extends Fitter<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+
+		@Override
+		public int getHalfKernel() {
+			return size;
 		}
 
 	}

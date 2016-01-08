@@ -9,7 +9,9 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.math.Gaussian2DFitter;
+import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.Localization;
@@ -19,13 +21,12 @@ import org.scijava.plugin.Plugin;
 import ij.IJ;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.RealType;
 
-public class GaussianFitter<T extends RealType<T>> extends Fitter<T> {
+public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Gaussian Fitter";
+	public static final String NAME = "Gaussian";
 	public static final String KEY = "GAUSSIANFITTER";
 	public static final String INFO_TEXT = "<html>" + "Gaussian Fitter Plugin (with sx and sy)" + "</html>";
 
@@ -51,10 +52,10 @@ public class GaussianFitter<T extends RealType<T>> extends Fitter<T> {
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, final RandomAccessibleInterval<T> pixels, final long windowSize, final long frameNumber,
-			final double pixelDepth) {
-		ImageProcessor ip = ImageJFunctions.wrap(pixels, "").getProcessor();
-		List<Element> found = new ArrayList<>();
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+		final double pixelDepth = frame.getPixelDepth();
+		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
+		final List<Element> found = new ArrayList<>();
 		final Rectangle imageRoi = ip.getRoi();
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
@@ -175,6 +176,11 @@ public class GaussianFitter<T extends RealType<T>> extends Fitter<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+
+		@Override
+		public int getHalfKernel() {
+			return size;
 		}
 
 	}

@@ -7,7 +7,6 @@ import java.util.Map;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessible;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
@@ -16,13 +15,15 @@ import org.lemming.factories.FitterFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.FitterPanel;
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.math.CentroidFitterRA;
+import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.scijava.plugin.Plugin;
 
-public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
+public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
 	public static final String NAME = "Centroid Fitter";
 
@@ -32,17 +33,17 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 
 	private double thresh;
 
-	public CentroidFitter(int windowSize, double threshold_) {
-		super(windowSize);
+	public CentroidFitter(int halfkernel, double threshold_) {
+		super(halfkernel);
 		thresh = threshold_;
 	}
 
 	@Override
-	public List<Element> fit(List<Element> sliceLocs, RandomAccessibleInterval<T> pixels, long windowSize, long frameNumber, final double pixelDepth) {
-
-		final RandomAccessible<T> source = Views.extendMirrorSingle(pixels);
-		List<Element> found = new ArrayList<>();
-		int halfKernel = size / 2;
+	public List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) {
+		final double pixelDepth = frame.getPixelDepth();
+		final RandomAccessible<T> source = Views.extendMirrorSingle(frame.getPixels());
+		final List<Element> found = new ArrayList<>();
+		final int halfKernel = size;
 
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
@@ -105,6 +106,11 @@ public class CentroidFitter<T extends RealType<T>> extends Fitter<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+
+		@Override
+		public int getHalfKernel() {
+			return size;
 		}
 
 	}
