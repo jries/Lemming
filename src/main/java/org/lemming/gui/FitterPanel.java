@@ -60,7 +60,7 @@ public class FitterPanel extends ConfigurationPanel {
 				fireChanged();
 			}
 		});
-		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
+		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(5), null, null, new Integer(1)));
 		
 		lblCalibration = new JLabel("File");
 		lblCalibration.setAlignmentX(0.5f);

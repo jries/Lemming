@@ -28,7 +28,7 @@ public class GPUFitterTest {
 	@Before
 	public void setUp() throws Exception {
 		
-        File file = new File(System.getProperty("user.home")+"/Videos/test81000.tif");
+        File file = new File(System.getProperty("user.home")+"/Documents/storm/experiment3D.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -45,9 +45,9 @@ public class GPUFitterTest {
 		
 		AbstractModule tif = new ImageLoader(loc_im);
 
-		AbstractModule peak = new NMSDetector(700,7);
+		AbstractModule peak = new NMSDetector(50,7);
 		AbstractModule fitter = new MLE_Fitter<>(7);
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/Videos/test81000_GF.csv"));
+		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/Videos/experiment3D_GF.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
@@ -57,7 +57,7 @@ public class GPUFitterTest {
 		
 		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
 		pipe.linkModules(peak,fitter);
-		pipe.linkModules(fitter,saver,false, 100);
+		pipe.linkModules(fitter,saver,false, 256);
 		storeMap = pipe.getMap();
 	}
 

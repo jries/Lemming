@@ -37,7 +37,7 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 		return inputs.size() == 1;
 	}
 
-	protected static Roi cropRoi(Rectangle imageRoi, Rectangle curRect) {
+	public static Roi cropRoi(Rectangle imageRoi, Rectangle curRect) {
 		double x1 = curRect.getMinX() < imageRoi.getMinX() ? imageRoi.getMinX() : curRect.getMinX();
 		double y1 = curRect.getMinY() < imageRoi.getMinY() ? imageRoi.getMinY() : curRect.getMinY();
 		double x2 = curRect.getMaxX() > imageRoi.getMaxX() ? imageRoi.getMaxX() : curRect.getMaxX();

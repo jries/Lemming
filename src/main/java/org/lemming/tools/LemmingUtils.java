@@ -5,6 +5,7 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 
 import java.awt.image.IndexColorModel;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.lemming.interfaces.Element;
@@ -27,6 +28,16 @@ public class LemmingUtils {
 			polygon.addPoint(loc.getX().floatValue() / pixelSize, loc.getY().floatValue() / pixelSize);
 		}
 		return polygon;
+	}
+	
+	public static List<Element> pointsToLocs(FloatPolygon p, float pixelSize, long frame) {
+		List<Element> me = new ArrayList<>();
+		float[] xs = p.xpoints;
+		float[] ys = p.ypoints;
+		for (int i=0;i<xs.length;i++) {
+			me.add(new Localization(xs[i]*pixelSize, ys[i]*pixelSize, 1, frame));
+		}
+		return me;
 	}
 
 	@SuppressWarnings("unchecked")

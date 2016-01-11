@@ -57,7 +57,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	public MLE_Fitter(int windowSize) {
 		super(windowSize);
 		kernelSize = 2 * size + 1;
-		maxKernels = (int) (40000/Math.pow(kernelSize, 3)*5000);
+		maxKernels = (int) (40000/Math.pow(kernelSize, 3)*2000);
 		kernelList = new FastTable<>();
 		JCudaDriver.setExceptionsEnabled(true);
  		cuInit(0);

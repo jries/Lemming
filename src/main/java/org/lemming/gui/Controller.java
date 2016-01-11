@@ -65,6 +65,7 @@ import org.lemming.factories.RendererFactory;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.Store;
+import org.lemming.math.CentroidFitterIP;
 import org.lemming.modules.DataTable;
 import org.lemming.modules.Detector;
 import org.lemming.modules.Fitter;
@@ -530,7 +531,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 					detectorPreview(getConfigSettings(panelLower).getSettings());
 				else
 				if (widgetSelection == FITTER && ip == previewerWindow.getImagePlus() )
-					fitterPreview(getConfigSettings(panelLower).getSettings());
+					fitterPreview();
 			}
 		});
 		OpenDialog.setDefaultDirectory(System.getProperty("user.home"));
@@ -848,18 +849,22 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 
 		ConfigurationPanel panelDown = getConfigSettings(panelLower);
 		detectorPreview(panelDown.getSettings());
+		settings.putAll(panelDown.getSettings());
 		panelLower.repaint();
 	}
 
 	@SuppressWarnings("unchecked")
 	private void detectorPreview(Map<String, Object> map) {
 		// TODO constrain to current ROI
+		settings.putAll(map);
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
-		previewerWindow.getImagePlus().killRoi();
-		int frameNumber = previewerWindow.getImagePlus().getSlice();
-		double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		ImageStack stack = previewerWindow.getImagePlus().getStack();
+		final ImagePlus img = previewerWindow.getImagePlus();
+		img.killRoi();
+		int frameNumber = img.getCurrentSlice();
+		double pixelSize = img.getCalibration().pixelDepth;
+		ImageStack stack = img.getStack();
+		
 		Object ip = stack.getPixels(frameNumber);
 		Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
@@ -867,8 +872,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), (float)pixelSize);
 		PointRoi roi = new PointRoi(points);
-		
-		previewerWindow.getImagePlus().setRoi(roi);
+		img.setRoi(roi);
 	}
 
 	private void chooseFitter() {
@@ -887,32 +891,29 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		((TitledBorder) panelLower.getBorder()).setTitle(fitterFactory.getName());
 		((CardLayout) panelLower.getLayout()).show(panelLower, key);
 		System.out.println("Fitter_" + index + " : " + key);
-		ConfigurationPanel panelDown = getConfigSettings(panelLower);
-		final Map<String, Object> fitterSettings = panelDown.getSettings();
-		
-		final Object calibFile = settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
-		if (calibFile != null)
-			fitterSettings.put(FitterPanel.KEY_CALIBRATION_FILENAME, calibFile);
-		fitterPreview(fitterSettings);
+	
+		fitterPreview();
 		panelLower.repaint();
 	}
 
-	private void fitterPreview(Map<String, Object> map) {
-		if (!fitterFactory.setAndCheckSettings(map)) return;
-		fitter = fitterFactory.getFitter();
-		previewerWindow.getImagePlus().killRoi();
-		final int frameNumber = previewerWindow.getImagePlus().getSlice();
-		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
-		final ImageStack stack = previewerWindow.getImagePlus().getStack();
-		final Object ip = stack.getPixels(frameNumber);
-		final Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
-		final Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+	@SuppressWarnings("unchecked")
+	private void fitterPreview() { // use only CentroidFitter for performance reasons
+		final ImagePlus img = previewerWindow.getImagePlus();
+		img.killRoi();
+		final int frameNumber = img.getCurrentSlice();
+		final float pixelSize = (float) img.getCalibration().pixelDepth;
+		final ImageStack stack = img.getStack();
+		final ImageProcessor ip = stack.getProcessor(frameNumber);
+		Object pixels = stack.getPixels(frameNumber);
+		Img<T> curImage = LemmingUtils.wrap(pixels, new long[]{stack.getWidth(), stack.getHeight()});
+		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+		detResults = (FrameElements<T>) detector.preview(curFrame);
+		fitResults = CentroidFitterIP.fit(detResults.getList(), ip, fitterFactory.getHalfKernel(), pixelSize);
 
-		fitResults = fitter.fit(detResults.getList(), curFrame, fitterFactory.getHalfKernel());
 		if (fitResults == null) return;
-		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, (float)pixelSize);
+		FloatPolygon points = LemmingUtils.convertToPoints(fitResults, pixelSize);
 		final PointRoi roi = new PointRoi(points);
-		previewerWindow.getImagePlus().setRoi(roi);
+		img.setRoi(roi);
 	}
 	
 	// set a new Renderer
@@ -1187,11 +1188,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			infoTexts.add(factory.getInfoText());
 			final ConfigurationPanel panelDown = factory.getConfigurationPanel();
 			panelDown.addPropertyChangeListener(ConfigurationPanel.propertyName, new PropertyChangeListener() {
-				@SuppressWarnings("unchecked")
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
-					Map<String, Object> value = (Map<String, Object>) evt.getNewValue();
-					fitterPreview(value);
+					fitterPreview();
 				}
 			});
 			panelLower.add(panelDown, key);

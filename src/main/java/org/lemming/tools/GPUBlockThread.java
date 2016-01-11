@@ -70,7 +70,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
     	long start = System.currentTimeMillis();
     	//put as many images as fit into a block
     	int BlockSize = Math.max(4, blockSize);
-    	BlockSize = Math.min(1024, BlockSize);
+    	BlockSize = Math.min(512, BlockSize);
     	//int Nfits = BlockSize * (int) Math.ceil( (float) dims[2]/BlockSize);
     	int size = sz*sz*Nfits;
     	
