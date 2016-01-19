@@ -2,6 +2,7 @@ package org.lemming.tests;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.Map;
 
 import org.junit.Before;
@@ -9,8 +10,11 @@ import org.junit.Test;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
+import org.lemming.modules.SaveImages;
+import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.FastMedianFilter;
+import org.lemming.plugins.NMSDetector;
 
 import ij.ImagePlus;
 
@@ -23,24 +27,39 @@ public class ImageMathTest {
 
 	private FastMedianFilter fmf;
 	private Map<Integer, Store> map;
+	private NMSDetector det;
+	private SaveLocalizations saver;
+	private SaveImages si;
 	
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Manager();
-		final ImagePlus image = new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif");
+		final ImagePlus image = new ImagePlus("D:/Images/test81000.tif");
 		tif = new ImageLoader(image);
 		pipe.add(tif);
 	
-		fmf = new FastMedianFilter(50, true);
+		fmf = new FastMedianFilter(100, true);
 		pipe.add(fmf);
 		
-		im = new ImageMath();
+		im = new ImageMath(100);
 		im.setOperator(ImageMath.operators.SUBSTRACTION);
 		pipe.add(im);
+		
+		det = new NMSDetector(700, 7);
+		pipe.add(det);
+		
+		saver = new SaveLocalizations(new File("D:/Images/test.csv"));
+		pipe.add(saver);
+		
+		si = new SaveImages("D:/Images/test.tif");
+		pipe.add(si);
 		
 		pipe.linkModules(tif, fmf, true, image.getStackSize());
 		pipe.linkModules(tif, im);
 		pipe.linkModules(fmf, im);
+		pipe.linkModules(fmf, si);
+		pipe.linkModules(im, det);
+		pipe.linkModules(det, saver, false, 128);
 		map = pipe.getMap();
 		
 	}

@@ -36,6 +36,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	private List<Kernel> kList;
 	private int PARAMETER_LENGTH;
 	private String functionName;
+	private static int count = 0;
 	
 	private static final float PSFSigma = 1.3f;
 	private static final int iterations = 50;
@@ -141,7 +142,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
         cudaFree(d_CRLBs);
         cudaFree(d_LogLikelihood);
         cuCtxDestroy(context);
-        System.out.println("Kernels:" + nKernels + " BlockSize:"+ BlockSize + " GridSize:" + gridSizeX +" Elapsed time in ms: "+(System.currentTimeMillis()-start));
+        System.out.println("count:"+ count++ +" Kernels:" + nKernels + " BlockSize:"+ BlockSize + " GridSize:" + gridSizeX +" Elapsed time in ms: "+(System.currentTimeMillis()-start));
 		return result;
     }
 	

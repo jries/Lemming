@@ -84,4 +84,9 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 		else return -1;
 	}
 	
+	@Override
+	public String toString(){
+		return "F_"+getFrameNumber();
+	}
+	
 }

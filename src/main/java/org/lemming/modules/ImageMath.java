@@ -34,9 +34,10 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	private int counter;
 	private Store inputA;
 	private Store inputB;
-	private Store output;
+	private int frames;
 	
-	public ImageMath(){
+	public ImageMath(int frames){
+		this.frames = frames;
 	}
 	
 	public void setOperator(operators op){
@@ -50,20 +51,15 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 			iterator = it.next();							// first input
 			inputB = inputs.get(iterator);
 			inputA = inputs.get(it.next());
-			output = outputs.values().iterator().next(); 	// output
 		} catch (NoSuchElementException | NullPointerException ex){
 			System.err.println("Input provided not correct!");
 			Thread.currentThread().interrupt();
 		}
 	
-		int length = 0;
 		boolean loop = true;
-		while(loop){									// check for equal number in the two input stores
-			for ( Integer key : inputs.keySet()){
-				if (length == inputs.get(key).size())
-					loop = false;
-				length = inputs.get(key).size();
-			}
+		while(loop){									// check for minimum elements in the two input stores
+			if ((frames < inputB.size()) && (frames < inputA.size()))
+				loop = false;
 			pause(10);
 		}
 		System.out.println("Image Math - Input ready");
@@ -75,7 +71,19 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	public Element processData(Element data) {
 		F frameB = (F) data;
 		if (frameB == null) { return null; }
-		F frameA = (F) inputA.poll();
+		F test = null;
+		int maxFrames = Math.min(frames*4,Math.max(inputA.size(), inputB.size()));
+		for(int i=0;i<maxFrames;i++){
+			test = (F)inputA.poll();
+			if (test==null) continue;
+			if (frameB.getFrameNumber()==test.getFrameNumber())
+				break;
+			try {
+				inputA.put(test);
+			} catch (InterruptedException e) {
+			}
+		}
+		F frameA = test;
 		try {
 			if (frameA == null) {
 				inputB.put(frameB);
@@ -85,22 +93,22 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 			// if no match put it back to inputs
 			if (frameA.getFrameNumber() != frameB.getFrameNumber()) {
 				inputB.put(frameB);
-				inputA.put(frameA);
+				//inputA.put(frameA);
 				return null;
 			}
 
 			Pair<F, F> framePair = new ValuePair<>(frameA, frameB);
 
-			if (frameA.isLast()) { // make the poison pill
+			if (frameB.isLast()) { // make the poison pill
 				ImgLib2Frame<T> lastFrame = process1(framePair);
 				lastFrame.setLast(true);
-				output.put(lastFrame);
+				newOutput(lastFrame);
 				cancel();
 				counter++;
 				return null;
 			}
 
-			output.put(process1(framePair));
+			newOutput(process1(framePair));
 			counter++;
 		} catch (InterruptedException e) {
 		}

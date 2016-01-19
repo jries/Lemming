@@ -72,6 +72,8 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 			Queue<Frame<T>> transferList = new ArrayDeque<>();
 			transferList.addAll(frameList);
 			frameB = process(transferList, true);
+			if(interpolating)
+				interpolate();
 			running = false;
 			lastListSize = frameList.size() - 1;
 			lastFrames();
@@ -179,6 +181,11 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 				frameB.getHeight(), frameB.getPixelDepth(), frameB.getPixels());
 		lastFrame.setLast(true);
 		newOutput(lastFrame);
+	}
+	
+	@Override
+	public void afterRun(){
+		System.out.println("Filtering done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
 	
 	/**

@@ -57,7 +57,8 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	public MLE_Fitter(int windowSize) {
 		super(windowSize);
 		kernelSize = 2 * size + 1;
-		maxKernels = (int) (40000/Math.pow(kernelSize, 3)*1500);
+		//maxKernels = (int) (40000/Math.pow(kernelSize, 3)*1500);
+		maxKernels = 1152*11;
 		kernelList = new FastTable<>();
 		JCudaDriver.setExceptionsEnabled(true);
  		cuInit(0);
@@ -70,10 +71,6 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		final double pixelDepth = fe.getFrame().getPixelDepth();
 		final RandomAccessible<T> source = Views.extendMirrorSingle(fe.getFrame().getPixels());
 		
-		if ((kernelList.size()+sliceLocs.size())>maxKernels){
-			processGPU();
-			kernelList.clear();
-		}
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
 			double x = loc.getX().doubleValue() / pixelDepth;
@@ -94,9 +91,14 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 				IVal[index++]=c.next().getRealFloat();
 			}
 			kernelList.add(new Kernel(loc.getID(), loc.getFrame(), roi, IVal));
+			if (kernelList.size()>=maxKernels){
+				processGPU();
+				kernelList.clear();
+			}
 		}
 		if (fe.isLast()){
 			processGPU();
+			kernelList.clear();
 			cancel();
 			return;
 		}
@@ -114,9 +116,11 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 				long ystart = kernelList.get(i).getRoi().min(1);
 				float x = xstart + par[i*PARAMETER_LENGTH+0];
 				float y = ystart + par[i*PARAMETER_LENGTH+1];
-				float intensity = par[i*PARAMETER_LENGTH+3];
+				float s1 = par[i*PARAMETER_LENGTH+2];
+				float s2 = par[i*PARAMETER_LENGTH+3];
+				float intensity = par[i*PARAMETER_LENGTH+4];
 				long frame = kernelList.get(i).getFrame();
-				newOutput(new LocalizationPrecision3D(x, y, 0, 0, 0, 0, intensity, frame));
+				newOutput(new LocalizationPrecision3D(x, y, 0, s1, s2, 0, intensity, frame));
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();

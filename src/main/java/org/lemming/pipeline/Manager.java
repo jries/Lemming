@@ -41,7 +41,7 @@ public class Manager extends SwingWorker<Void,Void> {
 	public void linkModules(AbstractModule from, AbstractModule to, boolean noInputs, int maxElements ){
 		Store s = null;
 		if (noInputs){
-			int n = (int) Math.min(Math.pow(2,5)*Runtime.getRuntime().availableProcessors(), maxElements*0.5); // performance tweak
+			int n = (int) Math.min(Math.pow(2,6)*Runtime.getRuntime().availableProcessors(), maxElements*0.5); // performance tweak
 			System.out.println("Manager starts with maximal "+n+" elements" );
 			s = new LinkedStore(n);
 		} else {

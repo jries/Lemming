@@ -622,7 +622,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			manager.add(pp);
 			manager.linkModules(tif, pp, true, elements);
 			operators op = preProcessingFactory.getOperator();
-			math = new ImageMath<>();
+			math = new ImageMath<>(elements);
 			math.setOperator(op);
 			manager.add(math);
 			manager.linkModules(tif, math, true, elements);
