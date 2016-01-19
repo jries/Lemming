@@ -43,7 +43,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 
 	public static final String INFO_TEXT = "<html>" + "Maximum likelihood estimation using the NVIDIA CUDA capabilities " + "</html>";
 
-	private static final int PARAMETER_LENGTH = 4;
+	private static final int PARAMETER_LENGTH = 5;
 	
 	private int maxKernels;
 
@@ -57,7 +57,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	public MLE_Fitter(int windowSize) {
 		super(windowSize);
 		kernelSize = 2 * size + 1;
-		maxKernels = (int) (40000/Math.pow(kernelSize, 3)*2000);
+		maxKernels = (int) (40000/Math.pow(kernelSize, 3)*1500);
 		kernelList = new FastTable<>();
 		JCudaDriver.setExceptionsEnabled(true);
  		cuInit(0);
@@ -104,7 +104,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
 	private void processGPU(){
 		ExecutorService singleService = Executors.newSingleThreadExecutor();
-		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH);
+		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigma");
 		Future<Map<String, float[]>> f = singleService.submit(t);
 		try {
 			Map<String, float[]> res = f.get();

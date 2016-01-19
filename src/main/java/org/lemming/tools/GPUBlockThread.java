@@ -35,18 +35,20 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	private CUdevice device;
 	private List<Kernel> kList;
 	private int PARAMETER_LENGTH;
+	private String functionName;
 	
 	private static final float PSFSigma = 1.3f;
 	private static final int iterations = 50;
 	private static String ptxFileName = "resources/CudaFit.ptx";
 	private static float sharedMemPerBlock = 262144;
 
-	public GPUBlockThread(CUdevice device, List<Kernel> kernelList, int sz, int nKernels, int numParameters) {
+	public GPUBlockThread(CUdevice device, List<Kernel> kernelList, int sz, int nKernels, int numParameters, String functionName) {
 		this.sz = sz;
 		this.device = device;
 		this.nKernels = nKernels;
 		this.kList = kernelList;
 		PARAMETER_LENGTH = numParameters;
+		this.functionName = functionName;
 	}
 	
 	@Override
@@ -70,7 +72,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
     	long start = System.currentTimeMillis();
     	//put as many images as fit into a block
     	int BlockSize = Math.max(4, blockSize);
-    	BlockSize = Math.min(512, BlockSize);
+    	BlockSize = Math.min(256, BlockSize);
     	//int Nfits = BlockSize * (int) Math.ceil( (float) dims[2]/BlockSize);
     	int size = sz*sz*Nfits;
     	
@@ -83,7 +85,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
         checkResult(cuModuleLoad(module, ptxFileName));
         // Obtain a function pointer to the needed function.
         CUfunction function = new CUfunction();
-        checkResult(cuModuleGetFunction(function, module, "kernel_MLEFit"));
+        checkResult(cuModuleGetFunction(function, module, functionName));
     	    	
     	// Allocate the device input data, and copy the host input data to the device
     	Pointer d_data = new Pointer();

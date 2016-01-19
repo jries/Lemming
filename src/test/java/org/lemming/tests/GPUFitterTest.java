@@ -28,7 +28,8 @@ public class GPUFitterTest {
 	@Before
 	public void setUp() throws Exception {
 		
-        File file = new File(System.getProperty("user.home")+"/Documents/storm/experiment3D.tif");
+        //File file = new File(System.getProperty("user.home")+"/Documents/storm/experiment3D.tif");
+        File file = new File("D:/Images/DRG_KO_5_1.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -44,10 +45,10 @@ public class GPUFitterTest {
 		    throw new Exception("File not found");
 		
 		AbstractModule tif = new ImageLoader(loc_im);
-
-		AbstractModule peak = new NMSDetector(50,7);
-		AbstractModule fitter = new MLE_Fitter<>(7);
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/Videos/experiment3D_GF.csv"));
+		AbstractModule peak = new NMSDetector(5000,4);
+		//AbstractModule peak = new NMSDetector(2000,5); DRG_WT_MT_A647_1.tif
+		AbstractModule fitter = new MLE_Fitter<>(5);
+		AbstractModule saver = new SaveLocalizationPrecision3D(new File("D:/Images/DRG_KO_5_1.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
