@@ -702,7 +702,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			}
 		}
 		if (loc_im != null) {
-			tif = new ImageLoader<>(loc_im);
+			tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
 			manager.add(tif);
 
 			previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());

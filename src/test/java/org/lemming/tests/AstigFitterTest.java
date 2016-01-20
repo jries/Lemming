@@ -12,9 +12,9 @@ import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizationPrecision3D;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
-import org.lemming.pipeline.Settings;
 import org.lemming.plugins.AstigFitter;
 import org.lemming.plugins.NMSDetector;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
@@ -45,10 +45,10 @@ public class AstigFitterTest {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		AbstractModule tif = new ImageLoader(loc_im);
+		AbstractModule tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
 
 		AbstractModule peak = new NMSDetector(700,7);
-		AbstractModule fitter = new AstigFitter<>(7, Settings.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
+		AbstractModule fitter = new AstigFitter<>(7, LemmingUtils.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
 		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/storm/test3.csv"));
 		
 		pipe = new Manager();

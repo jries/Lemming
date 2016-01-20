@@ -5,6 +5,8 @@ import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 
+import java.util.List;
+
 import org.lemming.interfaces.Element;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.SingleRunModule;
@@ -23,11 +25,17 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	private ImagePlus img;
 	private int stackSize;
 	private double pixelDepth;
+	private double offset;
+	private double em_gain;
+	private double conversion;
 	
-	public ImageLoader(ImagePlus img) {
+	public ImageLoader(ImagePlus img, List<Double> cameraSettings) {
 		this.img = img;
 		stackSize = img.getStackSize();
 		pixelDepth = img.getCalibration().pixelDepth == 0 ? 1 : img.getCalibration().pixelDepth;
+		offset = cameraSettings.get(0);
+		em_gain = cameraSettings.get(1);
+		conversion = cameraSettings.get(2);
 	}
 	
 	@Override

@@ -15,6 +15,7 @@ import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.FastMedianFilter;
 import org.lemming.plugins.NMSDetector;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 
@@ -35,7 +36,7 @@ public class ImageMathTest {
 	public void setUp() throws Exception {
 		pipe = new Manager();
 		final ImagePlus image = new ImagePlus("D:/Images/test81000.tif");
-		tif = new ImageLoader(image);
+		tif = new ImageLoader<>(image,LemmingUtils.readCameraSettings("camera.props"));;
 		pipe.add(tif);
 	
 		fmf = new FastMedianFilter(100, true);

@@ -8,6 +8,7 @@ import org.lemming.modules.ImageLoader;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.PeakFinder;
 import org.lemming.plugins.QuadraticFitter;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
@@ -39,7 +40,7 @@ public class ExtendableTableTest2 {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		ImageLoader tif = new ImageLoader(loc_im);		
+		ImageLoader tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));	
 		
 		PeakFinder peak = new PeakFinder(700,6);
 		QuadraticFitter fitter = new QuadraticFitter(10);

@@ -13,6 +13,7 @@ import org.lemming.modules.SaveLocalizations;
 import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.NMSDetector;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 
@@ -30,7 +31,7 @@ public class NMSFinderTest {
 	public void setUp() throws Exception {
 		pipe = new Manager();	
 		final ImagePlus image = new ImagePlus(System.getProperty("user.home")+"/ownCloud/storm/experiment3D.tif");
-		tif = new ImageLoader(image);
+		tif = new ImageLoader<>(image,LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
 		
 		peak = new NMSDetector(700,9);

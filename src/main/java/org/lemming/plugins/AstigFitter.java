@@ -20,8 +20,8 @@ import org.lemming.math.GaussianFitterZ;
 import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
+import org.lemming.tools.LemmingUtils;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
 public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
@@ -102,7 +102,7 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			return new AstigFitter<>(windowSize, Settings.readCSV(calibFileName).get("param"));
+			return new AstigFitter<>(windowSize, LemmingUtils.readCSV(calibFileName).get("param"));
 		}
 
 		@Override

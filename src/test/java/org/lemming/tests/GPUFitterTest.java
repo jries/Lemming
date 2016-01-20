@@ -9,13 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
-import org.lemming.modules.ImageMath;
 import org.lemming.modules.SaveLocalizationPrecision3D;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
-import org.lemming.plugins.FastMedianFilter;
 import org.lemming.plugins.MLE_Fitter;
 import org.lemming.plugins.NMSDetector;
+import org.lemming.tools.LemmingUtils;
+
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
 import ij.plugin.FolderOpener;
@@ -31,9 +31,9 @@ public class GPUFitterTest {
 	public void setUp() throws Exception {
 		
         //File file = new File(System.getProperty("user.home")+"/Documents/storm/experiment3D.tif");
-        File file = new File("D:/Images/DRG_KO_5_1.tif");
+        //File file = new File("D:/Images/DRG_KO_5_1.tif");
 		//File file = new File("D:/Images/DRG_WT_MT_A647_1.tif");
-        //File file = new File("D:/Images/test81000.tif");
+        File file = new File("D:/Images/test81000.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -48,28 +48,28 @@ public class GPUFitterTest {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		AbstractModule tif = new ImageLoader(loc_im);
-		AbstractModule filter = new FastMedianFilter(100, true);
-		ImageMath substracter = new ImageMath(100);
-		substracter.setOperator(ImageMath.operators.SUBSTRACTION);
-		//AbstractModule peak = new NMSDetector(700,7);
-		AbstractModule peak = new NMSDetector(6000,4); //DRG_KO_5_1.tif
+		AbstractModule tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
+		//AbstractModule filter = new FastMedianFilter(100, true);
+		//ImageMath substracter = new ImageMath(100);
+		//substracter.setOperator(ImageMath.operators.SUBSTRACTION);
+		AbstractModule peak = new NMSDetector(700,7);
+		//AbstractModule peak = new NMSDetector(6000,4); //DRG_KO_5_1.tif
 		//AbstractModule peak = new NMSDetector(2000,5); //DRG_WT_MT_A647_1.tif
-		AbstractModule fitter = new MLE_Fitter<>(5);
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File("D:/Images/DRG_KO_5_1.csv"));
+		AbstractModule fitter = new MLE_Fitter<>(7);
+		AbstractModule saver = new SaveLocalizationPrecision3D(new File("D:/Images/test81000.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
-		pipe.add(substracter);
-		pipe.add(filter);
+		//pipe.add(substracter);
+		//pipe.add(filter);
 		pipe.add(peak);
 		pipe.add(fitter);
 		pipe.add(saver);
 		
-		pipe.linkModules(tif, filter, true, loc_im.getStackSize());
-		pipe.linkModules(tif, substracter);
-		pipe.linkModules(filter, substracter);
-		pipe.linkModules(substracter, peak);
+		pipe.linkModules(tif, peak, true, loc_im.getStackSize());
+		//pipe.linkModules(tif, substracter);
+		//pipe.linkModules(filter, substracter);
+		//pipe.linkModules(substracter, peak);
 		pipe.linkModules(peak,fitter);
 		pipe.linkModules(fitter,saver,false, 128);
 		storeMap = pipe.getMap();

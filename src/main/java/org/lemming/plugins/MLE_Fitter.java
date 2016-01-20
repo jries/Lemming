@@ -76,17 +76,17 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 			double x = loc.getX().doubleValue() / pixelDepth;
 			double y = loc.getY().doubleValue() / pixelDepth;
 			
-			long xstart = StrictMath.round(x - size);
-			long ystart = StrictMath.round(y - size);
-			long xend = xstart + kernelSize;
-			long yend = ystart + kernelSize;
+			long xstart = Math.max(0, Math.round(x - size));
+			long ystart = Math.max(0, Math.round(y - size));
+			long xend = xstart + kernelSize - 1;
+			long yend = ystart + kernelSize - 1;
 			
 			final Interval roi = new FinalInterval(new long[] { xstart, ystart }, new long[] { xend, yend });
 			IntervalView<T> interval = Views.interval(source, roi); 
 			
 			Cursor<T> c = interval.cursor();
-			int index = 0;
-			float[] IVal = new float[(int) (roi.dimension(0) * roi.dimension(1))];
+			float[] IVal = new float[(int) (kernelSize * kernelSize)];
+			int index=0;
 			while (c.hasNext()){
 				IVal[index++]=c.next().getRealFloat();
 			}
@@ -111,18 +111,19 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		try {
 			Map<String, float[]> res = f.get();
 			float[] par = res.get("Parameters");
-			for (int i=0;i<kernelList.size();i++){
+			int ksize = kernelList.size();
+			for (int i=0;i<ksize;i++){
 				long xstart = kernelList.get(i).getRoi().min(0);
 				long ystart = kernelList.get(i).getRoi().min(1);
-				float x = xstart + par[i*PARAMETER_LENGTH+0];
-				float y = ystart + par[i*PARAMETER_LENGTH+1];
-				float s1 = par[i*PARAMETER_LENGTH+2];
-				float s2 = par[i*PARAMETER_LENGTH+3];
-				float intensity = par[i*PARAMETER_LENGTH+4];
+				float x = par[i];
+				float y = par[ksize+i];
+				float intensity = par[2*ksize+i];
+				float bg = par[3*ksize+i];
+				float s = par[4*ksize+i];
 				long frame = kernelList.get(i).getFrame();
-				newOutput(new LocalizationPrecision3D(x, y, 0, s1, s2, 0, intensity, frame));
+				newOutput(new LocalizationPrecision3D(x, y, xstart, ystart, s, bg, intensity, frame));
 			}
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 		}
 	}

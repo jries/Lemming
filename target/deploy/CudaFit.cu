@@ -119,7 +119,7 @@ __device__ float kernel_alpha(const float z, const float Ax, const float Bx,
 	 * \return float alpha value
 	 */
 
-	return 1.0f + powf(z / d, 2) + Ax * powf(z / d, 3) + Bx * powf(z / d, 4);
+	return 1.0f + __powf(z / d, 2) + Ax * __powf(z / d, 3) + Bx * __powf(z / d, 4);
 }
 
 //*******************************************************************************************
@@ -133,8 +133,8 @@ __device__ float kernel_dalphadz(const float z, const float Ax, const float Bx,
 	 * \param d ???
 	 * \return float alpha value
 	 */
-	return (2.0f * z / (d * d) + 3.0f * Ax * powf(z, 2) / (d * d * d)
-			+ 4.0f * Bx * powf(z, 3) / powf(d, 4));
+	return (2.0f * z / (d * d) + 3.0f * Ax * __powf(z, 2) / (d * d * d)
+			+ 4.0f * Bx * __powf(z, 3) / __powf(d, 4));
 }
 
 //*******************************************************************************************
@@ -149,7 +149,7 @@ __device__ float kernel_d2alphadz2(const float z, const float Ax,
 	 * \return float alpha value
 	 */
 	return (2.0f / (d * d) + 6.0f * Ax * z / (d * d * d)
-			+ 12.0f * Bx * powf(z, 2) / powf(d, 4));
+			+ 12.0f * Bx * __powf(z, 2) / __powf(d, 4));
 }
 
 //*******************************************************************************************
@@ -167,13 +167,13 @@ __device__ void kernel_DerivativeIntGauss1D(const int ii, const float x,
 	 * \param d2udt2 ???
 	 */
 	float a, b;
-	a = expf(-0.5f * powf(((ii + 0.5f - x) / sigma), 2.0f));
-	b = expf(-0.5f * powf((ii - 0.5f - x) / sigma, 2.0f));
+	a = expf(-0.5f * __powf(((ii + 0.5f - x) / sigma), 2.0f));
+	b = expf(-0.5f * __powf((ii - 0.5f - x) / sigma, 2.0f));
 
 	*dudt = -N / sq2pi / sigma * (a - b) * PSFy;
 
 	if (d2udt2)
-		*d2udt2 = -N / sq2pi / powf(sigma, 3)
+		*d2udt2 = -N / sq2pi / __powf(sigma, 3)
 				* ((ii + 0.5f - x) * a - (ii - 0.5f - x) * b) * PSFy;
 }
 
@@ -201,9 +201,9 @@ __device__ void kernel_DerivativeIntGauss1DSigma(const int ii, const float x,
 
 	if (d2udt2)
 		*d2udt2 = -2.0f / Sx * dudt[0]
-				- N / sq2pi / powf(Sx, 5)
-						* (ax * powf((ii - x + 0.5f), 3)
-								- bx * powf((ii - x - 0.5f), 3)) * PSFy;
+				- N / sq2pi / __powf(Sx, 5)
+						* (ax * __powf((ii - x + 0.5f), 3)
+								- bx * __powf((ii - x - 0.5f), 3)) * PSFy;
 }
 
 //*******************************************************************************************
@@ -268,8 +268,8 @@ __device__ void kernel_DerivativeIntGauss2Dz(const int ii, const int jj,
 	alphax = kernel_alpha(z - gamma, Ax, Bx, d);
 	alphay = kernel_alpha(z + gamma, Ay, By, d);
 
-	Sx = PSFSigma_x * sqrt(alphax);
-	Sy = PSFSigma_y * sqrt(alphay);
+	Sx = PSFSigma_x * sqrtf(alphax);
+	Sy = PSFSigma_y * sqrtf(alphay);
 
 
 	PSFx = kernel_IntGauss1D(ii, theta[0], Sx);
@@ -293,12 +293,12 @@ __device__ void kernel_DerivativeIntGauss2Dz(const int ii, const int jj,
 		d2udt2[0] = ddx;
 		d2udt2[1] = ddy;
 
-		d2Sdalpha2_x = -PSFSigma_x / 4.0f / powf(alphax, 1.5f);
-		d2Sdalpha2_y = -PSFSigma_y / 4.0f / powf(alphay, 1.5f);
+		d2Sdalpha2_x = -PSFSigma_x / 4.0f / __powf(alphax, 1.5f);
+		d2Sdalpha2_y = -PSFSigma_y / 4.0f / __powf(alphay, 1.5f);
 
-		ddSddzx = d2Sdalpha2_x * pow(kernel_dalphadz(z - gamma, Ax, Bx, d), 2)
+		ddSddzx = d2Sdalpha2_x * __powf(kernel_dalphadz(z - gamma, Ax, Bx, d), 2)
 				+ dSdalpha_x * kernel_d2alphadz2(z - gamma, Ax, Bx, d);
-		ddSddzy = d2Sdalpha2_y * pow(kernel_dalphadz(z + gamma, Ay, By, d), 2)
+		ddSddzy = d2Sdalpha2_y * __powf(kernel_dalphadz(z + gamma, Ay, By, d), 2)
 				+ dSdalpha_y * kernel_d2alphadz2(z + gamma, Ay, By, d);
 
 		d2udt2[4] = ddSx * (dSdzx * dSdzx) + dSx * ddSddzx
@@ -353,7 +353,7 @@ __device__ void kernel_GaussFMaxMin2D(const int sz, const float sigma, float * d
         sum=0.0f;
         for (ii=0;ii<sz;ii++)
         	for(jj=0;jj<sz;jj++){
-        	temp=exp(-pow((float)(ii-kk), 2)*norm)*exp(-pow((float)(ll-jj), 2)*norm);
+        	temp=__expf(-pow((float)(ii-kk), 2)*norm)*__expf(-pow((float)(ll-jj), 2)*norm);
             filteredpixel+=temp*data[ii*sz+jj];
             sum+=temp;
         }
@@ -618,7 +618,8 @@ __global__ void kernel_MLEFit_sigma(float *d_data, float PSFSigma, int sz, int i
 		memset(NR_Numerator, 0, NV_P*sizeof(float));
 		memset(NR_Denominator, 0, NV_P*sizeof(float));
 
-        for (ii=0;ii<sz;ii++) for(jj=0;jj<sz;jj++) {
+        for (ii=0;ii<sz;ii++) 
+			for(jj=0;jj<sz;jj++) {
             PSFx=kernel_IntGauss1D(ii, theta[0], theta[4]);
             PSFy=kernel_IntGauss1D(jj, theta[1], theta[4]);
 
@@ -637,13 +638,13 @@ __global__ void kernel_MLEFit_sigma(float *d_data, float PSFSigma, int sz, int i
             cf=0.0f;
             df=0.0f;
             if (model>10e-3f) cf=data/model-1;
-            if (model>10e-3f) df=data/pow(model, 2);
+            if (model>10e-3f) df=data/powf(model, 2);
             cf=fminf(cf, 10e4f);
             df=fminf(df, 10e4f);
 
             for (ll=0;ll<NV;ll++){
                 NR_Numerator[ll]+=dudt[ll]*cf;
-                NR_Denominator[ll]+=d2udt2[ll]*cf-pow(dudt[ll], 2)*df;
+                NR_Denominator[ll]+=d2udt2[ll]*cf-powf(dudt[ll], 2)*df;
             }
         }
 
@@ -759,11 +760,11 @@ __global__ void kernel_MLEFit_z(float *d_data, float PSFSigma_x, float Ax, float
     //initial values
     kernel_CenterofMass2D(sz, &s_data[sz*sz*tx], &theta[0], &theta[1]);
     kernel_GaussFMaxMin2D(sz, PSFSigma_x, &s_data[sz*sz*tx], &Nmax, &theta[3]);
-    theta[2]=max(0.0f, (Nmax-theta[3])*2*pi*PSFSigma_x*PSFSigma_y*sqrt(2.0f));
+    theta[2]=fmaxf(0.0f, (Nmax-theta[3])*2*pi*PSFSigma_x*PSFSigma_y*sqrtf(2.0f));
     kernel_CentroidFitter(sz, &s_data[sz*sz*tx], &comx, &comy, &sigmax_sqrd, &sigmay_sqrd);
     float numerator = sigmay_sqrd- sigmax_sqrd;
     float numerator2 = 1/(4*gamma*PSFSigma_x*PSFSigma_y);
-    theta[4]= pow(d,2)*numerator*numerator2;
+    theta[4]= powf(d,2)*numerator*numerator2;
     //theta[4]=0;
 
     for (kk=0;kk<iterations;kk++) {//main iterative loop
@@ -789,8 +790,8 @@ __global__ void kernel_MLEFit_z(float *d_data, float PSFSigma_x, float Ax, float
             df=0.0f;
             if (model>10e-3f) cf=data/model-1;
             if (model>10e-3f) df=data/pow(model, 2);
-            cf=min(cf, 10e4f);
-            df=min(df, 10e4f);
+            cf=fminf(cf, 10e4f);
+            df=fminf(df, 10e4f);
 
             for (ll=0;ll<NV;ll++){
                 NR_Numerator[ll]+=dudt[ll]*cf;
@@ -801,14 +802,14 @@ __global__ void kernel_MLEFit_z(float *d_data, float PSFSigma_x, float Ax, float
         // The update
         if (kk<2)
             for (ll=0;ll<NV;ll++)
-                theta[ll]-=g[ll]*min(max(NR_Numerator[ll]/NR_Denominator[ll], -maxjump[ll]), maxjump[ll]);
+                theta[ll]-=g[ll]*fminf(fmaxf(NR_Numerator[ll]/NR_Denominator[ll], -maxjump[ll]), maxjump[ll]);
         else
             for (ll=0;ll<NV;ll++)
-                theta[ll]-=min(max(NR_Numerator[ll]/NR_Denominator[ll], -maxjump[ll]), maxjump[ll]);
+                theta[ll]-=fminf(fmaxf(NR_Numerator[ll]/NR_Denominator[ll], -maxjump[ll]), maxjump[ll]);
 
         // Any other constraints
-        theta[2]=max(theta[2], 1.0f);
-        theta[3]=max(theta[3], 0.01f);
+        theta[2]=fmaxf(theta[2], 1.0f);
+        theta[3]=fmaxf(theta[3], 0.01f);
 
     }
 
@@ -833,7 +834,7 @@ __global__ void kernel_MLEFit_z(float *d_data, float PSFSigma_x, float Ax, float
 
         //LogLikelyhood
         if (model>0)
-            if (data>0)Div+=data*log(model)-model-data*log(data)+data;
+            if (data>0)Div+=data*logf(model)-model-data*logf(data)+data;
             else
                 Div+=-model;
     }
@@ -897,7 +898,7 @@ __global__ void kernel_MLEFit_sigmaxy(float *d_data, float PSFSigma, int sz, int
     //initial values
     kernel_CenterofMass2D(sz, &s_data[sz*sz*tx], &theta[0], &theta[1]);
     kernel_GaussFMaxMin2D(sz, PSFSigma, &s_data[sz*sz*tx], &Nmax, &theta[3]);
-    theta[2]=max(0.0f, (Nmax-theta[3])*2*pi*PSFSigma*PSFSigma);
+    theta[2]=fmaxf(0.0f, (Nmax-theta[3])*2*pi*PSFSigma*PSFSigma);
     theta[4]=PSFSigma;
     theta[5]=PSFSigma;
     for (kk=0;kk<iterations;kk++) {//main iterative loop
@@ -929,8 +930,8 @@ __global__ void kernel_MLEFit_sigmaxy(float *d_data, float PSFSigma, int sz, int
             df=0.0f;
             if (model>10e-3f) cf=data/model-1;
             if (model>10e-3f) df=data/pow(model, 2);
-            cf=min(cf, 10e4f);
-            df=min(df, 10e4f);
+            cf=fminf(cf, 10e4f);
+            df=fminf(df, 10e4f);
 
             for (ll=0;ll<NV;ll++){
                 NR_Numerator[ll]+=dudt[ll]*cf;
@@ -940,13 +941,13 @@ __global__ void kernel_MLEFit_sigmaxy(float *d_data, float PSFSigma, int sz, int
 
         // The update
             for (ll=0;ll<NV;ll++)
-                theta[ll]-=g[ll]*min(max(NR_Numerator[ll]/NR_Denominator[ll], -maxjump[ll]), maxjump[ll]);
+                theta[ll]-=g[ll]*fminf(fmaxf(NR_Numerator[ll]/NR_Denominator[ll], -maxjump[ll]), maxjump[ll]);
 
         // Any other constraints
-        theta[2]=max(theta[2], 1.0f);
-        theta[3]=max(theta[3], 0.01f);
-        theta[4]=max(theta[4], PSFSigma/10.0f);
-        theta[5]=max(theta[5], PSFSigma/10.0f);
+        theta[2]=fmaxf(theta[2], 1.0f);
+        theta[3]=fmaxf(theta[3], 0.01f);
+        theta[4]=fmaxf(theta[4], PSFSigma/10.0f);
+        theta[5]=fmaxf(theta[5], PSFSigma/10.0f);
     }
 
     // Calculating the CRLB and LogLikelihood
@@ -975,7 +976,7 @@ __global__ void kernel_MLEFit_sigmaxy(float *d_data, float PSFSigma, int sz, int
 
         //LogLikelyhood
         if (model>0)
-            if (data>0)Div+=data*log(model)-model-data*log(data)+data;
+            if (data>0)Div+=data*logf(model)-model-data*logf(data)+data;
             else
                 Div+=-model;
     }
@@ -990,14 +991,4 @@ __global__ void kernel_MLEFit_sigmaxy(float *d_data, float PSFSigma, int sz, int
     return;
 }
 
-extern "C"
-__global__ void kernel_add(int n, float *a, float *b, float *sum)
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i<n)
-    {
-        sum[i] = a[i] + b[i];
-    }
-
-}
 

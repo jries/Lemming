@@ -31,6 +31,7 @@ import jcuda.driver.CUresult;
 public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	
 	private int sz;
+	private int sz2;
 	private int nKernels;
 	private CUdevice device;
 	private List<Kernel> kList;
@@ -45,6 +46,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 
 	public GPUBlockThread(CUdevice device, List<Kernel> kernelList, int sz, int nKernels, int numParameters, String functionName) {
 		this.sz = sz;
+		this.sz2 = sz*sz;
 		this.device = device;
 		this.nKernels = nKernels;
 		this.kList = kernelList;
@@ -55,16 +57,12 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	@Override
     public Map<String, float[]> call() {
 		int BlockSize = (int) Math.floor(sharedMemPerBlock/4/sz/sz);
-		float[] Ival = new float[sz*sz*(nKernels+1)];
+		float[] Ival = new float[sz2*nKernels];
 		for(int k=0;k<nKernels;k++){
-			int sliceIndex = k*sz*sz;
+			int sliceIndex = k*sz2;
 			float[] values = kList.get(k).getValues();
-			try {
-				System.arraycopy(values, 0, Ival, sliceIndex, values.length);
-			} catch (IndexOutOfBoundsException e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
-			}
+			for (int l=0; l<sz2;l++)
+				Ival[sliceIndex+l]=values[l];
 		}
 		return process(Ival, nKernels, BlockSize);
 	}
@@ -72,10 +70,10 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	private Map<String,float[]> process(float data[], int Nfits, int blockSize){
     	long start = System.currentTimeMillis();
     	//put as many images as fit into a block
-    	int BlockSize = Math.max(4, blockSize);
-    	BlockSize = Math.min(256, BlockSize);
+    	int BlockSize = Math.max(9, blockSize);
+    	BlockSize = Math.min(288, BlockSize);
     	//int Nfits = BlockSize * (int) Math.ceil( (float) dims[2]/BlockSize);
-    	int size = sz*sz*Nfits;
+    	int size = sz2*Nfits;
     	
     	CUcontext context = new CUcontext();
     	checkResult(cuCtxCreate(context, 0, device));

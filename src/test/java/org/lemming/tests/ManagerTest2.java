@@ -14,6 +14,7 @@ import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.CentroidFitter;
 import org.lemming.plugins.NMSDetector;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 import ij.plugin.FileInfoVirtualStack;
@@ -44,7 +45,7 @@ public class ManagerTest2 {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		AbstractModule tif = new ImageLoader(loc_im);
+		AbstractModule tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
 
 		AbstractModule peak = new NMSDetector(700,7);
 		//Fitter fitter = new QuadraticFitter(10);

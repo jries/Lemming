@@ -11,6 +11,7 @@ import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveImages;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.FastMedianFilter;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 
@@ -27,7 +28,7 @@ public class FastMedianFilterTest {
 	public void setUp() throws Exception {
 		pipe = new Manager();
 		
-		tif = new ImageLoader(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"));
+		tif = new ImageLoader<>(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"),LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
 		
 		fmf = new FastMedianFilter(50,true);

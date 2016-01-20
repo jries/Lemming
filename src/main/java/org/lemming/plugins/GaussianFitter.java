@@ -14,8 +14,8 @@ import org.lemming.math.Gaussian2DFitter;
 import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
+import org.lemming.tools.LemmingUtils;
 import org.lemming.pipeline.Localization;
-import org.lemming.pipeline.Settings;
 import org.scijava.plugin.Plugin;
 
 import ij.IJ;
@@ -168,7 +168,7 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			Map<String, List<Double>> cal = Settings.readCSV(calibFileName);
+			Map<String, List<Double>> cal = LemmingUtils.readCSV(calibFileName);
 			return new GaussianFitter<>(windowSize, cal);
 		}
 
