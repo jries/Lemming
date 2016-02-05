@@ -2,7 +2,6 @@ package org.lemming.plugins;
 
 import static jcuda.driver.JCudaDriver.cuDeviceGet;
 import static jcuda.driver.JCudaDriver.cuInit;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -11,9 +10,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javolution.util.FastTable;
+import jcuda.CudaException;
 import jcuda.driver.CUdevice;
+import jcuda.driver.CUresult;
 import jcuda.driver.JCudaDriver;
-
+import jcuda.LogLevel;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -43,7 +44,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 
 	public static final String INFO_TEXT = "<html>" + "Maximum likelihood estimation using the NVIDIA CUDA capabilities " + "</html>";
 
-	private static final int PARAMETER_LENGTH = 5;
+	private static final int PARAMETER_LENGTH = 6;
 	
 	private int maxKernels;
 
@@ -61,9 +62,12 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		maxKernels = 1152*11;
 		kernelList = new FastTable<>();
 		JCudaDriver.setExceptionsEnabled(true);
- 		cuInit(0);
+		JCudaDriver.setLogLevel(LogLevel.LOG_ERROR);
+ 		int cuResult = cuInit(0);
  		device = new CUdevice();
- 		cuDeviceGet(device, 0); 
+ 		cuResult = cuDeviceGet(device, 0);
+ 		if (cuResult != CUresult.CUDA_SUCCESS)
+            throw new CudaException(CUresult.stringFor(cuResult)); 
 	}
 
 	public void process(FrameElements<T> fe) {
@@ -106,7 +110,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
 	private void processGPU(){
 		ExecutorService singleService = Executors.newSingleThreadExecutor();
-		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigma");
+		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigmaxy");
 		Future<Map<String, float[]>> f = singleService.submit(t);
 		try {
 			Map<String, float[]> res = f.get();
@@ -115,13 +119,14 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 			for (int i=0;i<ksize;i++){
 				long xstart = kernelList.get(i).getRoi().min(0);
 				long ystart = kernelList.get(i).getRoi().min(1);
-				float x = par[i];
-				float y = par[ksize+i];
+				float x = par[i]+xstart;
+				float y = par[ksize+i]+ystart;
 				float intensity = par[2*ksize+i];
 				float bg = par[3*ksize+i];
-				float s = par[4*ksize+i];
+				float sx = par[4*ksize+i];
+				float sy = par[4*ksize+i];
 				long frame = kernelList.get(i).getFrame();
-				newOutput(new LocalizationPrecision3D(x, y, xstart, ystart, s, bg, intensity, frame));
+				newOutput(new LocalizationPrecision3D(x, y, 0, sx, sy, bg, intensity, frame));
 			}
 		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();

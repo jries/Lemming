@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -24,7 +24,7 @@ import org.lemming.pipeline.SingleRunModule;
  * @param <T> - data type
  * @param <F> - frame type
  */
-public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
+public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends SingleRunModule {
 	
 	public enum operators {
 		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION, NONE
@@ -136,7 +136,9 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		case SUBSTRACTION:		
 			while ( cursorA.hasNext()){
 	            cursorA.fwd();  cursorB.fwd(); // move both cursors forward by one pixel
-	            cursorA.get().sub(cursorB.get());
+	            double val = cursorB.get().getRealDouble() - cursorA.get().getRealDouble();
+	            val = val<0?0:val; 				// check for negative values
+	            cursorA.get().setReal(val);
 	        }
 			break;
 		case MULTIPLICATION:

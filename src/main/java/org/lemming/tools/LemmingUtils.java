@@ -4,6 +4,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
 
+import java.awt.Rectangle;
 import java.awt.image.IndexColorModel;
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.LocalizationInterface;
 import org.lemming.pipeline.Localization;
 
 import ij.process.FloatPolygon;
@@ -30,11 +32,11 @@ import ij.process.FloatPolygon;
  */
 public class LemmingUtils {
 
-	public static FloatPolygon convertToPoints(List<Element> me, float pixelSize) {
+	public static FloatPolygon convertToPoints(List<Element> me, Rectangle rect, double pixelSize) {
 		FloatPolygon polygon = new FloatPolygon();
 		for (Element el : me) {
-			Localization loc = (Localization) el;
-			polygon.addPoint(loc.getX().floatValue() / pixelSize, loc.getY().floatValue() / pixelSize);
+			LocalizationInterface loc = (LocalizationInterface) el;
+			polygon.addPoint(loc.getX().floatValue() / pixelSize + rect.x, loc.getY().floatValue() / pixelSize + rect.y);
 		}
 		return polygon;
 	}

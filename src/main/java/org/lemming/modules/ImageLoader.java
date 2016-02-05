@@ -1,9 +1,10 @@
 package org.lemming.modules;
 
 import ij.ImagePlus;
+import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.IntegerType;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ import org.lemming.tools.LemmingUtils;
  *
  * @param <T> - data type
  */
-public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends SingleRunModule{
+public class ImageLoader<T extends IntegerType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice = 0;
 	private ImagePlus img;
@@ -47,8 +48,14 @@ public class ImageLoader<T extends NumericType<T> & NativeType<T>> extends Singl
 	@Override
 	public Element processData(Element data) {		
 		Object ip = img.getImageStack().getPixels(++curSlice);
-		
 		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
+		final Cursor<T> it = theImage.cursor();
+		while(it.hasNext()){
+			it.fwd();
+			final double adu = Math.max((it.get().getRealDouble()-offset), 0);
+			final double im2phot = adu*conversion/em_gain;
+			it.get().setReal(im2phot);
+		}
 		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
 		if (curSlice >= stackSize){
 			frame.setLast(true);

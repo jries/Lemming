@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import org.lemming.interfaces.Element;
-import org.lemming.pipeline.Localization;
+import org.lemming.interfaces.LocalizationInterface;
 import org.lemming.pipeline.SingleRunModule;
 
 /**
@@ -44,33 +44,25 @@ public class SaveLocalizations extends SingleRunModule {
 
 	@Override
 	public Element processData(Element data) {
-		
-		if (data.isLast()) {
-			if (data instanceof Localization) {
-				if (inputs.get(iterator).isEmpty()) {
-					cancel();
-					return null;
-				}
-				try {
-					inputs.get(iterator).put(data);
-				} catch (InterruptedException e) {}
+		if (data.isLast()) {	
+			if (inputs.get(iterator).isEmpty()) {
+				cancel();
 				return null;
 			}
-			cancel();
+			try {
+				inputs.get(iterator).put(data);
+			} catch (InterruptedException e) {}
 			return null;
 		}
 		
-		if (data instanceof Localization) {
-			Localization loc = (Localization) data;
-			
-			try {
-				w.write(loc.toString()+"⁄n");
-			} catch (IOException e) {
-				IJ.error("SaveLocalization:"+e.getMessage());;
-			}
-			counter++;
+		LocalizationInterface loc = (LocalizationInterface) data;
 		
+		try {
+			w.write(loc.toString()+"\n");
+		} catch (IOException e) {
+			IJ.error("SaveLocalization:"+e.getMessage());;
 		}
+		counter++;
 		return null;
 	}
 

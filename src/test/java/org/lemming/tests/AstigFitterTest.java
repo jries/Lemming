@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
-import org.lemming.modules.SaveLocalizationPrecision3D;
+import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.AstigFitter;
@@ -49,7 +49,7 @@ public class AstigFitterTest {
 
 		AbstractModule peak = new NMSDetector(700,7);
 		AbstractModule fitter = new AstigFitter<>(7, LemmingUtils.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/storm/test3.csv"));
+		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/test3.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

@@ -15,6 +15,12 @@
   <name>Lemming</name>
   <description>The ultimate localization microscopy software</description>
   
+  <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <!-- Set needed version of JCuda here -->
+      <jcuda.version>0.7.5</jcuda.version>
+  </properties>
+  
 	<repositories>
 		<repository>
 			<id>imagej.releases</id>
@@ -45,11 +51,11 @@
       		<id>ome.snapshots</id>
      		<url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
    		</repository>
-   		 <repository>
-    		<id>jcuda.local</id>
+        <repository>
+            <id>jcuda.local</id>
             <name>JCuda</name>
-            <url>file:${project.basedir}/jars</url>
-  		</repository>
+            <url>file:${project.basedir}/../jcuda/JCudaJava/target</url>
+        </repository>
 	</repositories>
 	
 	<pluginRepositories>
@@ -106,7 +112,7 @@
 			<artifactId>scijava-common</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>jcuda</groupId>
+            <groupId>org.jcuda</groupId>
             <artifactId>jcuda</artifactId>
             <version>0.7.5</version>
         </dependency>

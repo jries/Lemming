@@ -20,7 +20,7 @@ import ij.process.ImageProcessor;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.IntegerType;
 import net.imglib2.type.numeric.RealType;
 
 import java.awt.event.ActionEvent;
@@ -71,7 +71,7 @@ import org.lemming.modules.Detector;
 import org.lemming.modules.Fitter;
 import org.lemming.modules.ImageLoader;
 import org.lemming.modules.ImageMath;
-import org.lemming.modules.SaveLocalizationPrecision3D;
+import org.lemming.modules.SaveLocalizations;
 import org.lemming.modules.ImageMath.operators;
 import org.lemming.modules.Renderer;
 import org.lemming.modules.StoreSaver;
@@ -131,7 +131,7 @@ import java.awt.Color;
  * @param <T> - data type
  * @param <F> - frame type
  */
-public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, F extends Frame<T>> extends JFrame implements ActionListener {
+public class Controller<T extends IntegerType<T> & NativeType<T> & RealType<T>, F extends Frame<T>> extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;
 	private JTabbedPane tabbedPane;
@@ -187,7 +187,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private JPanel panelProgress;
 	private JLabel lblEta;
 	private long start;
-	private SaveLocalizationPrecision3D saver;
+	private AbstractModule saver;
+	public static String lastDir = System.getProperty("user.home"); 
 
 	/**
 	 * Create the frame.
@@ -534,7 +535,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 					fitterPreview();
 			}
 		});
-		OpenDialog.setDefaultDirectory(System.getProperty("user.home"));
+		OpenDialog.setDefaultDirectory(lastDir);
 	}
 
 	//// Overrides
@@ -682,6 +683,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			final OpenDialog od = new OpenDialog("Import Images");
 			if(od.getFileName()==null) return;
 			final File file = new File(od.getDirectory()+od.getFileName());
+			lastDir = od.getDirectory();
+			OpenDialog.setDefaultDirectory(lastDir);
 
 			if (file.isDirectory()) {
 				final FolderOpener fo = new FolderOpener();
@@ -702,7 +705,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			}
 		}
 		if (loc_im != null) {
-			tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
+			tif = new ImageLoader<T>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
 			manager.add(tif);
 
 			previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());
@@ -727,6 +730,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		final OpenDialog od = new OpenDialog("Import Data");
 		if(od.getFileName()==null) return;
 		File file = new File(od.getDirectory()+od.getFileName());
+		lastDir = od.getDirectory();
+		OpenDialog.setDefaultDirectory(lastDir);
 
 		TableLoader tl = new TableLoader(file);
 		tl.readCSV(',');
@@ -860,18 +865,23 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
 		final ImagePlus img = previewerWindow.getImagePlus();
-		img.killRoi();
-		int frameNumber = img.getCurrentSlice();
-		double pixelSize = img.getCalibration().pixelDepth;
-		ImageStack stack = img.getStack();
+		final int frameNumber = img.getCurrentSlice();
+		final double pixelSize = img.getCalibration().pixelDepth;
+		Roi currentRoi = previewerWindow.getImagePlus().getRoi();
+		ImageProcessor ip = img.getStack().getProcessor(frameNumber);
+		if (currentRoi != null){
+			ip.setRoi(currentRoi.getBounds());
+			ip = ip.crop();
+		} else{
+			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+		}
 		
-		Object ip = stack.getPixels(frameNumber);
-		Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
-		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
+		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
-		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), (float)pixelSize);
-		PointRoi roi = new PointRoi(points);
+		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), currentRoi.getBounds(), pixelSize);
+		final PointRoi roi = new PointRoi(points);
 		img.setRoi(roi);
 	}
 
@@ -902,16 +912,22 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		img.killRoi();
 		final int frameNumber = img.getCurrentSlice();
 		final float pixelSize = (float) img.getCalibration().pixelDepth;
+		Roi currentRoi = img.getRoi();
 		final ImageStack stack = img.getStack();
-		final ImageProcessor ip = stack.getProcessor(frameNumber);
-		Object pixels = stack.getPixels(frameNumber);
-		Img<T> curImage = LemmingUtils.wrap(pixels, new long[]{stack.getWidth(), stack.getHeight()});
-		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+		ImageProcessor ip = stack.getProcessor(frameNumber);
+		if (currentRoi != null){
+			ip.setRoi(currentRoi.getBounds());
+			ip = ip.crop();
+		} else{
+			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+		}
+		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
+		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		fitResults = CentroidFitterIP.fit(detResults.getList(), ip, fitterFactory.getHalfKernel(), pixelSize);
 
 		if (fitResults == null) return;
-		FloatPolygon points = LemmingUtils.convertToPoints(fitResults, pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, currentRoi.getBounds(), pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		img.setRoi(roi);
 	}
@@ -1061,6 +1077,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private void saveLocalizations() {
 		final SaveDialog sd = new SaveDialog("Import Images", "Results", ".csv");
 		if(sd.getFileName()==null) return;
+		lastDir = sd.getDirectory();
+		OpenDialog.setDefaultDirectory(lastDir);
 		final File file = new File(sd.getDirectory()+sd.getFileName());
 		if (this.chkboxFilter.isSelected()) {
 			ExtendableTable tableToProcess = filteredTable == null ? table : filteredTable;
@@ -1071,7 +1089,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			tSaver.run();
 		} else {
 			if (fitter != null) {
-				saver = new SaveLocalizationPrecision3D(file);
+				saver = new SaveLocalizations(file);
 				if (!manager.getMap().containsKey(fitter.hashCode())) manager.add(fitter);
 				manager.add(saver);
 				manager.linkModules(fitter, saver, false, 100);

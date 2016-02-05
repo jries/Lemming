@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
-import org.lemming.modules.SaveLocalizationPrecision3D;
+import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.NMSDetector;
@@ -49,7 +49,7 @@ public class GaussianFitterTest {
 
 		AbstractModule peak = new NMSDetector(700,7);
 		AbstractModule fitter = new SymmetricGaussianFitter<>(7);
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/Videos/test9000_SG.csv"));
+		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/Videos/test9000_SG.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
