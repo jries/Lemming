@@ -18,7 +18,7 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
-public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Detector<T, F> {
+public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Detector<T> {
 
 	public static final String NAME = "NMS Detector";
 
@@ -38,7 +38,7 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 	}
 
 	@Override
-	public FrameElements<T> detect(F frame) {
+	public FrameElements<T> detect(Frame<T> frame) {
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		RandomAccess<T> ra = interval.randomAccess();
 
@@ -127,7 +127,7 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 		}
 
 		@Override
-		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
+		public <T extends RealType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(NMSDetectorPanel.KEY_NMS_THRESHOLD);
 			final int stepSize = (Integer) settings.get(NMSDetectorPanel.KEY_NMS_STEPSIZE);
 			return new NMSDetector<>(threshold, stepSize);

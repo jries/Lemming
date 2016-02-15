@@ -131,7 +131,7 @@ import java.awt.Color;
  * @param <T> - data type
  * @param <F> - frame type
  */
-public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, F extends Frame<T>> extends JFrame implements ActionListener {
+public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = -2596199192028890712L;
 	private JTabbedPane tabbedPane;
@@ -167,7 +167,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 	private ImageLoader<T> tif;
 	private Map<String, Object> settings;
 	private StackWindow previewerWindow;
-	private Detector<T,F> detector;
+	private Detector<T> detector;
 	private Fitter<T> fitter;
 	private ContrastAdjuster contrastAdjuster;
 	private Renderer renderer;
@@ -616,7 +616,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		}
 		manager.add(detector);
 
-		ImageMath<T, F> math = null;
+		ImageMath<T> math = null;
 		if (checkboxPP.isSelected()) {
 			AbstractModule pp = preProcessingFactory.getModule();
 			manager.add(pp);
@@ -673,6 +673,14 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			curImage.killRoi();
 		}
 	}
+	
+	private void convertPhotons(ImageProcessor ip2, List<Double> cameraSettings){
+		double offset = cameraSettings.get(0);
+		double em_gain = cameraSettings.get(1);
+		double conversion = cameraSettings.get(2);
+		ip2.subtract(offset);
+		ip2.multiply(conversion/em_gain);
+	}
 
 	private void loadImages() {
 		manager.reset();
@@ -702,7 +710,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 			}
 		}
 		if (loc_im != null) {
-			tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
+			
+			tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 			manager.add(tif);
 
 			previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());
@@ -865,11 +874,14 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>, 
 		double pixelSize = img.getCalibration().pixelDepth;
 		ImageStack stack = img.getStack();
 		
-		Object ip = stack.getPixels(frameNumber);
-		Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
+		ImageProcessor ip = stack.getProcessor(frameNumber);
+		convertPhotons(ip,LemmingUtils.readCameraSettings("camera.props"));
+
+		Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{stack.getWidth(), stack.getHeight()});
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
+		if (detResults==null) return;
 		FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), (float)pixelSize);
 		PointRoi roi = new PointRoi(points);
 		img.setRoi(roi);

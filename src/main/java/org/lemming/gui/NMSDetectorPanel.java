@@ -11,9 +11,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-
+import org.lemming.tools.WaitForChangeListener;
 import org.lemming.tools.WaitForKeyListener;
 
 
@@ -27,7 +25,7 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Threshold");
 		
 		jTextFieldThreshold = new JTextField();
-		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
 			@Override
 			public void run() {
 				fireChanged();
@@ -39,10 +37,12 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 		JLabel lblStepsize = new JLabel("StepSize");
 		
 		spinnerStepSize = new JSpinner();
-		spinnerStepSize.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				fireChanged();			}
-		});
+		spinnerStepSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged();
+			}
+		}));
 		spinnerStepSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(

@@ -12,10 +12,8 @@ import javax.swing.SwingConstants;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
+import org.lemming.tools.WaitForChangeListener;
 import org.lemming.tools.WaitForKeyListener;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 public class PeakFinderPanel extends ConfigurationPanel {
 
@@ -36,7 +34,7 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		jTextFieldThreshold = new JTextField();
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
 		jTextFieldThreshold.setText("100");
-		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
 
 			@Override
 			public void run() {
@@ -47,11 +45,12 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		JLabel lblKernelSize = new JLabel("KernelSize");
 		
 		spinnerKernelSize = new JSpinner();
-		spinnerKernelSize.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+		spinnerKernelSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
 				fireChanged();
 			}
-		});
+		}));
 		spinnerKernelSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(

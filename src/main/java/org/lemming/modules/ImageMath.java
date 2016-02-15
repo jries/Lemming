@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.Views;
@@ -24,7 +24,7 @@ import org.lemming.pipeline.SingleRunModule;
  * @param <T> - data type
  * @param <F> - frame type
  */
-public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends SingleRunModule {
+public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 	
 	public enum operators {
 		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION, NONE
@@ -69,12 +69,12 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frameB = (F) data;
+		Frame<T> frameB = (Frame<T>) data;
 		if (frameB == null) { return null; }
-		F test = null;
+		Frame<T> test = null;
 		int maxFrames = Math.min(frames*4,Math.max(inputA.size(), inputB.size()));
 		for(int i=0;i<maxFrames;i++){
-			test = (F)inputA.poll();
+			test = (Frame<T>)inputA.poll();
 			if (test==null) continue;
 			if (frameB.getFrameNumber()==test.getFrameNumber())
 				break;
@@ -83,7 +83,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 			} catch (InterruptedException e) {
 			}
 		}
-		F frameA = test;
+		Frame<T> frameA = test;
 		try {
 			if (frameA == null) {
 				inputB.put(frameB);
@@ -97,7 +97,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 				return null;
 			}
 
-			Pair<F, F> framePair = new ValuePair<>(frameA, frameB);
+			Pair<Frame<T>, Frame<T>> framePair = new ValuePair<>(frameA, frameB);
 
 			if (frameB.isLast()) { // make the poison pill
 				ImgLib2Frame<T> lastFrame = process1(framePair);
@@ -118,7 +118,7 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		return null;
 	}
 
-	private ImgLib2Frame<T> process1(Pair<F, F> framePair) {
+	private ImgLib2Frame<T> process1(Pair<Frame<T>, Frame<T>> framePair) {
 		
 		RandomAccessibleInterval<T> intervalA = framePair.getA().getPixels();
 		RandomAccessibleInterval<T> intervalB = framePair.getB().getPixels();
@@ -136,7 +136,9 @@ public class ImageMath<T extends NumericType<T>, F extends Frame<T>> extends Sin
 		case SUBSTRACTION:		
 			while ( cursorA.hasNext()){
 	            cursorA.fwd();  cursorB.fwd(); // move both cursors forward by one pixel
-	            cursorA.get().sub(cursorB.get());
+	            double val = cursorB.get().getRealDouble() - cursorA.get().getRealDouble();
+	            val = val<0?0:val; 				// check for negative values
+	            cursorA.get().setReal(val);
 	        }
 			break;
 		case MULTIPLICATION:

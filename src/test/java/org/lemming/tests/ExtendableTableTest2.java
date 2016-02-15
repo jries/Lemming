@@ -40,7 +40,7 @@ public class ExtendableTableTest2 {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		ImageLoader tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));	
+		ImageLoader tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));	
 		
 		PeakFinder peak = new PeakFinder(700,6);
 		QuadraticFitter fitter = new QuadraticFitter(10);

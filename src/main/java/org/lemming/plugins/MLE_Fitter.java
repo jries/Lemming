@@ -43,7 +43,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 
 	public static final String INFO_TEXT = "<html>" + "Maximum likelihood estimation using the NVIDIA CUDA capabilities " + "</html>";
 
-	private static final int PARAMETER_LENGTH = 5;
+	private static final int PARAMETER_LENGTH = 6;
 	
 	private int maxKernels;
 
@@ -58,7 +58,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		super(windowSize);
 		kernelSize = 2 * size + 1;
 		//maxKernels = (int) (40000/Math.pow(kernelSize, 3)*1500);
-		maxKernels = 1152*11;
+		maxKernels = 1152*9;
 		kernelList = new FastTable<>();
 		JCudaDriver.setExceptionsEnabled(true);
  		cuInit(0);
@@ -106,7 +106,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
 	private void processGPU(){
 		ExecutorService singleService = Executors.newSingleThreadExecutor();
-		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigma");
+		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigmaxy");
 		Future<Map<String, float[]>> f = singleService.submit(t);
 		try {
 			Map<String, float[]> res = f.get();
@@ -119,13 +119,15 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 				float y = par[ksize+i];
 				float intensity = par[2*ksize+i];
 				float bg = par[3*ksize+i];
-				float s = par[4*ksize+i];
+				float sx = par[4*ksize+i];
+				float sy = par[5*ksize+i];
 				long frame = kernelList.get(i).getFrame();
-				newOutput(new LocalizationPrecision3D(x, y, xstart, ystart, s, bg, intensity, frame));
+				newOutput(new LocalizationPrecision3D(x+xstart, y+ystart, 0, sx, sy, bg, intensity, frame));
 			}
 		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 		}
+		singleService.shutdown();
 	}
 	
 	@Override

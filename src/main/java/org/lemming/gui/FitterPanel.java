@@ -10,6 +10,7 @@ import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.lemming.math.Calibrator;
+import org.lemming.tools.WaitForChangeListener;
 import org.lemming.tools.WaitForKeyListener;
 
 import javax.swing.SpinnerNumberModel;
@@ -20,8 +21,6 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.awt.event.ActionEvent;
 
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
@@ -55,11 +54,12 @@ public class FitterPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Window Size");
 		
 		spinnerWindowSize = new JSpinner();
-		spinnerWindowSize.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
+		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
 				fireChanged();
 			}
-		});
+		}));
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(5), null, null, new Integer(1)));
 		
 		lblCalibration = new JLabel("File");

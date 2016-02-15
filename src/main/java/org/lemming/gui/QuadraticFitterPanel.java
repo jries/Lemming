@@ -9,8 +9,7 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import java.io.File;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
+import org.lemming.tools.WaitForChangeListener;
 
 public class QuadraticFitterPanel extends ConfigurationPanel {
 
@@ -29,11 +28,12 @@ public class QuadraticFitterPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Window Size");
 		
 		spinnerWindowSize = new JSpinner();
-		spinnerWindowSize.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
 				fireChanged();
 			}
-		});
+		}));
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
 		
 		GroupLayout groupLayout = new GroupLayout(this);

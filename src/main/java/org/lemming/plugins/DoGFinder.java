@@ -34,7 +34,7 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
-public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T, F> {
+public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 
 	public static final String NAME = "DoG Finder";
 
@@ -56,7 +56,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frame = (F) data;
+		Frame<T> frame = (Frame<T>) data;
 		if (frame == null)
 			return null;
 
@@ -73,7 +73,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 	}
 
 	@Override
-	public FrameElements<T> detect(F frame) {
+	public FrameElements<T> detect(Frame<T> frame) {
 
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		final ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> extended = Views.extendMirrorSingle(interval);
@@ -93,8 +93,8 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 		final double[][] sigmas = DifferenceOfGaussian.computeSigmas(0.5, 2, calibration, sigma1, sigma2);
 
 		try {
-			Gauss3.gauss(sigmas[1], extended, dog2);
-			Gauss3.gauss(sigmas[0], extended, dog);
+			Gauss3.gauss(sigmas[1], extended, dog2, 2);
+			Gauss3.gauss(sigmas[0], extended, dog, 2);
 		} catch (IncompatibleTypeException e) {
 			e.printStackTrace();
 		}
@@ -103,18 +103,22 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 		final IterableInterval<FloatType> tmpIterable = Views.iterable(dog2);
 		final Cursor<FloatType> dogCursor = dogIterable.cursor();
 		final Cursor<FloatType> tmpCursor = tmpIterable.cursor();
-		while (dogCursor.hasNext())
-			dogCursor.next().sub(tmpCursor.next());
+		while (dogCursor.hasNext()){
+			tmpCursor.fwd();
+			dogCursor.fwd();
+			float val = Math.abs(dogCursor.get().getRealFloat()-tmpCursor.get().getRealFloat())*10;
+			dogCursor.get().setReal(val);
+		}
 
 		final FloatType val = new FloatType();
-		val.setReal(threshold);
+		val.setReal(threshold/10);
 		final MaximumCheck<FloatType> localNeighborhoodCheck = new MaximumCheck<>(val);
 		final IntervalView<FloatType> dogWithBorder = Views.interval(Views.extendMirrorSingle(dog), Intervals.expand(dog, 1));
 		final List<Point> peaks = findLocalExtrema(dogWithBorder, localNeighborhoodCheck, 1);
-		List<Element> found = new ArrayList<>();
+		final List<Element> found = new ArrayList<>();
 		RandomAccess<FloatType> ra = dogWithBorder.randomAccess();
 
-		for (Point p : peaks) {
+		for (final Point p : peaks) {
 			double x = p.getDoublePosition(0);
 			double y = p.getDoublePosition(1);
 			ra.setPosition(p);
@@ -202,7 +206,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 		}
 
 		@Override
-		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
+		public <T extends RealType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(DoGFinderPanel.KEY_THRESHOLD);
 			final int radius = (Integer) settings.get(DoGFinderPanel.KEY_RADIUS);
 			return new DoGFinder<>(threshold, radius);

@@ -35,21 +35,21 @@ public class ImageMathTest {
 	@Before
 	public void setUp() throws Exception {
 		pipe = new Manager();
-		final ImagePlus image = new ImagePlus("D:/Images/test81000.tif");
-		tif = new ImageLoader<>(image,LemmingUtils.readCameraSettings("camera.props"));;
+		final ImagePlus image = new ImagePlus("D:/Images/Tubulin2.tif");
+		tif = new ImageLoader<>(image, LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
 	
-		fmf = new FastMedianFilter(100, true);
+		fmf = new FastMedianFilter(5, true);
 		pipe.add(fmf);
 		
-		im = new ImageMath(100);
+		im = new ImageMath(5);
 		im.setOperator(ImageMath.operators.SUBSTRACTION);
 		pipe.add(im);
 		
-		det = new NMSDetector(700, 7);
+		det = new NMSDetector(5, 5);
 		pipe.add(det);
 		
-		saver = new SaveLocalizations(new File("D:/Images/test.csv"));
+		saver = new SaveLocalizations(new File("D:/Images/Tubulin2.csv"));
 		pipe.add(saver);
 		
 		si = new SaveImages("D:/Images/test.tif");
@@ -58,7 +58,7 @@ public class ImageMathTest {
 		pipe.linkModules(tif, fmf, true, image.getStackSize());
 		pipe.linkModules(tif, im);
 		pipe.linkModules(fmf, im);
-		pipe.linkModules(fmf, si);
+		pipe.linkModules(im, si);
 		pipe.linkModules(im, det);
 		pipe.linkModules(det, saver, false, 128);
 		map = pipe.getMap();

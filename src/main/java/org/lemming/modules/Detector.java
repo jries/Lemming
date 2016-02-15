@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;;
  * @param <T> - data type
  * @param <F> - frame type
  */
-public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extends MultiRunModule {
+public abstract class Detector<T extends RealType<T>> extends MultiRunModule {
 		
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
@@ -31,16 +31,22 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frame = (F) data;
+		Frame<T> frame = (Frame<T>) data;
 		if (frame == null)
 			return null;
 
 		if (frame.isLast()) { // make the poison pill
 			cancel();
 			FrameElements<T> res = detect(frame);
-			res.setLast(true);
-			counterList.add(res.getList().size());
-			return res;
+			if (res!=null){
+				res.setLast(true);
+				counterList.add(res.getList().size());
+				return res;
+			} else {
+				res = new FrameElements<T>(null, frame);
+				res.setLast(true);
+				return res;
+			}
 		}
 		FrameElements<T> res = detect(frame);
 		if (res != null)
@@ -48,7 +54,7 @@ public abstract class Detector<T extends RealType<T>, F extends Frame<T>> extend
 		return res;
 	}
 	
-	public abstract FrameElements<T> detect(F frame);
+	public abstract FrameElements<T> detect(Frame<T> frame);
 		
 	
 	@Override

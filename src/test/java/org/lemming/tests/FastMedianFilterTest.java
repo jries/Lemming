@@ -28,7 +28,7 @@ public class FastMedianFilterTest {
 	public void setUp() throws Exception {
 		pipe = new Manager();
 		
-		tif = new ImageLoader<>(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"),LemmingUtils.readCameraSettings("camera.props"));
+		tif = new ImageLoader<>(new ImagePlus("/Users/ronny/Documents/TubulinAF647.tif"), LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
 		
 		fmf = new FastMedianFilter(50,true);

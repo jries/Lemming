@@ -1,7 +1,6 @@
 package org.lemming.plugins;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -20,11 +19,17 @@ import org.scijava.plugin.Plugin;
 
 import javolution.util.FastTable;
 import net.imglib2.Cursor;
+import net.imglib2.FinalInterval;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.neighborhood.Neighborhood;
+import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.util.Intervals;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends SingleRunModule {
@@ -101,37 +106,74 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 		return null;
 	}
 	
-	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
-		if (list.isEmpty())
-			return null;
-
-		final Frame<T> firstFrame = list.peek();
-		final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();
-
-		Img<T> out = new ArrayImgFactory<T>().create(firstInterval, Views.iterable(firstInterval).firstElement());
-		Cursor<T> cursor = Views.iterable(out).cursor();
-
-		List<Cursor<T>> cursorList = new ArrayList<>();
-
-		for (Frame<T> currentFrame : list)
-			cursorList.add(Views.iterable(currentFrame.getPixels()).cursor());
-
-		while (cursor.hasNext()) {
-			FastTable<Integer> values = new FastTable<>();
-
+	private void findBorderMedian(Cursor<T> cursor, List<RandomAccess<T>> cursorList){
+		final List<Integer> values = new FastTable<Integer>();
+		while(cursor.hasNext()){
 			cursor.fwd();
-			for (Cursor<T> currentCursor : cursorList) {
-				currentCursor.fwd();
+			for (RandomAccess<T> currentCursor : cursorList) {
+				currentCursor.setPosition(cursor);
 				values.add(currentCursor.get().getInteger());
 			}
-			// find the median
-			Integer median = QuickSelect.fastmedian(values, values.size());
-			// Integer median = QuickSelect.select(values, middle);
-			if (median != null)
-				cursor.get().setInteger(median);
 		}
-		Frame<T> newFrame = new ImgLib2Frame<>(firstFrame.getFrameNumber(), firstFrame.getWidth(), firstFrame.getHeight(), 
-				firstFrame.getPixelDepth(), out);
+		final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
+		if (median != null)
+			cursor.get().setInteger(median);
+	}
+	
+	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
+		Frame<T> newFrame = null;
+		if (!list.isEmpty()){
+			final Frame<T> firstFrame = list.peek();
+			final RandomAccessibleInterval<T> firstInterval = firstFrame.getPixels();	// handle borders
+			final long[] dims = new long[firstInterval.numDimensions()];
+			firstInterval.dimensions(dims);
+			Img<T> out = new ArrayImgFactory<T>().create(dims, Views
+					.iterable(firstInterval).firstElement());
+			
+			final FinalInterval shrinked = Intervals.expand(out,-1);		// handle borders
+			final IntervalView<T> source = Views.interval( out, shrinked );
+			final RectangleShape outshape = new RectangleShape(1, false);	// 3x3 kernel
+			Cursor<T> outcursor = Views.iterable(source).cursor();
+			
+			List<RandomAccess<T>> cursorList = new FastTable<RandomAccess<T>>();
+			
+			for (Frame<T> currentFrame : list){
+				RandomAccessibleInterval<T> currentInterval = currentFrame.getPixels();
+				cursorList.add(currentInterval.randomAccess());								// creating neighborhoods
+			}
+			
+			for ( final Neighborhood< T > localNeighborhood : outshape.neighborhoods( source ) )
+	        {
+				outcursor.fwd();
+				final Cursor<T> localCursor = localNeighborhood.cursor();
+				final List<Integer> values = new FastTable<Integer>();
+				while(localCursor.hasNext()){
+					localCursor.fwd();
+					for (RandomAccess<T> currentCursor : cursorList) {
+						currentCursor.setPosition(localCursor);
+						values.add(currentCursor.get().getInteger());
+					}
+				}
+				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
+				if (median != null)
+					outcursor.get().setInteger(median);
+	        }
+			
+			// Borders
+			final Cursor<T>  top = Views.interval(out, Intervals.createMinMax(0,0,dims[0]-1,0)).cursor();
+			findBorderMedian(top,cursorList);
+			final Cursor<T>  left = Views.interval(out,Intervals.createMinMax(0,1,0,dims[1]-2)).cursor();
+			findBorderMedian(left,cursorList);
+			final Cursor<T>  right = Views.interval(out,Intervals.createMinMax(dims[0]-1,1,dims[0]-1,dims[1]-2)).cursor();
+			findBorderMedian(right,cursorList);
+			final Cursor<T>  bottom = Views.interval(out,Intervals.createMinMax(0,dims[1]-1,dims[0]-1,dims[1]-1)).cursor();
+			findBorderMedian(bottom,cursorList);
+			
+			newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
+			firstFrame.getHeight(), firstFrame.getPixelDepth(), out);
+		} else {
+			newFrame = new ImgLib2Frame<T>(0, 1, 1, 1, null);
+		}
 		if (isLast)
 			newFrame.setLast(true);
 		return newFrame;

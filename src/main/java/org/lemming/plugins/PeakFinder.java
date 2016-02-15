@@ -23,7 +23,7 @@ import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T, F> {
+public class PeakFinder<T extends RealType<T>> extends Detector<T> {
 
 	public static final String NAME = "Peak Finder";
 
@@ -50,7 +50,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detec
 	}
 
 	@Override
-	public FrameElements<T> detect(final F frame) {
+	public FrameElements<T> detect(final Frame<T> frame) {
 		Interval interval = Intervals.expand(frame.getPixels(), -size);
 
 		RandomAccessibleInterval<T> source = Views.interval(frame.getPixels(), interval);
@@ -130,7 +130,7 @@ public class PeakFinder<T extends RealType<T>, F extends Frame<T>> extends Detec
 		}
 
 		@Override
-		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
+		public <T extends RealType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(PeakFinderPanel.KEY_THRESHOLD);
 			final int kernelSize = (Integer) settings.get(PeakFinderPanel.KEY_KERNEL_SIZE);
 			return new PeakFinder<>(threshold, kernelSize);

@@ -11,9 +11,7 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-
+import org.lemming.tools.WaitForChangeListener;
 import org.lemming.tools.WaitForKeyListener;
 
 public class DoGFinderPanel extends ConfigurationPanel {
@@ -35,7 +33,7 @@ public class DoGFinderPanel extends ConfigurationPanel {
 		jTextFieldThreshold = new JTextField();
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
 		jTextFieldThreshold.setText("100");
-		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
 
 			@Override
 			public void run() {
@@ -46,11 +44,12 @@ public class DoGFinderPanel extends ConfigurationPanel {
 		JLabel lblRadius = new JLabel("Radius");
 		
 		spinnerRadius = new JSpinner();
-		spinnerRadius.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
+		spinnerRadius.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
 				fireChanged();
 			}
-		});
+		}));
 		spinnerRadius.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
@@ -93,8 +92,8 @@ public class DoGFinderPanel extends ConfigurationPanel {
 		final Map< String, Object > settings = new HashMap<>( 2 );
 		final int radius = (int) spinnerRadius.getValue();
 		final double threshold = Double.parseDouble( jTextFieldThreshold.getText() );
-		settings.put( KEY_RADIUS, radius );
-		settings.put( KEY_THRESHOLD, threshold / 100);
+		settings.put( KEY_RADIUS, radius);
+		settings.put( KEY_THRESHOLD, threshold);
 		
 		return settings;
 	}
