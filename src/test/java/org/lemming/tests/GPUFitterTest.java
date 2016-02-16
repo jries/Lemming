@@ -37,7 +37,7 @@ public class GPUFitterTest {
         //File file = new File("D:/Images/DRG_KO_5_1.tif");
 		//File file = new File("D:/Images/DRG_WT_MT_A647_1.tif");
         //File file = new File("D:/Images/test81000.tif");
-		File file = new File("D:/Images/Tubulin2.tif");
+		File file = new File("D:/Images/Tubulin1.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -57,11 +57,11 @@ public class GPUFitterTest {
 		//ImageMath substracter = new ImageMath(3);
 		//substracter.setOperator(ImageMath.operators.SUBSTRACTION);
 		//AbstractModule peak = new NMSDetector(70,7);
-		AbstractModule peak = new NMSDetector(2.5f,5); //DRG_KO_5_1.tif
+		AbstractModule peak = new NMSDetector(350,5); //DRG_KO_5_1.tif
 		//AbstractModule peak = new DoGFinder(4.5f,13); //DRG_KO_5_1.tif
 		//AbstractModule peak = new NMSDetector(2000,5); //DRG_WT_MT_A647_1.tif
 		AbstractModule fitter = new MLE_Fitter<>(5);
-		AbstractModule saver = new SaveLocalizations(new File("D:/Images/Tubulin2.csv"));
+		AbstractModule saver = new SaveLocalizations(new File("D:/Images/Tubulin1.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

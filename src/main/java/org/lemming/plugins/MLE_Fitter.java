@@ -92,19 +92,19 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 			}
 			kernelList.add(new Kernel(loc.getID(), loc.getFrame(), roi, IVal));
 			if (kernelList.size()>=maxKernels){
-				processGPU();
+				processGPU(pixelDepth);
 				kernelList.clear();
 			}
 		}
 		if (fe.isLast()){
-			processGPU();
+			processGPU(pixelDepth);
 			kernelList.clear();
 			cancel();
 			return;
 		}
 	}
 	
-	private void processGPU(){
+	private void processGPU(double pixelDepth){
 		ExecutorService singleService = Executors.newSingleThreadExecutor();
 		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigmaxy");
 		Future<Map<String, float[]>> f = singleService.submit(t);
@@ -115,14 +115,14 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 			for (int i=0;i<ksize;i++){
 				long xstart = kernelList.get(i).getRoi().min(0);
 				long ystart = kernelList.get(i).getRoi().min(1);
-				float x = par[i];
-				float y = par[ksize+i];
+				float x = par[i] + xstart;
+				float y = par[ksize+i] + ystart;
 				float intensity = par[2*ksize+i];
 				float bg = par[3*ksize+i];
 				float sx = par[4*ksize+i];
 				float sy = par[5*ksize+i];
 				long frame = kernelList.get(i).getFrame();
-				newOutput(new LocalizationPrecision3D(x+xstart, y+ystart, 0, sx, sy, bg, intensity, frame));
+				newOutput(new LocalizationPrecision3D(x*pixelDepth, y*pixelDepth, 0, sx*pixelDepth, sy*pixelDepth, bg, intensity, frame));
 			}
 		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();

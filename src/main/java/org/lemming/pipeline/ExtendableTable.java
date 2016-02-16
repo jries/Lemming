@@ -125,6 +125,10 @@ public class ExtendableTable {
 		filtersCollection.put(col, p);
 	}
 	
+	public void resetFilter(){
+		filtersCollection.clear();
+	}
+	
 	/**
 	 * @param row - row
 	 */

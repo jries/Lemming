@@ -20,7 +20,7 @@ import ij.process.ImageProcessor;
 import net.imglib2.img.Img;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.IntegerType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 
 import java.awt.event.ActionEvent;
@@ -885,10 +885,9 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 		
-		ImageProcessor ip = stack.getProcessor(frameNumber);
 		convertPhotons(ip,LemmingUtils.readCameraSettings("camera.props"));
 
-		Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{stack.getWidth(), stack.getHeight()});
+		Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);

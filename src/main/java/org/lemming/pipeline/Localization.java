@@ -25,7 +25,6 @@ public class Localization implements LocalizationInterface {
 	public long getID() {
 		return ID;
 	}
-
 	
 	@Override
 	public boolean isLast() {
