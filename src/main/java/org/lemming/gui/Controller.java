@@ -189,6 +189,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 	private long start;
 	private AbstractModule saver;
 	public static String lastDir = System.getProperty("user.home"); 
+	private Roi imageRoi;
 
 	/**
 	 * Create the frame.
@@ -668,13 +669,15 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 				final int iHeight = r.height / 2;
 				final int iXROI = r.x + r.width / 4;
 				final int iYROI = r.y + r.height / 4;
-				curImage.setRoi(iXROI, iYROI, iWidth, iHeight);
+				imageRoi = new Roi(iXROI, iYROI, iWidth, iHeight);
+				curImage.killRoi();
 			}
 		} else {
 			curImage.killRoi();
 		}
 	}
 	
+	@SuppressWarnings("unused")
 	private void convertPhotons(ImageProcessor ip2, List<Double> cameraSettings){
 		double offset = cameraSettings.get(0);
 		double em_gain = cameraSettings.get(1);
@@ -728,6 +731,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 					}
 				}
 			});
+			imageRoi = new Roi(0, 0, loc_im.getWidth(), loc_im.getHeight());
 			previewerWindow.setVisible(true);
 			lblFile.setText(loc_im.getTitle());
 			validate();
@@ -870,29 +874,28 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 	@SuppressWarnings("unchecked")
 	private void detectorPreview(Map<String, Object> map) {
 		// TODO constrain to current ROI
-		settings.putAll(map);
 		detectorFactory.setAndCheckSettings(map);
 		detector = detectorFactory.getDetector();
 		final ImagePlus img = previewerWindow.getImagePlus();
+		img.killRoi();
 		final int frameNumber = img.getCurrentSlice();
 		final double pixelSize = img.getCalibration().pixelDepth;
-		Roi currentRoi = previewerWindow.getImagePlus().getRoi();
 		ImageProcessor ip = img.getStack().getProcessor(frameNumber);
-		if (currentRoi != null){
-			ip.setRoi(currentRoi.getBounds());
+		if (imageRoi.getBounds().width < ip.getWidth() || imageRoi.getBounds().height < ip.getHeight()){
+			ip.setRoi(imageRoi.getBounds());
 			ip = ip.crop();
 		} else{
-			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+			imageRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 		
-		convertPhotons(ip,LemmingUtils.readCameraSettings("camera.props"));
+		//convertPhotons(ip,LemmingUtils.readCameraSettings("camera.props"));
 
 		Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
 		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		if (detResults==null) return;
-		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), currentRoi.getBounds(), pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(detResults.getList(), imageRoi.getBounds(), pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		img.setRoi(roi);
 	}
@@ -924,14 +927,13 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		img.killRoi();
 		final int frameNumber = img.getCurrentSlice();
 		final float pixelSize = (float) img.getCalibration().pixelDepth;
-		Roi currentRoi = img.getRoi();
 		final ImageStack stack = img.getStack();
 		ImageProcessor ip = stack.getProcessor(frameNumber);
-		if (currentRoi != null){
-			ip.setRoi(currentRoi.getBounds());
+		if (imageRoi.getBounds().width < ip.getWidth() || imageRoi.getBounds().height < ip.getHeight()){
+			ip.setRoi(imageRoi.getBounds());
 			ip = ip.crop();
 		} else{
-			currentRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
+			imageRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
 		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
 		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
@@ -939,7 +941,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		fitResults = CentroidFitterIP.fit(detResults.getList(), ip, fitterFactory.getHalfKernel(), pixelSize);
 
 		if (fitResults == null) return;
-		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, currentRoi.getBounds(), pixelSize);
+		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, imageRoi.getBounds(), pixelSize);
 		final PointRoi roi = new PointRoi(points);
 		img.setRoi(roi);
 	}

@@ -3,10 +3,17 @@ package org.lemming.plugins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
+import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
+import net.imglib2.view.ExtendedRandomAccessibleInterval;
+import net.imglib2.view.Views;
 
 import org.lemming.factories.DetectorFactory;
 import org.lemming.gui.ConfigurationPanel;
@@ -32,21 +39,56 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 
 	private int counter = 0;
 
-	public NMSDetector(final double threshold, final int size) {
+	private int gaussian;
+
+	public NMSDetector(final double threshold, final int size, final int gaussian) {
 		this.threshold = threshold;
 		this.n_ = size;
+		this.gaussian = gaussian;
+		//this.service = Executors.newSingleThreadExecutor();
 	}
 
 	@Override
 	public FrameElements<T> detect(Frame<T> frame) {
-		final RandomAccessibleInterval<T> interval = frame.getPixels();
-		RandomAccess<T> ra = interval.randomAccess();
+		final RandomAccessibleInterval<T> pixels = frame.getPixels();
+		double[] sigma = new double[ pixels.numDimensions() ];
+		if(gaussian>0){
+			for ( int d = 0; d < pixels.numDimensions(); ++d )
+	            sigma[ d ] = gaussian;
+			final ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> extended = Views.extendMirrorSingle(pixels);
+
+			// WE NEED TO SHIFT COORDINATES BY -MIN[] TO HAVE THE CORRECT LOCATION.
+			final long[] min = new long[pixels.numDimensions()];
+			pixels.min(min);
+			for (int d = 0; d < min.length; d++) {
+				min[d] = -min[d];
+			}
+			final FloatType type = new FloatType();
+			final RandomAccessibleInterval<FloatType> dog = Views.offset(Util.getArrayOrCellImgFactory(pixels, type).create(pixels, type), min);
+			
+			try {
+				Gauss3.gauss(sigma, extended, dog, 1);
+			} catch (Exception e) {
+				return null;
+			}
+			
+			final Cursor<FloatType> dogCursor = Views.iterable(dog).cursor();
+			final Cursor<T> tmpCursor = Views.iterable(pixels).cursor();
+
+			while (dogCursor.hasNext()){
+				tmpCursor.fwd();
+				dogCursor.fwd();
+				float val = Math.abs(tmpCursor.get().getRealFloat()-dogCursor.get().getRealFloat());
+				tmpCursor.get().setReal(val);
+			}
+		}
+		RandomAccess<T> ra = pixels.randomAccess();
 
 		int i, j, ii, jj, ll, kk;
 		int mi, mj;
 		boolean failed = false;
-		long width_ = interval.dimension(0);
-		long height_ = interval.dimension(1);
+		long width_ = pixels.dimension(0);
+		long height_ = pixels.dimension(1);
 		List<Element> found = new ArrayList<>();
 
 		for (i = 0; i <= width_ - 1 - n_; i += n_ + 1) { // Loop over (n+1)x(n+1)
@@ -130,7 +172,8 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 		public <T extends RealType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(NMSDetectorPanel.KEY_NMS_THRESHOLD);
 			final int stepSize = (Integer) settings.get(NMSDetectorPanel.KEY_NMS_STEPSIZE);
-			return new NMSDetector<>(threshold, stepSize);
+			final int gaussian = (Integer) settings.get(NMSDetectorPanel.KEY_NMS_GAUSSIAN_SIZE);
+			return new NMSDetector<>(threshold, stepSize, gaussian);
 		}
 
 		@Override

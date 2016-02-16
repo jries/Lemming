@@ -24,7 +24,9 @@ public class PeakFinderPanel extends ConfigurationPanel {
 	private JTextField jTextFieldThreshold;
 	private JSpinner spinnerKernelSize;
 	public static final String KEY_KERNEL_SIZE = "KERNEL_SIZE";
+	public static final String KEY_GAUSSIAN_SIZE = "GAUSSIAN_SIZE";
 	public static final String KEY_THRESHOLD = "PEAK_THRESHOLD";
+	private JSpinner spinnerGaussian;
 
 	public PeakFinderPanel() {
 		setBorder(null);
@@ -32,6 +34,7 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Threshold");
 		
 		jTextFieldThreshold = new JTextField();
+		jTextFieldThreshold.setToolTipText("Threshold");
 		jTextFieldThreshold.setHorizontalAlignment(SwingConstants.RIGHT);
 		jTextFieldThreshold.setText("100");
 		jTextFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
@@ -45,6 +48,7 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		JLabel lblKernelSize = new JLabel("KernelSize");
 		
 		spinnerKernelSize = new JSpinner();
+		spinnerKernelSize.setToolTipText("Kernel Size");
 		spinnerKernelSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
 			@Override
 			public void run() {
@@ -52,6 +56,18 @@ public class PeakFinderPanel extends ConfigurationPanel {
 			}
 		}));
 		spinnerKernelSize.setModel(new SpinnerNumberModel(new Integer(10), new Integer(1), null, new Integer(1)));
+		
+		JLabel lblGaussian = new JLabel("Gaussian");
+		
+		spinnerGaussian = new JSpinner();
+		spinnerGaussian.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
+				fireChanged();
+			}
+		}));
+		spinnerGaussian.setToolTipText("Prefilter with Gaussian (0=no filtering)");
+		spinnerGaussian.setModel(new SpinnerNumberModel(0, 0, 20, 1));
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -59,25 +75,31 @@ public class PeakFinderPanel extends ConfigurationPanel {
 					.addGap(26)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(lblWindowSize, GroupLayout.PREFERRED_SIZE, 97, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblKernelSize))
+						.addComponent(lblKernelSize)
+						.addComponent(lblGaussian))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(spinnerGaussian)
 						.addComponent(spinnerKernelSize)
 						.addComponent(jTextFieldThreshold, GroupLayout.DEFAULT_SIZE, 67, Short.MAX_VALUE))
-					.addGap(63))
+					.addGap(256))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.TRAILING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(11)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(jTextFieldThreshold, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+						.addComponent(jTextFieldThreshold, GroupLayout.PREFERRED_SIZE, 31, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblWindowSize, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(spinnerKernelSize, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblKernelSize))
-					.addContainerGap(72, Short.MAX_VALUE))
+						.addComponent(lblKernelSize)
+						.addComponent(spinnerKernelSize, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(spinnerGaussian, GroupLayout.PREFERRED_SIZE, 28, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblGaussian))
+					.addContainerGap(185, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
 	}
@@ -87,7 +109,7 @@ public class PeakFinderPanel extends ConfigurationPanel {
 	public void setSettings(Map<String, Object> map) {
 		spinnerKernelSize.setValue(map.get(KEY_KERNEL_SIZE));
 		jTextFieldThreshold.setText(""+map.get(KEY_THRESHOLD)); 
-
+		spinnerGaussian.setValue(map.get(KEY_GAUSSIAN_SIZE));
 	}
 
 	@Override
@@ -95,10 +117,10 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		final Map< String, Object > map = new HashMap<>( 2 );
 		final int stepsize = (int) spinnerKernelSize.getValue();
 		final double threshold = Double.parseDouble( jTextFieldThreshold.getText() );
+		final int gaussianSize = (int) spinnerGaussian.getValue();
 		map.put( KEY_KERNEL_SIZE, stepsize );
 		map.put( KEY_THRESHOLD, threshold );
-		
+		map.put( KEY_GAUSSIAN_SIZE, gaussianSize);
 		return map;
 	}
-
 }

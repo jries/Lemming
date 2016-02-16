@@ -21,7 +21,7 @@ import org.lemming.interfaces.Store;
 public abstract class AbstractModule implements ModuleInterface,Runnable {
 	
 	protected int numTasks;
-	protected int numThreads = Runtime.getRuntime().availableProcessors()-2;
+	protected int numThreads = Runtime.getRuntime().availableProcessors()-1;
 	protected ExecutorService service;
 	protected Map<Integer, Store> inputs = new LinkedHashMap<>();
 	protected Map<Integer, Store> outputs = new LinkedHashMap<>();

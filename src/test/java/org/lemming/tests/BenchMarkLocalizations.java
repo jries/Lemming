@@ -84,11 +84,11 @@ public class BenchMarkLocalizations {
 	
 	
 	public static void main(String[] args) {
-		final ExtendableTable exp = readCSV(new File("D:\\Images\\Tubulin1.csv"),'\t');
-		final File file = new File("D:\\Images\\Tubulin1\\frames");
+		final ExtendableTable exp = readCSV(new File("D:\\ownCloud\\Tubulin1.csv"),'\t');
+		final File file = new File("D:\\ownCloud\\Tubulin1\\frames");
 		final String[] files = file.list();
 		for (int num=0;num<files.length;num++){
-			final String filename="D:\\Images\\Tubulin1\\frames\\"+files[num];
+			final String filename="D:\\ownCloud\\Tubulin1\\frames\\"+files[num];
 			final ExtendableTable truth = readCSV(new File(filename),',');
 			exp.addFilterExact("frame", num);
 			final ExtendableTable filtered = exp.filter();

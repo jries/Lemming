@@ -47,7 +47,7 @@ public class GaussianFitterTest {
 		
 		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
-		AbstractModule peak = new NMSDetector(700,7);
+		AbstractModule peak = new NMSDetector(700,7,0);
 		AbstractModule fitter = new SymmetricGaussianFitter<>(7);
 		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/Videos/test9000_SG.csv"));
 		

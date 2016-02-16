@@ -34,7 +34,7 @@ public class NMSFinderTest {
 		tif = new ImageLoader<>(image, LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
 		
-		peak = new NMSDetector(700,9);
+		peak = new NMSDetector(700,9,0);
 		pipe.add(peak);
 		
 		unpacker = new UnpackElements();

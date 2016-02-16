@@ -46,7 +46,7 @@ public class ImageMathTest {
 		im.setOperator(ImageMath.operators.SUBSTRACTION);
 		pipe.add(im);
 		
-		det = new NMSDetector(5, 5);
+		det = new NMSDetector(5, 5, 0);
 		pipe.add(det);
 		
 		saver = new SaveLocalizations(new File("D:/Images/Tubulin2.csv"));
