@@ -52,14 +52,14 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			double y = loc.getY().longValue() / pixelDepth;
 			final Roi origroi = new Roi(x - size, y - size, 2 * size + 1, 2 * size + 1);
 			final Roi roi = cropRoi(ip.getRoi(), origroi.getBounds());
-			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 100, 100, params);
+			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 100, 100, pixelDepth, params);
 			double[] result = null;
 			result = gf.fit();
 			
 			if (result != null){
-				for (int i = 0; i < 8; i++)
+				for (int i = 0; i < 6; i++)
 					result[i] *= pixelDepth;
-				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[5], result[6], result[7], result[3]/pixelDepth, loc.getFrame()));
+				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[3], result[4], result[5], result[6], loc.getFrame()));
 			}
 		}
 		return found;

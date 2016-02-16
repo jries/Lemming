@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
-import org.lemming.modules.SaveLocalizationPrecision3D;
+import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
 import org.lemming.plugins.CentroidFitter;
@@ -53,7 +53,7 @@ public class ManagerTest2 {
 		//Fitter fitter = new Fitter(7, Settings.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
 		AbstractModule fitter = new CentroidFitter(10, 700);
 
-		AbstractModule saver = new SaveLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted2.csv"));
+		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted2.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);
