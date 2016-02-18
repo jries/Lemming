@@ -40,7 +40,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	private static int count = 0;
 	
 	private static final float PSFSigma = 1.3f;
-	private static final int iterations = 50;
+	private static final int iterations = 75;
 	private static String ptxFileName = "resources/CudaFit.ptx";
 	private static float sharedMemPerBlock = 262144;
 

@@ -12,11 +12,10 @@ import javax.swing.SpinnerNumberModel;
 
 import java.io.File;
 
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
+import org.lemming.tools.WaitForChangeListener;
 import org.lemming.tools.WaitForKeyListener;
 
 public class CentroidFitterPanel extends ConfigurationPanel {
@@ -40,16 +39,17 @@ public class CentroidFitterPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Window Size");
 		
 		spinnerWindowSize = new JSpinner();
-		spinnerWindowSize.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
+		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+			@Override
+			public void run() {
 				fireChanged();
 			}
-		});
+		}));
 		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
 		
 		lblCentroidThreshold = new JLabel("Centroid Threshold");
 		textFieldThreshold = new JTextField();
-		textFieldThreshold.addKeyListener(new WaitForKeyListener(1000, new Runnable(){
+		textFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
 			@Override
 			public void run() {
 				fireChanged();

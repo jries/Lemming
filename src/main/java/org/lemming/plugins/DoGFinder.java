@@ -93,8 +93,8 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 		final double[][] sigmas = DifferenceOfGaussian.computeSigmas(0.5, 2, calibration, sigma1, sigma2);
 
 		try {
-			Gauss3.gauss(sigmas[1], extended, dog2);
-			Gauss3.gauss(sigmas[0], extended, dog);
+			Gauss3.gauss(sigmas[1], extended, dog2, 2);
+			Gauss3.gauss(sigmas[0], extended, dog, 2);
 		} catch (IncompatibleTypeException e) {
 			e.printStackTrace();
 		}
@@ -103,18 +103,22 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 		final IterableInterval<FloatType> tmpIterable = Views.iterable(dog2);
 		final Cursor<FloatType> dogCursor = dogIterable.cursor();
 		final Cursor<FloatType> tmpCursor = tmpIterable.cursor();
-		while (dogCursor.hasNext())
-			dogCursor.next().sub(tmpCursor.next());
+		while (dogCursor.hasNext()){
+			tmpCursor.fwd();
+			dogCursor.fwd();
+			float val = Math.abs(dogCursor.get().getRealFloat()-tmpCursor.get().getRealFloat())*10;
+			dogCursor.get().setReal(val);
+		}
 
 		final FloatType val = new FloatType();
-		val.setReal(threshold);
+		val.setReal(threshold/10);
 		final MaximumCheck<FloatType> localNeighborhoodCheck = new MaximumCheck<>(val);
 		final IntervalView<FloatType> dogWithBorder = Views.interval(Views.extendMirrorSingle(dog), Intervals.expand(dog, 1));
 		final List<Point> peaks = findLocalExtrema(dogWithBorder, localNeighborhoodCheck, 1);
-		List<Element> found = new ArrayList<>();
+		final List<Element> found = new ArrayList<>();
 		RandomAccess<FloatType> ra = dogWithBorder.randomAccess();
 
-		for (Point p : peaks) {
+		for (final Point p : peaks) {
 			double x = p.getDoublePosition(0);
 			double y = p.getDoublePosition(1);
 			ra.setPosition(p);

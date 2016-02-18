@@ -25,12 +25,12 @@ import ij.IJ;
  */
 public class Manager extends SwingWorker<Void,Void> {
 	
-	private Map<Integer,Store> storeMap = new LinkedHashMap<>();
-	private Map<Integer,AbstractModule> modules = new LinkedHashMap<>();
+	final private Map<Integer,Store> storeMap = new LinkedHashMap<>();
+	final private Map<Integer,AbstractModule> modules = new LinkedHashMap<>();
 	private boolean done = false;
 	private int maximum = 1;
-	private ExecutorService service = Executors.newCachedThreadPool();
-
+	final private ExecutorService service = Executors.newCachedThreadPool();
+ 
 	public Manager() {
 	}
 	
@@ -90,10 +90,7 @@ public class Manager extends SwingWorker<Void,Void> {
 				break;
 			}	
 			starter.setService(service);
-			Future<?> t = service.submit(starter);
-			//Thread t = new Thread(starter, starter.getClass().getSimpleName());
-			//t.start();
-			threads.add(t);
+			threads.add(service.submit(starter));
 			
 			try {
 				Thread.sleep(100); 						// HACK : give the module some time to start working
@@ -109,6 +106,10 @@ public class Manager extends SwingWorker<Void,Void> {
 		}
 		done = true;
 		sm.cancel(true);
+		if(!service.isShutdown()) {
+            	service.shutdown();
+                // await termination code
+              }
 		return null;
 	}
 	
