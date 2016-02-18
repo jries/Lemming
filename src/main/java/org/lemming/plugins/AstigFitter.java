@@ -34,15 +34,15 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
 	private double[] params;
 
-	public AstigFitter(final int windowSize, final List<Double> list) {
-		super(windowSize);
+	public AstigFitter(final int windowSize, double stepSize, final List<Double> list) {
+		super(windowSize, stepSize);
 		this.params = new double[list.size()];
 		for (int i = 0; i < list.size(); i++)
 			params[i] = list.get(i);
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize, double stepSize) {
 		final double pixelDepth = frame.getPixelDepth();
 		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
 		final List<Element> found = new ArrayList<>();
@@ -57,8 +57,12 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			result = gf.fit();
 			
 			if (result != null){
-				for (int i = 0; i < 6; i++)
-					result[i] *= pixelDepth;
+				result[0] *= pixelDepth;
+				result[1] *= pixelDepth;
+				result[2] *= stepSize;
+				result[3] *= pixelDepth;
+				result[4] *= pixelDepth;
+				result[5] *= stepSize;
 				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[3], result[4], result[5], result[6], loc.getFrame()));
 			}
 		}
@@ -102,7 +106,7 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			return new AstigFitter<>(windowSize, LemmingUtils.readCSV(calibFileName).get("param"));
+			return new AstigFitter<>(windowSize, stepSize, LemmingUtils.readCSV(calibFileName).get("param"));
 		}
 
 		@Override

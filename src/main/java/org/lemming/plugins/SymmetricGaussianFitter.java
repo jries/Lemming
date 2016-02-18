@@ -32,11 +32,11 @@ public class SymmetricGaussianFitter<T extends RealType<T>> extends CPU_Fitter<T
 
 
 	public SymmetricGaussianFitter(final int halfkernel) {
-		super(halfkernel);
+		super(halfkernel, stepSize);
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize, double stepSize) {
 		final double pixelDepth = frame.getPixelDepth();
 		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
 		final List<Element> found = new ArrayList<>();

@@ -24,7 +24,7 @@ import org.lemming.pipeline.SingleRunModule;
  * @param <T> - data type
  * @param <F> - frame type
  */
-public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends SingleRunModule {
+public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 	
 	public enum operators {
 		ADDITION, SUBSTRACTION, MULTIPLICATION, DIVISION, NONE
@@ -69,12 +69,12 @@ public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends Single
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frameB = (F) data;
+		Frame<T> frameB = (Frame<T>) data;
 		if (frameB == null) { return null; }
-		F test = null;
+		Frame<T> test = null;
 		int maxFrames = Math.min(frames*4,Math.max(inputA.size(), inputB.size()));
 		for(int i=0;i<maxFrames;i++){
-			test = (F)inputA.poll();
+			test = (Frame<T>)inputA.poll();
 			if (test==null) continue;
 			if (frameB.getFrameNumber()==test.getFrameNumber())
 				break;
@@ -83,7 +83,7 @@ public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends Single
 			} catch (InterruptedException e) {
 			}
 		}
-		F frameA = test;
+		Frame<T> frameA = test;
 		try {
 			if (frameA == null) {
 				inputB.put(frameB);
@@ -97,7 +97,7 @@ public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends Single
 				return null;
 			}
 
-			Pair<F, F> framePair = new ValuePair<>(frameA, frameB);
+			Pair<Frame<T>, Frame<T>> framePair = new ValuePair<>(frameA, frameB);
 
 			if (frameB.isLast()) { // make the poison pill
 				ImgLib2Frame<T> lastFrame = process1(framePair);
@@ -118,7 +118,7 @@ public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends Single
 		return null;
 	}
 
-	private ImgLib2Frame<T> process1(Pair<F, F> framePair) {
+	private ImgLib2Frame<T> process1(Pair<Frame<T>, Frame<T>> framePair) {
 		
 		RandomAccessibleInterval<T> intervalA = framePair.getA().getPixels();
 		RandomAccessibleInterval<T> intervalB = framePair.getB().getPixels();
@@ -157,7 +157,7 @@ public class ImageMath<T extends RealType<T>, F extends Frame<T>> extends Single
 		}
 		
 		return new ImgLib2Frame<>(framePair.getA().getFrameNumber(), framePair.getA().getWidth(), 
-				framePair.getA().getHeight(), framePair.getA().getPixelDepth(), intervalA);
+				framePair.getA().getHeight(), framePair.getA().getPixelDepth(), framePair.getA().getStepSize(), intervalA);
 	}
 	
 	@Override

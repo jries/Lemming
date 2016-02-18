@@ -98,12 +98,26 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 			} else {
 				for (int i = 0; i < nFrames; i++)
 					newOutput(new ImgLib2Frame<>(frameB.getFrameNumber()
-							+ i, frameB.getWidth(), frameB.getWidth(), frameB.getPixelDepth(), 
+							+ i, frameB.getWidth(), frameB.getWidth(), frameB.getPixelDepth(), frameB.getStepSize(),
 							frameB.getPixels()));				
 			}
 			frameList.clear();
 		}
 		return null;
+	}
+	
+	private void findBorderMedian(Cursor<T> cursor, List<RandomAccess<T>> cursorList){
+		final List<Integer> values = new FastTable<Integer>();
+		while(cursor.hasNext()){
+			cursor.fwd();
+			for (RandomAccess<T> currentCursor : cursorList) {
+				currentCursor.setPosition(cursor);
+				values.add(currentCursor.get().getInteger());
+			}
+		}
+		final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
+		if (median != null)
+			cursor.get().setInteger(median);
 	}
 	
 	private Frame<T> process(final Queue<Frame<T>> list, final boolean isLast) {
@@ -147,58 +161,18 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 			
 			// Borders
 			final Cursor<T>  top = Views.interval(out, Intervals.createMinMax(0,0,dims[0]-1,0)).cursor();
-			while(top.hasNext()){
-				final List<Integer> values = new FastTable<Integer>();
-				top.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(top);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					top.get().setInteger(median);
-			}
+			findBorderMedian(top,cursorList);
 			final Cursor<T>  left = Views.interval(out,Intervals.createMinMax(0,1,0,dims[1]-2)).cursor();
-			while(left.hasNext()){
-				final List<Integer> values = new FastTable<Integer>();
-				left.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(left);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					left.get().setInteger(median);
-			}
+			findBorderMedian(left,cursorList);
 			final Cursor<T>  right = Views.interval(out,Intervals.createMinMax(dims[0]-1,1,dims[0]-1,dims[1]-2)).cursor();
-			while(right.hasNext()){
-				final List<Integer> values = new FastTable<Integer>();
-				right.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(right);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					right.get().setInteger(median);
-			}
+			findBorderMedian(right,cursorList);
 			final Cursor<T>  bottom = Views.interval(out,Intervals.createMinMax(0,dims[1]-1,dims[0]-1,dims[1]-1)).cursor();
-			while(bottom.hasNext()){
-				final List<Integer> values = new FastTable<Integer>();
-				bottom.fwd();
-				for (RandomAccess<T> currentCursor : cursorList) {
-					currentCursor.setPosition(bottom);
-					values.add(currentCursor.get().getInteger());
-				}
-				final Integer median = QuickSelect.fastmedian(values, values.size());   // find the median
-				if (median != null)
-					bottom.get().setInteger(median);
-			}		
+			findBorderMedian(bottom,cursorList);
 			
 			newFrame = new ImgLib2Frame<T>(firstFrame.getFrameNumber(), firstFrame.getWidth(), 
-			firstFrame.getHeight(), firstFrame.getPixelDepth(), out);
+			firstFrame.getHeight(), firstFrame.getPixelDepth(), firstFrame.getStepSize(),out);
 		} else {
-			newFrame = new ImgLib2Frame<T>(0, 1, 1, 1, null);
+			newFrame = new ImgLib2Frame<T>(0, 1, 1, 1, 1, null);
 		}
 		if (isLast)
 			newFrame.setLast(true);
@@ -231,7 +205,7 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 
 			newOutput(new ImgLib2Frame<>(
 					frameA.getFrameNumber() + i, frameA.getWidth(),
-					frameA.getHeight(), frameA.getPixelDepth(), outFrame));
+					frameA.getHeight(), frameA.getPixelDepth(), frameA.getStepSize(), outFrame));
 		}
 	}
 	
@@ -240,13 +214,13 @@ public class FastMedianFilter<T extends IntegerType<T> & NativeType<T>> extends 
 		for (int i = 0; i < lastListSize; i++) {
 			newOutput(new ImgLib2Frame<>(frameB.getFrameNumber() + i,
 					frameB.getWidth(), frameB.getHeight(), 
-					frameB.getPixelDepth(), frameB.getPixels()));
+					frameB.getPixelDepth(), frameB.getStepSize(), frameB.getPixels()));
 		}
 
 		// create last frame
 		ImgLib2Frame<T> lastFrame = new ImgLib2Frame<>(
 				frameB.getFrameNumber() + lastListSize, frameB.getWidth(),
-				frameB.getHeight(), frameB.getPixelDepth(), frameB.getPixels());
+				frameB.getHeight(), frameB.getPixelDepth(), frameB.getStepSize(), frameB.getPixels());
 		lastFrame.setLast(true);
 		newOutput(lastFrame);
 	}

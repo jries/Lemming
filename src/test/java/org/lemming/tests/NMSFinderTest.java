@@ -31,10 +31,10 @@ public class NMSFinderTest {
 	public void setUp() throws Exception {
 		pipe = new Manager();	
 		final ImagePlus image = new ImagePlus(System.getProperty("user.home")+"/ownCloud/storm/experiment3D.tif");
-		tif = new ImageLoader<>(image,LemmingUtils.readCameraSettings("camera.props"));
+		tif = new ImageLoader<>(image, LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
 		
-		peak = new NMSDetector(700,9);
+		peak = new NMSDetector(700,9,0);
 		pipe.add(peak);
 		
 		unpacker = new UnpackElements();

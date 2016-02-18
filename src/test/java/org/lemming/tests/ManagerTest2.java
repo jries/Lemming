@@ -45,9 +45,9 @@ public class ManagerTest2 {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		AbstractModule tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
+		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
-		AbstractModule peak = new NMSDetector(700,7);
+		AbstractModule peak = new NMSDetector(700,7,0);
 		//Fitter fitter = new QuadraticFitter(10);
 		//@SuppressWarnings("unchecked")
 		//Fitter fitter = new Fitter(7, Settings.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));

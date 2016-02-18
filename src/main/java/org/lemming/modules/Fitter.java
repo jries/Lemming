@@ -19,9 +19,11 @@ import ij.gui.Roi;
 public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 
 	protected static int size;
+	protected static double stepSize;
 
-	public Fitter(int halfkernel) {
+	public Fitter(int halfkernel, double stepSize) {
 		Fitter.size = halfkernel;
+		Fitter.stepSize = stepSize;
 	}
 	
 	public static int getHalfKernel() {
@@ -45,5 +47,5 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 		return new Roi(x1, y1, x2 - x1, y2 - y1);
 	}
 
-	public abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) ;
+	public abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize, double stepSize) ;
 }

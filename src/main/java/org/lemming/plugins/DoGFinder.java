@@ -34,7 +34,7 @@ import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
-public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detector<T, F> {
+public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 
 	public static final String NAME = "DoG Finder";
 
@@ -56,7 +56,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 	@SuppressWarnings("unchecked")
 	@Override
 	public Element processData(Element data) {
-		F frame = (F) data;
+		Frame<T> frame = (Frame<T>) data;
 		if (frame == null)
 			return null;
 
@@ -73,7 +73,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 	}
 
 	@Override
-	public FrameElements<T> detect(F frame) {
+	public FrameElements<T> detect(Frame<T> frame) {
 
 		final RandomAccessibleInterval<T> interval = frame.getPixels();
 		final ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval<T>> extended = Views.extendMirrorSingle(interval);
@@ -202,7 +202,7 @@ public class DoGFinder<T extends RealType<T>, F extends Frame<T>> extends Detect
 		}
 
 		@Override
-		public <T extends RealType<T>, F extends Frame<T>> Detector<T, F> getDetector() {
+		public <T extends RealType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(DoGFinderPanel.KEY_THRESHOLD);
 			final int radius = (Integer) settings.get(DoGFinderPanel.KEY_RADIUS);
 			return new DoGFinder<>(threshold, radius);

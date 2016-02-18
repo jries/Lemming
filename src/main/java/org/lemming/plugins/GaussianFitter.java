@@ -44,15 +44,15 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 	private static int INDEX_D = 7;
 	private static int INDEX_Mp = 8;
 
-	public GaussianFitter(int windowSize, final Map<String, List<Double>> cal) {
-		super(windowSize);
+	public GaussianFitter(int windowSize, double stepSize, final Map<String, List<Double>> cal) {
+		super(windowSize, stepSize);
 		param = cal.get("param");
 		zgrid = cal.get("zgrid");
 		Calibcurve = cal.get("Calibcurve");
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize, double stepSize) {
 		final double pixelDepth = frame.getPixelDepth();
 		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
 		final List<Element> found = new ArrayList<>();
@@ -68,10 +68,12 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			result = gf.fit();
 			if (result != null) {
 				double SxSy = result[2] * result[2] - result[3] * result[3];
-				for (int i = 0; i < 8; i++)
-					result[i] *= pixelDepth;
-				found.add(new LocalizationPrecision3D( result[0], result[1], calculateZ(SxSy)*pixelDepth, 
-					result[6], result[7], result[8], result[4]/pixelDepth, loc.getFrame()));
+				result[0] *= pixelDepth;
+				result[1] *= pixelDepth;
+				result[6] *= pixelDepth;
+				result[7] *= pixelDepth;
+				found.add(new LocalizationPrecision3D( result[0], result[1], calculateZ(SxSy)*stepSize, 
+					result[6], result[7], result[8], result[4], loc.getFrame()));
 			}
 		}
 		return found;
@@ -169,7 +171,7 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				return null;
 			}
 			Map<String, List<Double>> cal = LemmingUtils.readCSV(calibFileName);
-			return new GaussianFitter<>(windowSize, cal);
+			return new GaussianFitter<>(windowSize, stepSize, cal);
 		}
 
 		@Override

@@ -1,12 +1,18 @@
 package org.lemming.modules;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.lemming.interfaces.Element;
@@ -22,14 +28,16 @@ public class StoreSaver extends SingleRunModule {
 	private BufferedWriter br;
 	private Locale curLocale;
 	private Map<String,Object> metaData;
+	private static String[] preferredOrder= new String[]{"x","y","z","sX","sY","sZ","intensity","frame"}; 
 
 	public StoreSaver(File f){
 		this.file = f;
 	}
 	
-	public void putMetadata(Map<String,Object> metaData_){
-		this.metaData = metaData_;
+	public void putMetadata(Map<String,Object> metaData){
+		this.metaData = metaData;
 	}
+		
 	
 	@Override
 	public void beforeRun() {
@@ -38,14 +46,31 @@ public class StoreSaver extends SingleRunModule {
 		curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);
-		
+		Element el = inputs.get(iterator).peek();
+		Set<String> headset = new LinkedHashSet<>();
 		try {
 			br = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
 			for (String key : metaData.keySet()){
 			String line = "# " + key + "=" + metaData.get(key)+"\n";
 				br.write(line);	
-			}	
-		} catch (IOException e) {
+			}
+			
+			BeanInfo b = Introspector.getBeanInfo(el.getClass());
+			for (PropertyDescriptor p : b.getPropertyDescriptors()) {
+				String prop = p.getName();
+				boolean test = prop.contains("class") | prop.contains("last") | prop.contains("ID");
+				if (!test){
+					headset.add(prop);
+				}
+			}
+			String headline="";
+			for (int n=0; n<preferredOrder.length; n++){
+				if(headset.contains(preferredOrder[n]))
+					headline += preferredOrder[n]+ "\t";
+			}
+			headline = headline.substring(0, headline.length()-1);
+			br.write(headline+"\n");
+		} catch (IOException | IntrospectionException e) {
 			IJ.error(e.getMessage());
 		}
 	}

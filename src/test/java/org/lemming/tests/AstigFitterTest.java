@@ -45,10 +45,10 @@ public class AstigFitterTest {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 		
-		AbstractModule tif = new ImageLoader<>(loc_im,LemmingUtils.readCameraSettings("camera.props"));
+		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
-		AbstractModule peak = new NMSDetector(700,7);
-		AbstractModule fitter = new AstigFitter<>(7, LemmingUtils.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
+		AbstractModule peak = new NMSDetector(700,7,0);
+		AbstractModule fitter = new AstigFitter<>(7,10, LemmingUtils.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
 		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/test3.csv"));
 		
 		pipe = new Manager();
