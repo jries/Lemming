@@ -46,10 +46,13 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 		//this.service = Executors.newSingleThreadExecutor();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public FrameElements<T> detect(Frame<T> frame) {
 		final RandomAccessibleInterval<T> pixels = frame.getPixels();
 		double[] sigma = new double[ pixels.numDimensions() ];
+		RandomAccess<T> ra = null;
+		final RandomAccess<T> ro = pixels.randomAccess();
 		if(gaussian>0){
 			for ( int d = 0; d < pixels.numDimensions(); ++d )
 	            sigma[ d ] = gaussian;
@@ -77,10 +80,12 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 				tmpCursor.fwd();
 				dogCursor.fwd();
 				float val = Math.abs(tmpCursor.get().getRealFloat()-dogCursor.get().getRealFloat());
-				tmpCursor.get().setReal(val);
+				dogCursor.get().setReal(val);
 			}
+			ra = (RandomAccess<T>) dog.randomAccess();
 		}
-		RandomAccess<T> ra = pixels.randomAccess();
+		else
+			ra = pixels.randomAccess();
 
 		int i, j, ii, jj, ll, kk;
 		int mi, mj;
@@ -124,8 +129,8 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 					}
 				}
 				if (!failed) {
-					ra.setPosition(new int[] { mi, mj });
-					T value = ra.get();
+					ro.setPosition(new int[] { mi, mj });
+					T value = ro.get();
 					if (value.getRealDouble() > threshold) {
 						found.add(new Localization(mi * frame.getPixelDepth(), mj * frame.getPixelDepth(), value.getRealDouble() ,frame.getFrameNumber()));
 						counter++;

@@ -65,7 +65,7 @@ import org.lemming.factories.RendererFactory;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.Store;
-import org.lemming.math.CentroidFitterIP;
+import org.lemming.math.CentroidFitterRA;
 import org.lemming.modules.DataTable;
 import org.lemming.modules.Detector;
 import org.lemming.modules.Fitter;
@@ -938,7 +938,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
 		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
 		detResults = (FrameElements<T>) detector.preview(curFrame);
-		fitResults = CentroidFitterIP.fit(detResults.getList(), ip, fitterFactory.getHalfKernel(), pixelSize);
+		fitResults = CentroidFitterRA.fit(detResults.getList(), curImage, fitterFactory.getHalfKernel(), pixelSize);
 
 		if (fitResults == null) return;
 		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, imageRoi.getBounds(), pixelSize);

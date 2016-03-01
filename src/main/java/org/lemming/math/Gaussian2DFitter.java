@@ -13,6 +13,8 @@ import org.apache.commons.math3.util.Precision;
 
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 /**
  * Fitter module for the 3D astigmatism fit calculating Z from sigmax and sigmay
@@ -20,7 +22,7 @@ import ij.process.ImageProcessor;
  * @author Ronny Sczech
  *
  */
-public class Gaussian2DFitter {
+public class Gaussian2DFitter<T extends RealType<T>> {
 	
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;
@@ -36,10 +38,10 @@ public class Gaussian2DFitter {
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
+	private IntervalView<T> interval;
 	
-	public Gaussian2DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
-		ip = ip_;
-		roi = roi_;
+	public Gaussian2DFitter(final IntervalView<T> interval_, int maxIter_, int maxEval_) {
+		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 	}
@@ -92,7 +94,7 @@ public class Gaussian2DFitter {
 	                .target(Ival)
 	                .checkerPair(new ConvChecker2DGauss())
                     .parameterValidator(new ParamValidator2DGauss())
-	                .start(eg.getInitialGuess(ip,roi))
+	                .start(eg.getInitialGuess(interval))
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
 	                .build()

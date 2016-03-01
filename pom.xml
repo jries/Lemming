@@ -23,6 +23,11 @@
   
 	<repositories>
 		<repository>
+            <id>jcuda.local</id>
+            <name>JCuda</name>
+            <url>file:${project.basedir}/../mavenized-jcuda/repo</url>
+        </repository>
+		<repository>
 			<id>imagej.releases</id>
 			<url>http://maven.imagej.net/content/repositories/releases</url>
 		</repository>
@@ -51,11 +56,6 @@
       		<id>ome.snapshots</id>
      		<url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
    		</repository>
-        <repository>
-            <id>jcuda.local</id>
-            <name>JCuda</name>
-            <url>file:${project.basedir}/../mavenized-jcuda/repo</url>
-        </repository>
 	</repositories>
 	
 	<pluginRepositories>
@@ -116,6 +116,11 @@
             <artifactId>jcuda</artifactId>
             <version>0.7.5</version>
         </dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.1</version>
+		</dependency>
 	</dependencies>	
 	<build>
 	<plugins>

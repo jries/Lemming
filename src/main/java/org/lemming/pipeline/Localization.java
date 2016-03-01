@@ -22,6 +22,11 @@ public class Localization implements LocalizationInterface {
 		X=x; Y=y; ID=curID++; this.frame=frame; isLast=false; this.intensity = intensity;
 	}
 	
+	public Localization(Long id, Number x, Number y, Number intensity, Long frame) {
+		X=x; Y=y; ID=id; this.frame=frame; isLast=false; this.intensity = intensity;
+	}
+	
+	
 	public long getID() {
 		return ID;
 	}
@@ -61,6 +66,6 @@ public class Localization implements LocalizationInterface {
 
 	@Override
 	public String toString(){
-		return "" + getX() + "\t" + getY() + "\t" + getIntensity() + "\t" + getFrame();
+		return "" + getID() + "\t" + getX() + "\t" + getY() + "\t" + getIntensity() + "\t" + getFrame();
 	}	
 }

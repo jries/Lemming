@@ -13,6 +13,8 @@ import org.apache.commons.math3.util.Precision;
 
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 /**
  * a fast symmetric 2D Gaussian fitter
@@ -20,7 +22,7 @@ import ij.process.ImageProcessor;
  * @author Ronny Sczech
  *
  */
-public class Symmetric2DFitter {
+public class Symmetric2DFitter<T extends RealType<T>> {
 	
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;
@@ -35,10 +37,10 @@ public class Symmetric2DFitter {
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
+	private IntervalView<T> interval;
 	
-	public Symmetric2DFitter(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_) {
-		ip = ip_;
-		roi = roi_;
+	public Symmetric2DFitter(final IntervalView<T> interval_, int maxIter_, int maxEval_) {
+		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 	}
@@ -91,7 +93,7 @@ public class Symmetric2DFitter {
 	                .target(Ival)
 	                .checkerPair(new ConvChecker2DGauss())
                     .parameterValidator(new ParamValidator2DGauss())
-	                .start(eg.getInitialGuess(ip,roi))
+	                .start(eg.getInitialGuess(interval))
 	                .maxIterations(maxIter)
 	                .maxEvaluations(maxEval)
 	                .build()

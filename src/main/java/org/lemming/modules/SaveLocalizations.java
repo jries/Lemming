@@ -29,7 +29,7 @@ public class SaveLocalizations extends SingleRunModule {
 	private File file;
 	private FileWriter w;
 	private int counter=0;
-	private static String[] preferredOrder= new String[]{"x","y","z","sX","sY","sZ","intensity","frame"}; 
+	private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","intensity","frame"}; 
 
 	public SaveLocalizations(File file) {
 		this.curLocale = Locale.getDefault();
@@ -47,7 +47,7 @@ public class SaveLocalizations extends SingleRunModule {
 			BeanInfo b = Introspector.getBeanInfo(el.getClass());
 			for (PropertyDescriptor p : b.getPropertyDescriptors()) {
 				String prop = p.getName();
-				boolean test = prop.contains("class") | prop.contains("last") | prop.contains("ID");
+				boolean test = prop.contains("class") | prop.contains("last");
 				if (!test){
 					headset.add(prop);
 				}
@@ -83,7 +83,7 @@ public class SaveLocalizations extends SingleRunModule {
 		try {
 			w.write(loc.toString()+"\n");
 		} catch (IOException e) {
-			IJ.error("SaveLocalization:"+e.getMessage());;
+			IJ.error("SaveLocalization:"+e.getMessage());
 		}
 		counter++;
 		return null;

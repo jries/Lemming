@@ -1,6 +1,5 @@
 package org.lemming.plugins;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,15 +13,13 @@ import org.lemming.math.Gaussian2DFitter;
 import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
-import org.lemming.tools.LemmingUtils;
 import org.lemming.pipeline.Localization;
 import org.scijava.plugin.Plugin;
 
-import ij.IJ;
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
@@ -44,39 +41,42 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 	private static int INDEX_D = 7;
 	private static int INDEX_Mp = 8;
 
-	public GaussianFitter(int windowSize, final Map<String, List<Double>> cal) {
+	public GaussianFitter(int windowSize/*, final Map<String, List<Double>> cal*/) {
 		super(windowSize);
-		param = cal.get("param");
-		zgrid = cal.get("zgrid");
-		Calibcurve = cal.get("Calibcurve");
+		//param = cal.get("param");
+		//zgrid = cal.get("zgrid");
+		//Calibcurve = cal.get("Calibcurve");
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long halfKernel) {
 		final double pixelDepth = frame.getPixelDepth();
-		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
+		final RandomAccessibleInterval<T> pixels = frame.getPixels();
 		final List<Element> found = new ArrayList<>();
-		final Rectangle imageRoi = ip.getRoi();
+		long[] imageMin = new long[2];
+		long[] imageMax = new long[2];
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			double x = loc.getX().doubleValue() / pixelDepth;
-			double y = loc.getY().doubleValue() / pixelDepth;
-			final Roi origroi = new Roi(x - size, y - size, 2 * size + 1, 2 * size + 1);
-			final Roi roi = cropRoi(imageRoi, origroi.getBounds());
-			Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 1000, 1000);
+			long x = Math.round(loc.getX().doubleValue()/pixelDepth);
+			long y = Math.round(loc.getY().doubleValue()/pixelDepth);
+			pixels.min(imageMin);
+			pixels.max(imageMax);
+			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
+			Gaussian2DFitter<T> gf = new Gaussian2DFitter<T>(Views.interval(pixels, roi), 200, 200);
 			double[] result = null;
 			result = gf.fit();
 			if (result != null) {
-				double SxSy = result[2] * result[2] - result[3] * result[3];
+				//double SxSy = result[2] * result[2] - result[3] * result[3];
 				for (int i = 0; i < 8; i++)
 					result[i] *= pixelDepth;
-				found.add(new LocalizationPrecision3D( result[0], result[1], calculateZ(SxSy)*pixelDepth, 
+				found.add(new LocalizationPrecision3D( result[0], result[1], 0/*calculateZ(SxSy)*pixelDepth*/, 
 					result[6], result[7], result[8], result[4]/pixelDepth, loc.getFrame()));
 			}
 		}
 		return found;
 	}
 
+	@SuppressWarnings("unused")
 	private double calculateZ(final double SxSy) {
 		final int end = Calibcurve.size() - 1;
 
@@ -163,13 +163,13 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		@Override
 		public <T extends RealType<T>> Fitter<T> getFitter() {
 			final int windowSize = (int) settings.get(FitterPanel.KEY_WINDOW_SIZE);
-			final String calibFileName = (String) settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
+			/*final String calibFileName = (String) settings.get(FitterPanel.KEY_CALIBRATION_FILENAME);
 			if (calibFileName == null) {
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			Map<String, List<Double>> cal = LemmingUtils.readCSV(calibFileName);
-			return new GaussianFitter<>(windowSize, cal);
+			Map<String, List<Double>> cal = LemmingUtils.readCSV(calibFileName);*/
+			return new GaussianFitter<>(windowSize/*, cal*/);
 		}
 
 		@Override

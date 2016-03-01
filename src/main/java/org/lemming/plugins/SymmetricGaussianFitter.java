@@ -1,14 +1,13 @@
 package org.lemming.plugins;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
@@ -36,17 +35,20 @@ public class SymmetricGaussianFitter<T extends RealType<T>> extends CPU_Fitter<T
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long halfKernel) {
 		final double pixelDepth = frame.getPixelDepth();
-		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
+		final RandomAccessibleInterval<T> pixels = frame.getPixels();
 		final List<Element> found = new ArrayList<>();
+		long[] imageMin = new long[2];
+		long[] imageMax = new long[2];
 		for (Element el : sliceLocs) {
 			final Localization loc = (Localization) el;
-			double x = loc.getX().doubleValue() / pixelDepth;
-			double y = loc.getY().doubleValue() / pixelDepth;
-			final Roi origroi = new Roi(x - size, y - size, 2 * size + 1, 2 * size + 1);
-			final Roi roi = cropRoi(ip.getRoi(), origroi.getBounds());
-			Symmetric2DFitter gf = new Symmetric2DFitter(ip, roi, 100, 100);
+			long x = Math.round(loc.getX().doubleValue()/pixelDepth);
+			long y = Math.round(loc.getY().doubleValue()/pixelDepth);
+			pixels.min(imageMin);
+			pixels.max(imageMax);
+			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
+			Symmetric2DFitter<T> gf = new Symmetric2DFitter<T>(Views.interval(pixels, roi), 200, 200);
 			double[] result = null;
 			result = gf.fit();
 			

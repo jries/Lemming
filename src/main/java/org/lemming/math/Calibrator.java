@@ -1,5 +1,6 @@
 package org.lemming.math;
 
+import java.awt.Rectangle;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
@@ -8,12 +9,17 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.apache.commons.math3.util.Precision;
+import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import ij.util.ThreadUtil;
+import net.imglib2.img.Img;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 /**
 * This class handle the calibration by calling the various method of the fitter. Each fit runs on a dedicated thread to allow updating of the GUI.
@@ -44,7 +50,7 @@ public class Calibrator {
 	// Input from user
     private int zstep;
     private int rangeStart, rangeEnd;					// Both ends of the restricted z range and length of the restriction
-    private volatile Roi roi;
+    private volatile Rectangle roi;
     
 	private ImageStack is;
 	private Calibration cal;
@@ -56,7 +62,7 @@ public class Calibrator {
     	this.nSlice = im.getNSlices(); 
     	im.getWidth(); 
     	im.getHeight();
-    	this.roi = r;
+    	this.roi = r.getBounds();
 	
     	// Initialize arrays
     	zgrid = new double[nSlice];						// z position of the frames
@@ -72,7 +78,7 @@ public class Calibrator {
 	
 	// ////////////////////////////////////////////////////////////
 	// 1D and 2D fits
-	public void fitStack() {
+	public <T extends RealType<T> & NativeType<T>> void fitStack() {
 
 		Thread[] threads = ThreadUtil.createThreadArray(Runtime.getRuntime().availableProcessors()-1);
 		final AtomicInteger ai = new AtomicInteger(0);
@@ -84,7 +90,9 @@ public class Calibrator {
 				public void run() {
 					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
 						ImageProcessor ip = is.getProcessor(i + 1);
-						Gaussian2DFitter gf = new Gaussian2DFitter(ip, roi, 200, 200);
+						Img<T> theImage = LemmingUtils.wrap(ip.getPixels(), new long[]{is.getWidth(), is.getHeight()});
+						Gaussian2DFitter<T> gf = new Gaussian2DFitter<T>(Views.interval(theImage, 
+								new long[]{roi.x,roi.y},  new long[]{roi.x+roi.width, roi.y+roi.height}), 200, 200);
 						double[] results = gf.fit();
 						if (results!=null){
 							Wx[i]=results[2];

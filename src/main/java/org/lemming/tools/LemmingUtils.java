@@ -1,8 +1,15 @@
 package org.lemming.tools;
 
+import net.imglib2.Cursor;
+import net.imglib2.IterableInterval;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.histogram.Histogram1d;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.Type;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import java.awt.Rectangle;
 import java.awt.image.IndexColorModel;
@@ -18,7 +25,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.lemming.interfaces.Element;
+import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.LocalizationInterface;
 import org.lemming.pipeline.Localization;
 
@@ -70,15 +80,30 @@ public class LemmingUtils {
 		}
 		return theImage;
 	}
+	
+	public static <T extends RealType<T>> short[] convertToShort(Frame<T> frame) {
+		
+		final RandomAccessibleInterval<T> rai = frame.getPixels();
+		
+		short[] pixels = new short[frame.getWidth()*frame.getHeight()];
+		Cursor<T> cursor = Views.iterable(rai).cursor();
+		int index=0;
+		while(cursor.hasNext())
+			pixels[index++]=(short) Math.round(cursor.next().getRealFloat());
+
+		return pixels;
+	}
+	
+	
 
 	public static IndexColorModel getDefaultColorModel() {
 		byte[] r = new byte[256];
 		byte[] g = new byte[256];
 		byte[] b = new byte[256];
 		for (byte i = -128; i < 128; i++) {
-			r[i] = i;
-			g[i] = i;
-			b[i] = i;
+			r[i+128] = i;
+			g[i+128] = i;
+			b[i+128] = i;
 		}
 		return new IndexColorModel(8, 256, r, g, b);
 	}
@@ -98,7 +123,176 @@ public class LemmingUtils {
 		return new IndexColorModel(8, 256, reds, greens, blues);
 	}
 	
-	static public Map<String, List<Double>> readCSV(String path){
+	/**
+     * Compute the min and max for any {@link Iterable}, like an {@link Img}.
+     *
+     * The only functionality we need for that is to iterate. Therefore we need no {@link Cursor}
+     * that can localize itself, neither do we need a {@link RandomAccess}. So we simply use the
+     * most simple interface in the hierarchy.
+     *
+     * @param input - the input that has to just be {@link Iterable}
+     * @param min - the type that will have min
+     * @param max - the type that will have max
+	 * @return 
+     */
+    public static < T extends Comparable< T > & Type< T > > T computeMax(
+        final IterableInterval< T > input){
+        /// create a cursor for the image (the order does not matter)
+        final Cursor< T > cursor = input.cursor();
+ 
+        // initialize min and max with the first image value
+        T type = cursor.next();
+        T max = type.copy();
+ 
+        // loop over the rest of the data and determine min and max value
+        while ( cursor.hasNext() ){
+            // we need this type more than once
+            type = cursor.next();
+ 
+            if ( type.compareTo( max ) > 0 )
+                max.set( type );
+        }
+        return max;
+    }
+    
+    public static < T extends Comparable< T > & Type< T > > T computeMin(
+        final IterableInterval< T > input){
+        /// create a cursor for the image (the order does not matter)
+        final Cursor< T > cursor = input.cursor();
+ 
+        // initialize min and max with the first image value
+        T type = cursor.next();
+        T min = type.copy();
+ 
+        // loop over the rest of the data and determine min and max value
+        while ( cursor.hasNext() ){
+            // we need this type more than once
+            type = cursor.next();
+ 
+            if ( type.compareTo( min ) < 0 )
+            	min.set( type );
+        }
+        return min;
+    }
+    
+    public static <T> long computeBin(final Histogram1d<T> hist) {
+		long[] histogram = hist.toLongArray();
+		// Otsu's threshold algorithm
+		// C++ code by Jordan Bevik <Jordan.Bevic@qtiworld.com>
+		// ported to ImageJ plugin by G.Landini
+		int k, kStar; // k = the current threshold; kStar = optimal threshold
+		int L = histogram.length; // The total intensity of the image
+		long N1, N; // N1 = # points with intensity <=k; N = total number of
+		// points
+		long Sk; // The total intensity for all histogram points <=k
+		long S;
+		double BCV, BCVmax; // The current Between Class Variance and maximum
+		// BCV
+		double num, denom; // temporary bookkeeping
+
+		// Initialize values:
+		S = 0;
+		N = 0;
+		for (k = 0; k < L; k++) {
+			S += k * histogram[k]; // Total histogram intensity
+			N += histogram[k]; // Total number of data points
+		}
+
+		Sk = 0;
+		N1 = histogram[0]; // The entry for zero intensity
+		BCV = 0;
+		BCVmax = 0;
+		kStar = 0;
+
+		// Look at each possible threshold value,
+		// calculate the between-class variance, and decide if it's a max
+		for (k = 1; k < L - 1; k++) { // No need to check endpoints k = 0 or k =
+			// L-1
+			Sk += k * histogram[k];
+			N1 += histogram[k];
+
+			// The float casting here is to avoid compiler warning about loss of
+			// precision and
+			// will prevent overflow in the case of large saturated images
+			denom = (double) (N1) * (N - N1); // Maximum value of denom is
+			// (N^2)/4 =
+			// approx. 3E10
+
+			if (denom != 0) {
+				// Float here is to avoid loss of precision when dividing
+				num = ((double) N1 / N) * S - Sk; // Maximum value of num =
+				// 255*N =
+				// approx 8E7
+				BCV = (num * num) / denom;
+			}
+			else BCV = 0;
+
+			if (BCV >= BCVmax) { // Assign the best threshold found so far
+				BCVmax = BCV;
+				kStar = k;
+			}
+		}
+		// kStar += 1; // Use QTI convention that intensity -> 1 if intensity >=
+		// k
+		// (the algorithm was developed for I-> 1 if I <= k.)
+		return kStar;
+	}
+    
+    public static String doubleArrayToString(double[] array){
+		String result ="";
+		for (int num=0; num<array.length;num++)
+			result += array[num] + ",";
+		result = result.substring(0, result.length()-1);
+		return result;
+	}
+	
+    public static double[] stringToDoubleArray(String line){
+		String[] s = line.split(",");
+		double[] result = new double[s.length];
+		for (int n=0;n<s.length;n++)
+			result[n]=Double.parseDouble(s[n].trim());
+		return result;
+	}
+    
+    public static Map<String,Object> readCSV(String path){
+		Map<String,Object>  map = new HashMap<String, Object>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(path));
+			String line=br.readLine();
+			final double[] knotsX = stringToDoubleArray(line);
+			PolynomialFunction[] polynomsX = new PolynomialFunction[knotsX.length-1];
+			for (int n=0;n<polynomsX.length;n++){
+				line=br.readLine();
+				polynomsX[n]=new PolynomialFunction(stringToDoubleArray(line));
+			}
+			map.put("psx", new PolynomialSplineFunction(knotsX,polynomsX));
+			line=br.readLine();
+			if (!line.contains("--")) System.err.println("Corrupt File!");
+			line=br.readLine();
+			final double[] knotsY = stringToDoubleArray(line);
+			PolynomialFunction[] polynomsY = new PolynomialFunction[knotsY.length-1];
+			for (int n=0;n<polynomsY.length;n++){
+				line=br.readLine();
+				polynomsY[n]=new PolynomialFunction(stringToDoubleArray(line));
+			}
+			map.put("psy", new PolynomialSplineFunction(knotsY,polynomsY));
+			line=br.readLine();
+			if (!line.contains("--")) System.err.println("Corrupt File!");
+			line=br.readLine();
+			map.put("z0", Double.parseDouble(line.trim()));
+			line=br.readLine();
+			map.put("zStep", Double.parseDouble(line.trim()));
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return map;
+	}
+	
+	static public Map<String, List<Double>> readCSVOld(String path){
 		final Locale curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale
 		Locale.setDefault(usLocale);

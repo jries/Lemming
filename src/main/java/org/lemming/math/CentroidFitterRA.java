@@ -1,10 +1,20 @@
 package org.lemming.math;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.lemming.interfaces.Element;
+import org.lemming.modules.Fitter;
+import org.lemming.pipeline.Localization;
+
 import net.imglib2.Cursor;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RealPoint;
+import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 /**
  * Calculating centroids on a {@link #RandomAccessibleInterval}
@@ -73,5 +83,27 @@ public class CentroidFitterRA<T extends RealType<T>>  {
 		}
 		r[n*2] = ra.get().getRealDouble();
 		return r;		
+	}
+
+	public static <T extends RealType<T>> List<Element> fit(List<Element> sliceLocs, Img<T> pixels, int halfKernel, float pixelDepth) {
+		final List<Element> found = new ArrayList<>();
+        //final Rectangle imageRoi = ip.getRoi();
+        long[] imageMin = new long[2];
+        long[] imageMax = new long[2];
+        for (Element el : sliceLocs) {
+            final Localization loc = (Localization) el;
+             
+            long x = Math.round(loc.getX().doubleValue()/pixelDepth);
+			long y = Math.round(loc.getY().doubleValue()/pixelDepth);
+			pixels.min(imageMin);
+			pixels.max(imageMax);
+			final Interval roi = Fitter.cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
+			final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(Views.interval(pixels, roi),0);
+            final double[] res = cf.fit();
+         
+            found.add(new Localization(res[0]*pixelDepth, res[1]*pixelDepth, res[4], 1L));
+        }
+ 
+        return found;
 	}
 }

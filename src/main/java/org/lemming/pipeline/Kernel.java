@@ -4,7 +4,7 @@ import net.imglib2.Interval;
 
 public class Kernel {
 	
-	final protected long ID;
+	final private long ID;
 	final private Interval roi;
 	final private long frame;
 	final private float[] values; 
@@ -26,6 +26,10 @@ public class Kernel {
 
 	public float[] getValues() {
 		return values;
+	}
+	
+	public long getID(){
+		return ID;
 	}
 	
 }

@@ -1,15 +1,14 @@
 package org.lemming.plugins;
 
 import ij.IJ;
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.Interval;
+import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.Views;
 
 import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
@@ -32,33 +31,39 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
 	public static final String INFO_TEXT = "<html>" + "Astigmatism Fitter with Z" + "</html>";
 
-	private double[] params;
+	private Map<String, Object> params;
 
-	public AstigFitter(final int windowSize, final List<Double> list) {
+	public AstigFitter(final int windowSize, final Map<String,Object> params) {
 		super(windowSize);
-		this.params = new double[list.size()];
-		for (int i = 0; i < list.size(); i++)
-			params[i] = list.get(i);
+		this.params=params;
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long halfKernel) {
 		final double pixelDepth = frame.getPixelDepth();
-		final ImageProcessor ip = ImageJFunctions.wrap(frame.getPixels(), "").getProcessor();
+		final RandomAccessibleInterval<T> pixels = frame.getPixels();
 		final List<Element> found = new ArrayList<>();
 		for (Element el : sliceLocs) {
-			final Localization loc = (Localization) el;
-			double x = loc.getX().longValue() / pixelDepth;
-			double y = loc.getY().longValue() / pixelDepth;
-			final Roi origroi = new Roi(x - size, y - size, 2 * size + 1, 2 * size + 1);
-			final Roi roi = cropRoi(ip.getRoi(), origroi.getBounds());
-			GaussianFitterZ gf = new GaussianFitterZ(ip, roi, 100, 100, pixelDepth, params);
+			final Localization loc = (Localization) el; 
+			long x = Math.round(loc.getX().doubleValue()/pixelDepth);
+			long y = Math.round(loc.getY().doubleValue()/pixelDepth);
+			long[] imageMin = new long[2];
+			pixels.min(imageMin);
+			long[] imageMax = new long[2];
+			pixels.max(imageMax);
+			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
+			
+			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), 1000, 1000, pixelDepth, params);
 			double[] result = null;
 			result = gf.fit();
 			
 			if (result != null){
-				for (int i = 0; i < 6; i++)
-					result[i] *= pixelDepth;
+				result[0] *= pixelDepth;
+				result[1] *= pixelDepth;
+				result[2] *= (double)params.get("zStep");
+				result[3] *= pixelDepth;
+				result[4] *= pixelDepth;
+				result[5] *= (double)params.get("zStep");
 				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[3], result[4], result[5], result[6], loc.getFrame()));
 			}
 		}
@@ -102,7 +107,7 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				IJ.error("No Calibration File!");
 				return null;
 			}
-			return new AstigFitter<>(windowSize, LemmingUtils.readCSV(calibFileName).get("param"));
+			return new AstigFitter<>(windowSize, LemmingUtils.readCSV(calibFileName));
 		}
 
 		@Override

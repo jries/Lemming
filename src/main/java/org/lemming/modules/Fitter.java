@@ -2,6 +2,9 @@ package org.lemming.modules;
 
 import java.awt.Rectangle;
 import java.util.List;
+
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
 import net.imglib2.type.numeric.RealType;
 
 import org.lemming.interfaces.Element;
@@ -21,10 +24,10 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 	protected static int size;
 
 	public Fitter(int halfkernel) {
-		Fitter.size = halfkernel;
+		size = halfkernel;
 	}
 	
-	public static int getHalfKernel() {
+	public int getHalfKernel() {
 		return size;
 	}
 
@@ -43,6 +46,14 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 		double x2 = curRect.getMaxX() > imageRoi.getMaxX() ? imageRoi.getMaxX() : curRect.getMaxX();
 		double y2 = curRect.getMaxY() > imageRoi.getMaxY() ? imageRoi.getMaxY() : curRect.getMaxY();
 		return new Roi(x1, y1, x2 - x1, y2 - y1);
+	}
+	
+	public static Interval cropInterval(long[] imageMin, long[] imageMax, long[] curMin, long[] curMax ){
+		long x1 = curMin[0] < imageMin[0] ? imageMin[0] : curMin[0];
+		long y1 = curMin[1] < imageMin[1] ? imageMin[1] : curMin[1];
+		long x2 = curMax[0] > imageMax[0] ? imageMax[0] : curMax[0];
+		long y2 = curMax[1] > imageMax[1] ? imageMax[1] : curMax[1];	
+		return new FinalInterval(new long[] { x1, y1 }, new long[]{ x2, y2 });
 	}
 
 	public abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) ;

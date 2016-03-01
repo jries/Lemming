@@ -2,6 +2,7 @@ package org.lemming.modules;
 
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.process.ImageProcessor;
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
@@ -48,8 +49,8 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 
 	@Override
 	public Element processData(Element data) {		
-		Object ip = img.getPixels(++curSlice);
-		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
+		ImageProcessor ip = img.getProcessor(++curSlice);
+		Img<T> theImage = LemmingUtils.wrap(ip.getPixels(), new long[]{img.getWidth(), img.getHeight()});
 		final Cursor<T> it = theImage.cursor();
 		while(it.hasNext()){
 			it.fwd();

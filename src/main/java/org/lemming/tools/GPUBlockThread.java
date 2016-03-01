@@ -40,7 +40,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
 	private static int count = 0;
 	
 	private static final float PSFSigma = 1.3f;
-	private static final int iterations = 75;
+	private static final int iterations = 200;
 	private static String ptxFileName = "resources/CudaFit.ptx";
 	private static float sharedMemPerBlock = 262144;
 
@@ -133,7 +133,7 @@ public class GPUBlockThread implements Callable<Map<String,float[]>> {
         checkResult(cudaMemcpy(Pointer.to(hostLogLikelihood), d_LogLikelihood, Nfits * Sizeof.FLOAT, cudaMemcpyDeviceToHost));
         
         result.put("Parameters", hostParameters);
-        //result.put("CRLB", hostCRLBs);
+        result.put("CRLBs", hostCRLBs);
         //result.put("LogLikelihood", hostLogLikelihood);
         
         cudaFree(d_Parameters);

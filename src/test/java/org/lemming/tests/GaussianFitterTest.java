@@ -12,8 +12,9 @@ import org.lemming.modules.ImageLoader;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
+import org.lemming.plugins.AstigFitter;
 import org.lemming.plugins.NMSDetector;
-import org.lemming.plugins.SymmetricGaussianFitter;
+//import org.lemming.plugins.SymmetricGaussianFitter;
 import org.lemming.tools.LemmingUtils;
 
 import ij.ImagePlus;
@@ -30,7 +31,7 @@ public class GaussianFitterTest {
 	@Before
 	public void setUp() throws Exception {
 		
-        File file = new File(System.getProperty("user.home")+"/Videos/test81000.tif");
+        File file = new File("/media/backup/ownCloud/set1.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -47,9 +48,9 @@ public class GaussianFitterTest {
 		
 		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
-		AbstractModule peak = new NMSDetector(700,7,0);
-		AbstractModule fitter = new SymmetricGaussianFitter<>(7);
-		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/Videos/test9000_SG.csv"));
+		AbstractModule peak = new NMSDetector(700,10,0);
+		AbstractModule fitter = new AstigFitter<>(7, LemmingUtils.readCSV("/media/backup/ownCloud/set1-calb.csv"));
+		AbstractModule saver = new SaveLocalizations(new File("/media/backup/ownCloud/set1l.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

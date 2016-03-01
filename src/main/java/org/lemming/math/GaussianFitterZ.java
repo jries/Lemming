@@ -1,5 +1,8 @@
 package org.lemming.math;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
@@ -14,7 +17,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 
 import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.Cursor;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 /**
  * Fitter module for the 3D astigmatism fit including direct Z calculation
@@ -22,29 +27,26 @@ import ij.process.ImageProcessor;
  * @author Ronny Sczech
  *
  */
-public class GaussianFitterZ {
+public class GaussianFitterZ<T extends RealType<T>> {
 	private static final int INDEX_X0 = 0;
 	private static final int INDEX_Y0 = 1;
 	private static final int INDEX_Z0 = 2;
 	private static final int INDEX_I0 = 3;
 	private static final int INDEX_Bg = 4;
-	private static final int INDEX_C = 6;
-	private static final int INDEX_D = 7;
-
+	private static final int PARAM_LENGTH = 5;
 	
-	private ImageProcessor ip;
 	private Roi roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
 	private int[] ygrid;
 	private double[] Ival;
-	private double[] params;
+	private Map<String, Object> params;
 	private double pixelSize;
+	private IntervalView<T> interval;
 
-	public GaussianFitterZ(ImageProcessor ip_, Roi roi_, int maxIter_, int maxEval_, double pixelSize_, double[] params_) {
-		ip = ip_;
-		roi = roi_;
+	public GaussianFitterZ(final IntervalView<T> interval_, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
+		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 		params = params_;
@@ -70,32 +72,24 @@ public class GaussianFitterZ {
 	}
 	
 	private void createGrids(){
-		int rwidth = (int) roi.getFloatWidth();
-		int rheight = (int) roi.getFloatHeight();
-		int xstart = (int) roi.getXBase();
-		int ystart = (int) roi.getYBase();
-
-		xgrid = new int[rwidth*rheight];
-		ygrid = new int[rwidth*rheight];
-		Ival = new double[rwidth*rheight];
-		
-		//double max = Double.NEGATIVE_INFINITY;
-		for(int i=0;i<rheight;i++){
-			for(int j=0;j<rwidth;j++){
-				ygrid[i*rwidth+j] = i+ystart;
-				xgrid[i*rwidth+j] = j+xstart;
-				Ival[i*rwidth+j] = ip.get(j+xstart,i+ystart);
-				//max = Math.max(max, Ival[i*rwidth+j]);
-			}
+		Cursor<T> cursor = interval.cursor();
+		int arraySize=(int)(interval.dimension(0)*interval.dimension(1));
+		Ival = new double[arraySize];
+		xgrid = new int[arraySize];
+		ygrid = new int[arraySize];
+		int index=0;
+		while(cursor.hasNext()){
+			cursor.fwd();
+			xgrid[index]=cursor.getIntPosition(0);
+			ygrid[index]=cursor.getIntPosition(1);
+			Ival[index++]=cursor.get().getRealDouble();
 		}
-		//for (int l=0; l<Ival.length;l++)
-		//	Ival[l] /= max;
 	}
 
 	public double[] fit() {
 		createGrids();
 		EllipticalGaussianZ eg = new EllipticalGaussianZ(xgrid, ygrid, params);
-		double[] initialGuess = eg.getInitialGuess(ip,roi);
+		double[] initialGuess = getInitialGuess(interval);
 		LevenbergMarquardtOptimizer optimizer = getOptimizer();
 		double[] fittedEG;
 		double RMS;
@@ -140,12 +134,27 @@ public class GaussianFitterZ {
 		return result;
 	}
 	
-	// Errors
+	private double[] getInitialGuess(IntervalView<T> interval) {
+		double[] initialGuess = new double[PARAM_LENGTH];
+	    Arrays.fill(initialGuess, 0);
+   
+	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
+	    double[] centroid = cf.fit();
+	    	    
+	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
+	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
+	    initialGuess[INDEX_Z0] = (double) params.get("z0");
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE;
+	    initialGuess[INDEX_Bg] = 0;
+	    
+		return initialGuess;
+	}
+	
 	private double[] get3DError(double[] fittedEG, EllipticalGaussianZ eg) {
 		// see thunderstorm corrections
 		double[] error3d = new double[3];
 		
-		double sx,sy, dx2, dy2,dsx2, dsy2, dz2;
+		double sx,sy, dx2, dy2;
 		int r=0, g=2;
 		double N = fittedEG[INDEX_I0];
 		double b = fittedEG[INDEX_Bg];
@@ -153,23 +162,19 @@ public class GaussianFitterZ {
 		sx = eg.Sx(fittedEG[INDEX_Z0]);
 		sy = eg.Sy(fittedEG[INDEX_Z0]);
 		double sigma2 = a2*sx*sy;
-		double l2 = params[INDEX_C]*params[INDEX_C];
-		double d2 = params[INDEX_D]*params[INDEX_D];
-		double tau = 2*FastMath.PI*(b*b+r)*(sigma2*(1+l2/d2)+a2/12)/(N*a2);
+		double tau = 2*FastMath.PI*(b*b+r)*(sigma2+a2/12)/(N*a2);
 		
-		dsx2 = (g*sx*sx+a2/12)*(1+8*tau)/N;
-		dsy2 = (g*sy*sy+a2/12)*(1+8*tau)/N;
 		dx2 = (g*sx*sx+a2/12)*(16/9+4*tau)/N;
 		dy2 = (g*sy*sy+a2/12)*(16/9+4*tau)/N;
 		error3d[0] = FastMath.sqrt(dx2);
 		error3d[1] = FastMath.sqrt(dy2);
-
-		double z2 = fittedEG[INDEX_Z0]*fittedEG[INDEX_Z0];
-		double F2 = 4*l2*z2/(l2+d2+z2)/(l2+d2+z2);
-		double dF2 = (1-F2)*(dsx2/(sx*sx)+dsy2/(sy*sy));
-
-		dz2 = dF2*(l2+d2+z2)*(l2+d2+z2)*(l2+d2+z2)*(l2+d2+z2)/(4*l2*(l2+d2-z2)*(l2-d2-z2));
-		error3d[2] = FastMath.sqrt(dz2);
+		
+		double[] knots = (double[]) params.get("knotsX");
+		for (r=0; r<knots.length;++r)
+			if(fittedEG[INDEX_Z0]>knots[r]) break;
+		double hx = (knots[r]-knots[r-1])/24*sx;
+		double hy = (knots[r]-knots[r-1])/24*sy;
+		error3d[2] = hx+hy;
 
 		return error3d;
 	}

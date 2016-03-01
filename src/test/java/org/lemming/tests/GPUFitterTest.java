@@ -9,13 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.lemming.interfaces.Store;
 import org.lemming.modules.ImageLoader;
-import org.lemming.modules.ImageMath;
+//import org.lemming.modules.ImageMath;
 import org.lemming.modules.SaveLocalizations;
 import org.lemming.modules.UnpackElements;
 import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.Manager;
-import org.lemming.plugins.DoGFinder;
-import org.lemming.plugins.FastMedianFilter;
+//import org.lemming.plugins.DoGFinder;
+//import org.lemming.plugins.FastMedianFilter;
 import org.lemming.plugins.MLE_Fitter;
 import org.lemming.plugins.NMSDetector;
 import org.lemming.tools.LemmingUtils;
@@ -37,7 +37,7 @@ public class GPUFitterTest {
 		
         //File file = new File("D:/Images/DRG_KO_5_1.tif");
 		//File file = new File("D:/Images/DRG_WT_MT_A647_1.tif");
-        File file = new File("D:/Images/test81000.tif");
+        File file = new File("/media/backup/ownCloud/Tubulin1-1.tif");
 		//File file = new File("D:/ownCloud/Tubulin1.tif");
         
 		if (file.isDirectory()){
@@ -58,13 +58,13 @@ public class GPUFitterTest {
 		//ImageMath substracter = new ImageMath(3);
 		//substracter.setOperator(ImageMath.operators.SUBSTRACTION);
 		//AbstractModule peak = new NMSDetector(70,7);
-		AbstractModule peak = new NMSDetector(700,7,0); //DRG_KO_5_1.tif
+		AbstractModule peak = new NMSDetector(350,6,10); //
 		//AbstractModule peak = new DoGFinder(4.5f,13); //DRG_KO_5_1.tif
 		//AbstractModule peak = new NMSDetector(2000,5); //DRG_WT_MT_A647_1.tif
-		AbstractModule fitter = new MLE_Fitter<>(7);
-		AbstractModule saver = new SaveLocalizations(new File("D:/ownCloud/test81000.csv"));
+		AbstractModule fitter = new MLE_Fitter<>(6);
+		AbstractModule saver = new SaveLocalizations(new File("/media/backup/ownCloud/Tubulin1-1.csv"));
 		AbstractModule unpacker = new UnpackElements();
-		AbstractModule saver2 = new SaveLocalizations(new File("D:/ownCloud/test81000Det.csv"));
+		AbstractModule saver2 = new SaveLocalizations(new File("/media/backup/ownCloud/Tubulin1-1det.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

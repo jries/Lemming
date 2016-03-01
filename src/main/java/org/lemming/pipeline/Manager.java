@@ -93,7 +93,7 @@ public class Manager extends SwingWorker<Void,Void> {
 			threads.add(service.submit(starter));
 			
 			try {
-				Thread.sleep(100); 						// HACK : give the module some time to start working
+				Thread.sleep(10); 						// HACK : give the module some time to start working
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -101,21 +101,18 @@ public class Manager extends SwingWorker<Void,Void> {
 		try {
 			for(Object joiner:threads)
 				((Future<?>) joiner).get();
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 		done = true;
 		sm.cancel(true);
-		if(!service.isShutdown()) {
-            	service.shutdown();
-                // await termination code
-              }
 		return null;
 	}
 	
 	@Override
 	public void done(){
 		setProgress(0);
+		service.shutdown();
 	}
 
 

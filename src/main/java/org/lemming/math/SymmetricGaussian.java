@@ -1,12 +1,14 @@
 package org.lemming.math;
 
+import java.util.Arrays;
+
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.util.FastMath;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
 
 /** ThunderSTORM algorithm for a symmetric Gaussian*/
 public class SymmetricGaussian implements OptimizationData {
@@ -77,16 +79,18 @@ public class SymmetricGaussian implements OptimizationData {
 	        };
 	    }
 
-	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
+	 public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
 		initialGuess = new double[PARAM_LENGTH];
-		
-		double[] centroid = CentroidFitterIP.fitCentroidandWidth(ip, roi, ip.getAutoThreshold());
+	    Arrays.fill(initialGuess, 0);
+   
+	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
+	    double[] centroid = cf.fit();
 
 		initialGuess[INDEX_X0] = centroid[INDEX_X0];
 		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
-		initialGuess[INDEX_S]  = 0.25*(centroid[INDEX_SY] * centroid[INDEX_SY] + centroid[INDEX_SX] * centroid[INDEX_SX]);
-		initialGuess[INDEX_I0] = ip.getMax() - ip.getMin();
-		initialGuess[INDEX_Bg] = ip.getMin();
+		initialGuess[INDEX_S]  = 0.25d*(centroid[INDEX_SY] * centroid[INDEX_SY] + centroid[INDEX_SX] * centroid[INDEX_SX]);
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE;
+	    initialGuess[INDEX_Bg] = 0;
 
 		return initialGuess;
 	}

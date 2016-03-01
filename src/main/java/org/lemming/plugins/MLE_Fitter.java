@@ -33,6 +33,7 @@ import org.lemming.pipeline.Kernel;
 import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.tools.GPUBlockThread;
+import org.lemming.tools.MLE;
 import org.scijava.plugin.Plugin;
 
 public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
@@ -44,7 +45,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	public static final String INFO_TEXT = "<html>" + "Maximum likelihood estimation using the NVIDIA CUDA capabilities " + "</html>";
 
 	private static final int PARAMETER_LENGTH = 6;
-	
+
 	private int maxKernels;
 
 	private FastTable<Kernel> kernelList;
@@ -107,10 +108,12 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	private void processGPU(double pixelDepth){
 		ExecutorService singleService = Executors.newSingleThreadExecutor();
 		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigmaxy");
+		//MLE t = new MLE(kernelList, kernelSize, kernelList.size());
 		Future<Map<String, float[]>> f = singleService.submit(t);
 		try {
 			Map<String, float[]> res = f.get();
 			float[] par = res.get("Parameters");
+			float[] fits = res.get("CRLBs");
 			int ksize = kernelList.size();
 			for (int i=0;i<ksize;i++){
 				long xstart = kernelList.get(i).getRoi().min(0);
@@ -118,11 +121,13 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 				float x = par[i] + xstart;
 				float y = par[ksize+i] + ystart;
 				float intensity = par[2*ksize+i];
+				float fitI = fits[2*ksize+i];
 				float bg = par[3*ksize+i];
 				float sx = par[4*ksize+i];
-				float sy = par[5*ksize+i];
+				//float sy = par[5*ksize+i];
 				long frame = kernelList.get(i).getFrame();
-				newOutput(new LocalizationPrecision3D(x*pixelDepth, y*pixelDepth, 0, sx*pixelDepth, sy*pixelDepth, bg, intensity, frame));
+				long id = kernelList.get(i).getID();
+				newOutput(new LocalizationPrecision3D(id, x*pixelDepth, y*pixelDepth, fitI, sx*pixelDepth, 0/*sy*pixelDepth*/, bg, intensity, frame));
 			}
 		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();

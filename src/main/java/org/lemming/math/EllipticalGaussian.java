@@ -1,7 +1,9 @@
 package org.lemming.math;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.type.numeric.RealType;
+import net.imglib2.view.IntervalView;
+
+import java.util.Arrays;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
@@ -60,12 +62,14 @@ public class EllipticalGaussian implements OptimizationData {
 
             	 double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
             	 
-        	     for (int i = 0; i < xgrid.length; ++i) {        	    	 
-        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*Ey(ygrid[i], point)*dEx(xgrid[i],point);
-        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*Ex(xgrid[i], point)*dEy(ygrid[i],point);
-        	    	 jacobian[i][INDEX_SX] = point[INDEX_I0]*Ey(ygrid[i], point)*dEsx(xgrid[i],point);
-        	    	 jacobian[i][INDEX_SY] = point[INDEX_I0]*Ex(xgrid[i], point)*dEsy(ygrid[i],point);
-        	    	 jacobian[i][INDEX_I0] = Ex(xgrid[i], point)*Ey(ygrid[i],point);
+        	     for (int i = 0; i < xgrid.length; ++i) {
+        	    	 final double ex = Ex(xgrid[i], point);
+        	    	 final double ey = Ey(ygrid[i], point);
+        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*ey*dEx(xgrid[i],point);
+        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*ex*dEy(ygrid[i],point);
+        	    	 jacobian[i][INDEX_SX] = point[INDEX_I0]*ey*dEsx(xgrid[i],point);
+        	    	 jacobian[i][INDEX_SY] = point[INDEX_I0]*ex*dEsy(ygrid[i],point);
+        	    	 jacobian[i][INDEX_I0] = ex*ey;
         	    	 jacobian[i][INDEX_Bg] = 1;
         	     }
         	     
@@ -74,19 +78,19 @@ public class EllipticalGaussian implements OptimizationData {
         };
     }
  
-	public double[] getInitialGuess(ImageProcessor ip, Roi roi) {
+    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
 		initialGuess = new double[PARAM_LENGTH];
-	    
-	    double[] centroid = CentroidFitterIP.fitCentroidandWidth(ip, roi, ip.getAutoThreshold());
+	    Arrays.fill(initialGuess, 0);
+   
+	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
+	    double[] centroid = cf.fit();
 
 		initialGuess[INDEX_X0] = centroid[INDEX_X0];
-		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
-	    
+		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];    
 	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
 	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
-	        
-	    initialGuess[INDEX_I0] = ip.getMax()-ip.getMin(); 
-	    initialGuess[INDEX_Bg] = ip.getMin();
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE;
+	    initialGuess[INDEX_Bg] = 0;
 		
 		return initialGuess;
 	}
