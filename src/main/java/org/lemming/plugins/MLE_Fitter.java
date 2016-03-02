@@ -56,7 +56,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 
 	
 	public MLE_Fitter(int windowSize) {
-		super(windowSize);
+		super(windowSize, stepSize);
 		kernelSize = 2 * size + 1;
 		//maxKernels = (int) (40000/Math.pow(kernelSize, 3)*1500);
 		maxKernels = 1152*9;
@@ -207,7 +207,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	}
 
 	@Override
-	public List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) {
+	public List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize, double stepSize) {
 		return null;
 	}
 	

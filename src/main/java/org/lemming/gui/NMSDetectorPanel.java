@@ -16,8 +16,6 @@ import org.lemming.tools.WaitForKeyListener;
 
 
 public class NMSDetectorPanel extends ConfigurationPanel {
-	private JTextField jTextFieldThreshold;
-	private JSpinner spinnerStepSize;
 
 	public NMSDetectorPanel() {
 		setBorder(null);
@@ -99,21 +97,23 @@ public class NMSDetectorPanel extends ConfigurationPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = -4601480448696314069L;
+    private JTextField jTextFieldThreshold;
+	private JSpinner spinnerStepSize;
 	public static final String KEY_NMS_STEPSIZE = "NMS_STEPSIZE";
 	public static final String KEY_NMS_THRESHOLD = "NMS_THRESHOLD";
-	public static final String KEY_NMS_GAUSSIAN_SIZE = "NMS_GAUSSIAN_SIZE";
+    public static final String KEY_NMS_GAUSSIAN_SIZE = "NMS_GAUSSIAN_SIZE";
 	private JSpinner spinnerGaussian;
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
 		spinnerStepSize.setValue(settings.get(KEY_NMS_STEPSIZE));
 		jTextFieldThreshold.setText(""+settings.get(KEY_NMS_THRESHOLD));
-		spinnerGaussian.setValue(settings.get(KEY_NMS_GAUSSIAN_SIZE));
+        spinnerGaussian.setValue(settings.get(KEY_NMS_GAUSSIAN_SIZE));
 	}
 
 	@Override
 	public Map<String, Object> getSettings() {
-		final Map< String, Object > settings = new HashMap<>( 2 );
+		final Map< String, Object > settings = new HashMap<>( 3 );
 		final int stepsize = (int) spinnerStepSize.getValue();
 		final double threshold = Double.parseDouble( jTextFieldThreshold.getText() );
 		final int gaussianSize = (int) spinnerGaussian.getValue();

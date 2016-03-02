@@ -17,8 +17,8 @@ public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
 	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
-	public CPU_Fitter(int halfkernel) {
-		super(halfkernel);
+	public CPU_Fitter(int halfkernel, double stepSize) {
+		super(halfkernel,stepSize);
 	}
 
 	@Override
@@ -133,7 +133,7 @@ public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 	}
 
 	protected void process(FrameElements<T> data) {
-		List<Element> res = fit(data.getList(), data.getFrame(), size);
+		List<Element> res = fit(data.getList(), data.getFrame(), size, stepSize);
 		counterList.add(res.size());
 		for (Element el : res)
 			newOutput(el);

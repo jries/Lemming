@@ -112,12 +112,12 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 		
 		double[] result = new double[9];
 		
-		result[0] = fittedEG[0];
-		result[1] = fittedEG[1];
-		result[2] = fittedEG[2];
-		result[3] = fittedEG[3];
-		result[4] = fittedEG[4];
-		result[5] = fittedEG[5];
+		result[0] = fittedEG[INDEX_X0];
+		result[1] = fittedEG[INDEX_Y0];
+		result[2] = fittedEG[INDEX_SX];
+		result[3] = fittedEG[INDEX_SY];
+		result[4] = fittedEG[INDEX_I0];
+		result[5] = fittedEG[INDEX_Bg];
 		result[6] = get2DErrorX(1, fittedEG);
 		result[7] = get2DErrorY(1, fittedEG);
 		result[8] = iter;

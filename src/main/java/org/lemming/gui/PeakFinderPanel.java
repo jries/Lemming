@@ -23,10 +23,10 @@ public class PeakFinderPanel extends ConfigurationPanel {
 	private static final long serialVersionUID = 7807972034055388559L;
 	private JTextField jTextFieldThreshold;
 	private JSpinner spinnerKernelSize;
-	public static final String KEY_KERNEL_SIZE = "KERNEL_SIZE";
-	public static final String KEY_GAUSSIAN_SIZE = "GAUSSIAN_SIZE";
-	public static final String KEY_THRESHOLD = "PEAK_THRESHOLD";
 	private JSpinner spinnerGaussian;
+	public static final String KEY_KERNEL_SIZE = "KERNEL_SIZE";
+	public static final String KEY_THRESHOLD = "PEAK_THRESHOLD";
+	public static final String KEY_GAUSSIAN_SIZE = "GAUSSIAN_SIZE";
 
 	public PeakFinderPanel() {
 		setBorder(null);
@@ -123,4 +123,5 @@ public class PeakFinderPanel extends ConfigurationPanel {
 		map.put( KEY_GAUSSIAN_SIZE, gaussianSize);
 		return map;
 	}
+
 }

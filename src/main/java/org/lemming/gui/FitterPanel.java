@@ -34,6 +34,7 @@ public class FitterPanel extends ConfigurationPanel {
 	public static final String KEY_CENTROID_THRESHOLD = "CENTROID_THRESHOLD";
 	public static final String KEY_CALIBRATION_FILENAME = "CALIBRATION_FILENAME";
 	public static final String KEY_CAMERA_FILENAME = "CAMERA_FILENAME";
+	public static final String KEY_STEPSIZE = "STEPSIZE";
 	private JSpinner spinnerWindowSize;
 	private JButton btnCamera;
 	private JButton btnCalibration;

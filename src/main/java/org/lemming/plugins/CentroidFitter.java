@@ -34,12 +34,12 @@ public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 	private double thresh;
 
 	public CentroidFitter(int halfkernel, double threshold_) {
-		super(halfkernel);
+		super(halfkernel, stepSize);
 		thresh = threshold_;
 	}
 
 	@Override
-	public List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) {
+	public List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize, double stepSize) {
 		final double pixelDepth = frame.getPixelDepth();
 		final RandomAccessible<T> source = Views.extendMirrorSingle(frame.getPixels());
 		final List<Element> found = new ArrayList<>();

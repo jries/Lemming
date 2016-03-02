@@ -190,6 +190,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 	private AbstractModule saver;
 	public static String lastDir = System.getProperty("user.home"); 
 	private Roi imageRoi;
+	private List<Double> cameraProperties;
 
 	/**
 	 * Create the frame.
@@ -716,8 +717,8 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 			}
 		}
 		if (loc_im != null) {
-			
-			tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
+			cameraProperties=LemmingUtils.readCameraSettings("camera.props");
+			tif = new ImageLoader<>(loc_im, cameraProperties);
 			manager.add(tif);
 
 			previewerWindow = new StackWindow(loc_im, loc_im.getCanvas());
@@ -745,6 +746,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		File file = new File(od.getDirectory()+od.getFileName());
 		lastDir = od.getDirectory();
 		OpenDialog.setDefaultDirectory(lastDir);
+		cameraProperties=LemmingUtils.readCameraSettings("camera.props");
 
 		TableLoader tl = new TableLoader(file);
 		tl.readCSV(',');
@@ -797,13 +799,14 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		final List<Element> list = new ArrayList<>();
 		final ImageStack stack = previewerWindow.getImagePlus().getImageStack();
 		final int stackSize = stack.getSize();
-		final double pixelSize = previewerWindow.getImagePlus().getCalibration().pixelDepth;
+		final double pixelSize = cameraProperties.get(3);
+		final double stepSize = cameraProperties.get(4);
 
 		for (int i = frameNumber; i < frameNumber + preProcessingFactory.processingFrames(); i++) {
 			if (i < stackSize) {
 				Object ip = stack.getPixels(i);
 				Img<T> curImage = LemmingUtils.wrap(ip, new long[]{stack.getWidth(), stack.getHeight()});
-				Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+				Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, stepSize, curImage);
 				list.add(curFrame);
 			}
 		}
@@ -879,7 +882,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		final ImagePlus img = previewerWindow.getImagePlus();
 		img.killRoi();
 		final int frameNumber = img.getCurrentSlice();
-		final double pixelSize = img.getCalibration().pixelDepth;
 		ImageProcessor ip = img.getStack().getProcessor(frameNumber);
 		if (imageRoi.getBounds().width < ip.getWidth() || imageRoi.getBounds().height < ip.getHeight()){
 			ip.setRoi(imageRoi.getBounds());
@@ -887,11 +889,12 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		} else{
 			imageRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
-		
+		final double pixelSize = cameraProperties.get(3);
+		final double stepSize = cameraProperties.get(4);
 		//convertPhotons(ip,LemmingUtils.readCameraSettings("camera.props"));
 
 		Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
-		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+		ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, stepSize, curImage);
 
 		detResults = (FrameElements<T>) detector.preview(curFrame);
 		if (detResults==null) return;
@@ -926,7 +929,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		final ImagePlus img = previewerWindow.getImagePlus();
 		img.killRoi();
 		final int frameNumber = img.getCurrentSlice();
-		final float pixelSize = (float) img.getCalibration().pixelDepth;
 		final ImageStack stack = img.getStack();
 		ImageProcessor ip = stack.getProcessor(frameNumber);
 		if (imageRoi.getBounds().width < ip.getWidth() || imageRoi.getBounds().height < ip.getHeight()){
@@ -935,10 +937,16 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 		} else{
 			imageRoi = new Roi(0,0,ip.getWidth(),ip.getHeight());
 		}
+		final double pixelSize = cameraProperties.get(3);
+		final double stepSize = cameraProperties.get(4);
 		final Img<T> curImage = LemmingUtils.wrap(ip.getPixels(), new long[]{ip.getWidth(), ip.getHeight()});
-		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, curImage);
+		final ImgLib2Frame<T> curFrame = new ImgLib2Frame<>(frameNumber, (int) curImage.dimension(0), (int) curImage.dimension(1), pixelSize, stepSize,curImage);
 		detResults = (FrameElements<T>) detector.preview(curFrame);
+<<<<<<< HEAD
 		fitResults = CentroidFitterRA.fit(detResults.getList(), curImage, fitterFactory.getHalfKernel(), pixelSize);
+=======
+		fitResults = CentroidFitterIP.fit(detResults.getList(), ip, fitterFactory.getHalfKernel(), (float) pixelSize);
+>>>>>>> 018c655dd19d1959a888940eb3d5722dd7b3b18b
 
 		if (fitResults == null) return;
 		final FloatPolygon points = LemmingUtils.convertToPoints(fitResults, imageRoi.getBounds(), pixelSize);

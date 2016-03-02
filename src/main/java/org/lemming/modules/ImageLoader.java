@@ -31,14 +31,16 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 	private Double offset;
 	private Double em_gain;
 	private Double conversion;
-	
+	private Double stepSize;
+
 	public ImageLoader(ImagePlus loc_im, List<Double> cameraSettings) {
 		this.img = loc_im.getStack();
 		stackSize = loc_im.getNSlices()*loc_im.getNFrames()*loc_im.getNChannels();
-		pixelDepth = loc_im.getCalibration().pixelDepth == 0 ? 1 : loc_im.getCalibration().pixelDepth;
+		pixelDepth = loc_im.getCalibration().pixelDepth == 0 ? cameraSettings.get(3) : loc_im.getCalibration().pixelDepth;
 		offset = cameraSettings.get(0);
 		em_gain = cameraSettings.get(1);
 		conversion = cameraSettings.get(2);
+		stepSize = cameraSettings.get(4);
 	}
 	
 	@Override
@@ -48,9 +50,17 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 	}
 
 	@Override
+<<<<<<< HEAD
 	public Element processData(Element data) {		
 		ImageProcessor ip = img.getProcessor(++curSlice);
 		Img<T> theImage = LemmingUtils.wrap(ip.getPixels(), new long[]{img.getWidth(), img.getHeight()});
+=======
+
+	public Element processData(Element data) {
+		Object ip = img.getPixels(++curSlice);
+
+		Img<T> theImage = LemmingUtils.wrap(ip, new long[]{img.getWidth(), img.getHeight()});
+>>>>>>> 018c655dd19d1959a888940eb3d5722dd7b3b18b
 		final Cursor<T> it = theImage.cursor();
 		while(it.hasNext()){
 			it.fwd();
@@ -58,7 +68,8 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 			final double im2phot = adu*conversion/em_gain;
 			it.get().setReal(im2phot);
 		}
-		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
+		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, stepSize, theImage);
+
 		if (curSlice >= stackSize){
 			frame.setLast(true);
 			cancel(); 
@@ -71,8 +82,7 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 	public void afterRun(){
 		System.out.println("Loading of " + stackSize +" done in " + (System.currentTimeMillis()-start) + "ms.");
 	}
-
-
+	
 	@Override
 	public boolean check() {
 		return outputs.size()>=1;

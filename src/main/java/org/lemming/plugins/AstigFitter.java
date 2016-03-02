@@ -33,6 +33,7 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
 	private Map<String, Object> params;
 
+<<<<<<< HEAD
 	public AstigFitter(final int windowSize, final Map<String,Object> params) {
 		super(windowSize);
 		this.params=params;
@@ -40,6 +41,17 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
 	@Override
 	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long halfKernel) {
+=======
+	public AstigFitter(final int windowSize, double stepSize, final List<Double> list) {
+		super(windowSize, stepSize);
+		this.params = new double[list.size()];
+		for (int i = 0; i < list.size(); i++)
+			params[i] = list.get(i);
+	}
+
+	@Override
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize, double stepSize) {
+>>>>>>> 018c655dd19d1959a888940eb3d5722dd7b3b18b
 		final double pixelDepth = frame.getPixelDepth();
 		final RandomAccessibleInterval<T> pixels = frame.getPixels();
 		final List<Element> found = new ArrayList<>();
@@ -60,10 +72,17 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			if (result != null){
 				result[0] *= pixelDepth;
 				result[1] *= pixelDepth;
+<<<<<<< HEAD
 				result[2] *= (double)params.get("zStep");
 				result[3] *= pixelDepth;
 				result[4] *= pixelDepth;
 				result[5] *= (double)params.get("zStep");
+=======
+				result[2] *= stepSize;
+				result[3] *= pixelDepth;
+				result[4] *= pixelDepth;
+				result[5] *= stepSize;
+>>>>>>> 018c655dd19d1959a888940eb3d5722dd7b3b18b
 				found.add(new LocalizationPrecision3D(result[0], result[1], result[2], result[3], result[4], result[5], result[6], loc.getFrame()));
 			}
 		}
@@ -107,7 +126,11 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				IJ.error("No Calibration File!");
 				return null;
 			}
+<<<<<<< HEAD
 			return new AstigFitter<>(windowSize, LemmingUtils.readCSV(calibFileName));
+=======
+			return new AstigFitter<>(windowSize, stepSize, LemmingUtils.readCSV(calibFileName).get("param"));
+>>>>>>> 018c655dd19d1959a888940eb3d5722dd7b3b18b
 		}
 
 		@Override
