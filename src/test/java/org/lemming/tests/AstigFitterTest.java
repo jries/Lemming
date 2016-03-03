@@ -48,8 +48,8 @@ public class AstigFitterTest {
 		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
 
 		AbstractModule peak = new NMSDetector(700,7,0);
-		AbstractModule fitter = new AstigFitter<>(7,10, LemmingUtils.readCSV(System.getProperty("user.home")+"/ownCloud/storm/calTest.csv").get("param"));
-		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/test3.csv"));
+		AbstractModule fitter = new AstigFitter<>(7, LemmingUtils.readCSV("/media/backup/ownCloud/storm/calTest.csv"));
+		AbstractModule saver = new SaveLocalizations(new File("/media/backup/ownCloud/storm/test3.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

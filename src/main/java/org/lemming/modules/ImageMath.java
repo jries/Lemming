@@ -157,7 +157,7 @@ public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 		}
 		
 		return new ImgLib2Frame<>(framePair.getA().getFrameNumber(), framePair.getA().getWidth(), 
-				framePair.getA().getHeight(), framePair.getA().getPixelDepth(), framePair.getA().getStepSize(), intervalA);
+				framePair.getA().getHeight(), framePair.getA().getPixelDepth(), intervalA);
 	}
 	
 	@Override

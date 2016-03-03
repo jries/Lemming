@@ -27,65 +27,139 @@ public class CentroidFitterRA<T extends RealType<T>>  {
 	
 	private IntervalView<T> op;
 	private double thresh;
-	RealPoint center;
+	private RealPoint center;
 
-	public CentroidFitterRA(IntervalView<T> op_, double threshold_){
+	public CentroidFitterRA(IntervalView<T> op_, double threshold_) {
 		op = op_;
 		thresh = threshold_;
 		center = new RealPoint(op.numDimensions());
-		for (int d=0; d<op.numDimensions();++d)
-			center.setPosition(op.min(d)+(op.dimension(d)/2), d);		
+		for (int d = 0; d < op.numDimensions(); ++d)
+			center.setPosition(op.min(d) + (op.dimension(d) / 2), d);
 	}
 	
-	public double[] fit(){
-		
+	public double[] fitXY() {
 		Cursor<T> c = op.cursor();
 		int n = op.numDimensions();
-		
-		double [] r = new double[n*2+1];
-		double sum = 0;
-		
-		while (c.hasNext()){
-			 c.fwd();
-			 
-			 double s = c.get().getRealDouble()-thresh;
-			 if (s>0){
-				 for (int i = 0; i < n; i++){
-					 int pos = c.getIntPosition(i);
-					 r[i] += (center.getDoublePosition(i) - pos) * s;
-				 }
-				 sum = sum + s;
-			 }
+
+		double[] r = new double[n * 2 + 1];
+		double[] sum = new double[n];
+		double s;
+
+		while (c.hasNext()) {
+			c.fwd();
+
+			s = c.get().getRealDouble() - thresh;
+			if (s > 0) {
+				for (int i = 0; i < n; i++) {
+					int pos = c.getIntPosition(i);
+					r[i] += (center.getDoublePosition(i) - pos) * s;
+					sum[i] += s;
+				}
+			}
 		}
-		
-		if (sum == 0) return null;
-		
-		for (int i = 0; i < n; i++) 
-			r[i] = (r[i] / sum) + center.getDoublePosition(i);
-		
+
+		for (int i = 0; i < n; i++){
+			if (sum[i] == 0)
+				return null;
+			r[i] = (r[i] / sum[i]) + center.getDoublePosition(i);
+		}
+
+		return r;
+	}
+	
+	public double[] fit() {
+		Cursor<T> c = op.cursor();
+		int n = op.numDimensions();
+
+		double[] r = new double[n * 2 + 1];
+		double[] sum = new double[n];
+		double s;
+
+		while (c.hasNext()) {
+			c.fwd();
+
+			s = c.get().getRealDouble() - thresh;
+			if (s > 0) {
+				for (int i = 0; i < n; i++) {
+					int pos = c.getIntPosition(i);
+					r[i] += (center.getDoublePosition(i) - pos) * s;
+					sum[i] += s;
+				}
+			}
+		}
+
+		for (int i = 0; i < n; i++){
+			if (sum[i] == 0)
+				return null;
+			r[i] = (r[i] / sum[i]) + center.getDoublePosition(i);
+		}
+
 		double[] dev = new double[n];
 		c.reset();
-		while (c.hasNext()){
+		while (c.hasNext()) {
 			c.fwd();
-			double s = c.get().getRealDouble()-thresh;
-			if (s>0)
-				 for (int i = 0; i < n; i++){
-					 dev[i] += Math.abs(c.getIntPosition(i)-r[i])*s;
-				 }
+			s = c.get().getRealDouble() - thresh;
+			if (s > 0)
+				for (int i = 0; i < n; i++) {
+					dev[i] += Math.abs(c.getIntPosition(i) - r[i]) * s;
+				}
 		}
-		
-		for (int i = 0; i < n; i++) 
-			r[i+n] = Math.sqrt(dev[i]/sum);
-		
+
+		for (int i = 0; i < n; i++)
+			r[i + n] = Math.sqrt(dev[i] / sum[i]);
+
 		RandomAccess<T> ra = op.randomAccess();
-		for (int i = 0; i < n; i++){
+		for (int i = 0; i < n; i++) {
 			ra.setPosition(StrictMath.round(r[i]), i);
 		}
-		r[n*2] = ra.get().getRealDouble();
-		return r;		
+		r[n * 2] = ra.get().getRealDouble();
+		return r;
+	}
+	
+	public double[] fitXYE() {
+		Cursor<T> c = op.cursor();
+		int n = op.numDimensions();
+
+		double[] r = new double[n + 1];
+		double[] sum = new double[n];
+		double s;
+
+		while (c.hasNext()) {
+			c.fwd();
+
+			s = c.get().getRealDouble() - thresh;
+			if (s > 0) {
+				for (int i = 0; i < n; i++) {
+					int pos = c.getIntPosition(i);
+					r[i] += (center.getDoublePosition(i) - pos) * s;
+					sum[i] += s;
+				}
+			}
+		}
+
+		for (int i = 0; i < n; i++){
+			if (sum[i] == 0)
+				return null;
+			r[i] = (r[i] / sum[i]);
+		}
+
+		double[] dev = new double[n];
+		c.reset();
+		while (c.hasNext()) {
+			c.fwd();
+			s = c.get().getRealDouble() - thresh;
+			if (s > 0)
+				for (int i = 0; i < n; i++) {
+					dev[i] += Math.abs(c.getIntPosition(i) - r[i]) * s;
+				}
+		}
+		
+		r[n]= (dev[1] / sum[1])/(dev[0] / sum[0]);
+
+		return r;
 	}
 
-	public static <T extends RealType<T>> List<Element> fit(List<Element> sliceLocs, Img<T> pixels, int halfKernel, float pixelDepth) {
+	public static <T extends RealType<T>> List<Element> fit(List<Element> sliceLocs, Img<T> curImage, int halfKernel, double pixelSize) {
 		final List<Element> found = new ArrayList<>();
         //final Rectangle imageRoi = ip.getRoi();
         long[] imageMin = new long[2];
@@ -93,15 +167,15 @@ public class CentroidFitterRA<T extends RealType<T>>  {
         for (Element el : sliceLocs) {
             final Localization loc = (Localization) el;
              
-            long x = Math.round(loc.getX().doubleValue()/pixelDepth);
-			long y = Math.round(loc.getY().doubleValue()/pixelDepth);
-			pixels.min(imageMin);
-			pixels.max(imageMax);
+            long x = Math.round(loc.getX().doubleValue()/pixelSize);
+			long y = Math.round(loc.getY().doubleValue()/pixelSize);
+			curImage.min(imageMin);
+			curImage.max(imageMax);
 			final Interval roi = Fitter.cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(Views.interval(pixels, roi),0);
+			final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(Views.interval(curImage, roi),0);
             final double[] res = cf.fit();
          
-            found.add(new Localization(res[0]*pixelDepth, res[1]*pixelDepth, res[4], 1L));
+            found.add(new Localization(res[0]*pixelSize, res[1]*pixelSize, res[4], 1L));
         }
  
         return found;

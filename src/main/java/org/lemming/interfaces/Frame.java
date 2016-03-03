@@ -29,8 +29,4 @@ public interface Frame<T> extends Element, Comparable<Frame<T>> {
 	 * @return Return the pixel size */
 	public double getPixelDepth();
 
-	/**  
-	 * @return Return the z step size */
-	public double getStepSize();
-	
 }

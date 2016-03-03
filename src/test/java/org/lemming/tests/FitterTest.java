@@ -1,4 +1,4 @@
-package org.lemming.tools;
+package org.lemming.tests;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,7 @@ import org.lemming.plugins.GaussianFitter;
 import org.lemming.plugins.MLE_Fitter;
 import org.lemming.plugins.QuadraticFitter;
 import org.lemming.plugins.SymmetricGaussianFitter;
+import org.lemming.tools.LemmingUtils;
 import org.lemming.interfaces.Element;
 
 import ij.ImagePlus;

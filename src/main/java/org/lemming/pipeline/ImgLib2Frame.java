@@ -13,7 +13,6 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 	final private RandomAccessibleInterval<T> slice;
 	private boolean isLast = false;
     final private double pixelDepth;
-	final private double stepSize;
 
 	/**
 	 * Creates a Frame with a reference to the appropriate (2D, although not
@@ -31,14 +30,12 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 	 * @param slice
 	 *            - slice
 	 */
-	public ImgLib2Frame(long frameNo, int width, int height, double pixelDepth,
-			double stepSize, RandomAccessibleInterval<T> slice) {
+	public ImgLib2Frame(long frameNo, int width, int height, double pixelDepth, RandomAccessibleInterval<T> slice) {
 		this.frameNo = frameNo;
 		this.width = width;
 		this.height = height;
 		this.slice = slice;
 		this.pixelDepth = pixelDepth;
-		this.stepSize = stepSize;
 	}
 
 	@Override
@@ -90,11 +87,6 @@ public class ImgLib2Frame<T extends NumericType<T>> implements Frame<T> {
 	@Override
 	public String toString(){
 		return "F_"+getFrameNumber();
-	}
-
-	@Override
-	public double getStepSize() {
-		return stepSize;
 	}
 	
 }

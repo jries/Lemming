@@ -22,16 +22,9 @@ import ij.gui.Roi;
 public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 
 	protected static int size;
-	protected static double stepSize;
 
-<<<<<<< HEAD
 	public Fitter(int halfkernel) {
 		size = halfkernel;
-=======
-	public Fitter(int halfkernel, double stepSize) {
-		Fitter.size = halfkernel;
-		Fitter.stepSize = stepSize;
->>>>>>> 018c655dd19d1959a888940eb3d5722dd7b3b18b
 	}
 	
 	public int getHalfKernel() {
@@ -63,5 +56,5 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 		return new FinalInterval(new long[] { x1, y1 }, new long[]{ x2, y2 });
 	}
 
-	public abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize, double stepSize) ;
+	public abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) ;
 }

@@ -27,11 +27,11 @@ public class QuadraticFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 	public static final String INFO_TEXT = "<html>" + "Quadratic Fitter Plugin (without z-direction)" + "</html>";
 
 	public QuadraticFitter(int halfkernel) {
-		super(halfkernel, stepSize);
+		super(halfkernel);
 	}
 
 	@Override
-	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize, double stepSize) {
+	public List<Element> fit(final List<Element> sliceLocs, Frame<T> frame, final long windowSize) {
 		
 		final RandomAccessible<T> ra = Views.extendBorder(frame.getPixels());
 		final boolean[] allowedToMoveInDim = new boolean[ra.numDimensions()];
