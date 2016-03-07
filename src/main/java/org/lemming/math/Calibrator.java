@@ -73,9 +73,10 @@ public class Calibrator {
 						final IntervalView<T> view = Views.interval(theImage, new long[]{roi.x,roi.y},  new long[]{roi.x+roi.width, roi.y+roi.height});
 						final Gaussian2DFitter<T> gf = new Gaussian2DFitter<>(view, 200, 200);
 						final double[] results = gf.fit();
-						final CentroidFitterRA<T> cf = new CentroidFitterRA<>(view, 0);
-						final double[] ce = cf.fitXYE();
-						E[i]=ce[2];
+						final Gradient<T> cf = new Gradient<>(view, 0, 7);
+						final double[] ce = cf.fit();
+						if (ce!=null)
+							E[i]=ce[2];
 						if (results!=null){
 							Wx[i]=results[2];
 							Wy[i]=results[3];
@@ -89,6 +90,7 @@ public class Calibrator {
 		createZgrid(zgrid, 0);
 		fixCurve(Wx);
 		fixCurve(Wy);
+		fixCurve(E);
 	}	
 	
 	private static void fixCurve(double[] d) {
@@ -114,9 +116,10 @@ public class Calibrator {
 			@Override
 			public void run() {
 				b.init(rangedZ, rangedWx, rangedWy, rangedE);
-
+				
 				// Display result
 				b.plotWxWyFitCurves();
+				b.plot(rangedE, "ellipticity");
 			}
 		});
 		t.start();

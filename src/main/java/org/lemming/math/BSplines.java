@@ -132,9 +132,9 @@ public class BSplines {
 	}
 	
 	///////////////////////////////////////// Plot
-	public void plot(double[] W1, double[] W2, String title){
-		if(W1.length > 0 && W2.length>0){
-			createXYDots(createDataSet(zgrid, W1, "Width in x", W2, "Width in y"), "Z (nm)", "Width", title);
+	public void plot(double[] W, String title){
+		if(W.length > 0){
+			createXYDots(createDataSet(zgrid, W, "Width in x"), "Z (nm)", "Width", title);
 		}
 	}	
 
@@ -163,6 +163,20 @@ public class BSplines {
 	    dataset.addSeries(series1);
 	    dataset.addSeries(series2);
 	 
+	    return dataset;
+	}
+	
+	private static XYDataset createDataSet(double[] X, double[] Y1, String nameY1){
+	    XYSeriesCollection dataset = new XYSeriesCollection();
+	    XYSeries series1 = new XYSeries(nameY1);
+
+	    if(X.length != Y1.length)
+	    	throw new IllegalArgumentException("createDataSet failed");
+	    
+		for(int i=0;i<X.length;i++)
+			series1.add(X[i], Y1[i]);
+		
+	    dataset.addSeries(series1);	 
 	    return dataset;
 	}
 	

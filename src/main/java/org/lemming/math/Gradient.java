@@ -36,7 +36,7 @@ public class Gradient<T extends RealType<T>>  {
 		final double e0 = result[2];
 		int r2 = 2 * radiusGrad;
 		int dim = r2 + 1;
-		
+		int xi, yi, i, j;	
 		final double[] m = new double[r2];
 		final double[] n = new double[r2];
 		final double[] Gx = new double[r2];
@@ -47,7 +47,8 @@ public class Gradient<T extends RealType<T>>  {
 		final double[] gxy = new double[r2*r2];
 		RandomAccess<T> ra = op.randomAccess();
 		long[] min = new long[op.numDimensions()];
-		op.min(min);
+		for (i=0;i<op.numDimensions();i++)
+			min[i]=op.min(i)+Math.max(0, op.dimension(i)/4-radiusGrad+1);
 		double a1 = 0;
 		double b1 = 0;
 		double c1 = 0;
@@ -59,7 +60,7 @@ public class Gradient<T extends RealType<T>>  {
 		double a3 = 0;
 		final double b3, c3, d3, e3, f3;
 		double g3 = 0;	
-		int xi, yi, i, j;	
+		
 		
 		//define the coordinates of the gradient grid, set the center pixel as the original point
 		for (i=0;i<r2;i++){
@@ -178,9 +179,13 @@ public class Gradient<T extends RealType<T>>  {
 		final double B = B1*B1*c3+B1*d3+B1*B2*e3;
 		final double C = B1*b3+2*A1*B1*c3+A1*d3+A1*B2*e3+B2*f3+g3;
 		
-		final double e = (-C+FastMath.sqrt(C*C-4*A*B))/(2*A);
-		final double cx= min[0]+radiusGrad+(A1+B1/e);
+		final double e = (-C+Math.sqrt(C*C-4*A*B))/(2*A);
+		if (e==0) return null;
+		final double cx= min[0]+radiusGrad+(A1+B1/e);//op.min(i)+(op.dimension(i)-1)/2-radiusGrad;
 		final double cy= min[1]+radiusGrad-(A2*e+B2);
+		
+		if (cx<op.min(0) || cx>op.max(0) || cy<op.min(1) || cy>op.max(1))
+			return null;
 		
 		final RealRandomAccess<T> interpolant = Views.interpolate(op, new LanczosInterpolatorFactory<T>()).realRandomAccess();
 		interpolant.setPosition(new double[]{cx, cy});

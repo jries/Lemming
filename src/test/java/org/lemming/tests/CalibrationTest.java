@@ -15,7 +15,7 @@ public class CalibrationTest {
 	public CalibrationTest(){
 		ImagePlus calibImage = new ImagePlus("/media/backup/ownCloud/set1.tif");
 		calibWindow = new StackWindow(calibImage);
-		calibImage.setRoi(21, 19, 21, 21);
+		calibImage.setRoi(19, 17, 25, 25);
 	}
 	
 	private boolean fitbeads() {
@@ -41,8 +41,8 @@ public class CalibrationTest {
 	}
 
 	private boolean fitCurve() {
-		final int rangeMin = 170; //set
-		final int rangeMax = 1080; //set
+		final int rangeMin = 100; //set
+		final int rangeMax = 1100; //set
 		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}

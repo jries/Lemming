@@ -58,7 +58,7 @@ public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			pixels.max(imageMax);
 			final Interval roi = cropInterval(imageMin, imageMax, new long[] { x - halfKernel, y - halfKernel },
 					new long[] { x + halfKernel, y + halfKernel });
-			final Gradient<T> gf = new Gradient<T>(Views.interval(pixels, roi), 0, (int) halfKernel);
+			final Gradient<T> gf = new Gradient<T>(Views.interval(pixels, roi), 0, (int) (halfKernel/2));
 			double[] result = null;
 			result = gf.fit();
 			if (result != null) {
