@@ -193,7 +193,7 @@ public class CalibrationDialog extends JDialog {
 		int zstep = (int) this.spinnerStepSize.getValue();
 		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);	
 		calibrator.fitStack();
-		double[] zgrid = calibrator.getCalibration().getZgrid();
+		double[] zgrid = calibrator.getZgrid();
 		Arrays.sort(zgrid);
 		this.rangeSlider.setMinimum((int) zgrid[0]);
 		this.rangeSlider.setMaximum((int) zgrid[zgrid.length-1]);
@@ -207,7 +207,7 @@ public class CalibrationDialog extends JDialog {
 	protected boolean fitCurve() {
 		int rangeMin = this.rangeSlider.getValue();
 		int rangeMax = this.rangeSlider.getUpperValue();
-		calibrator.fitCalibrationCurve(rangeMin, rangeMax);
+		calibrator.fitBSplines(rangeMin, rangeMax);
 		return true;
 	}
 
@@ -230,7 +230,7 @@ public class CalibrationDialog extends JDialog {
     	    calibFile = fc.getSelectedFile();
     	    calibrator.saveCalib(calibFile.getAbsolutePath());
     	}		
-    	calibrator.getCalibration().closePlotWindows();
+    	calibrator.closePlotWindows();
     	setVisible(false);
 	}
 	

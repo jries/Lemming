@@ -11,8 +11,7 @@ import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.Precision;
 
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
+import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
 
@@ -30,8 +29,6 @@ public class Symmetric2DFitter<T extends RealType<T>> {
 	private static final int INDEX_I0 = 3;
 	private static final int INDEX_Bg = 4;
 	
-	private ImageProcessor ip;
-	private Roi roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
@@ -64,20 +61,17 @@ public class Symmetric2DFitter<T extends RealType<T>> {
 	}
 	
 	private void createGrids(){
-		int rwidth = (int) roi.getFloatWidth();
-		int rheight = (int) roi.getFloatHeight();
-		int xstart = (int) roi.getXBase();
-		int ystart = (int) roi.getYBase();
-
-		xgrid = new int[rwidth*rheight];
-		ygrid = new int[rwidth*rheight];
-		Ival = new double[rwidth*rheight];
-		for(int i=0;i<rheight;i++){
-			for(int j=0;j<rwidth;j++){
-				ygrid[i*rwidth+j] = i+ystart;
-				xgrid[i*rwidth+j] = j+xstart;
-				Ival[i*rwidth+j] = ip.get(j+xstart,i+ystart);
-			}
+		Cursor<T> cursor = interval.cursor();
+		int arraySize=(int)(interval.dimension(0)*interval.dimension(1));
+		Ival = new double[arraySize];
+		xgrid = new int[arraySize];
+		ygrid = new int[arraySize];
+		int index=0;
+		while(cursor.hasNext()){
+			cursor.fwd();
+			xgrid[index]=cursor.getIntPosition(0);
+			ygrid[index]=cursor.getIntPosition(1);
+			Ival[index++]=cursor.get().getRealDouble();
 		}
 	}
 	
@@ -105,12 +99,8 @@ public class Symmetric2DFitter<T extends RealType<T>> {
 		} catch(ConvergenceException e){
         	return null;
 		}
-        //check bounds
-		if (!roi.contains((int)Math.round(fittedEG[0]), (int)Math.round(fittedEG[1])))
-			return null;
 		
 		double[] result = new double[7];
-		
 		result[0] = fittedEG[0];
 		result[1] = fittedEG[1];
 		result[2] = fittedEG[2];

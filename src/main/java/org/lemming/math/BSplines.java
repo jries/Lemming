@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -32,6 +34,7 @@ public class BSplines {
 	private double[] Wx;
 	private double[] Wy;
 	private JFrame plotWindow;
+	private double[] bestE;
 	private static int numKnots = 21;
 	
 	public BSplines(){
@@ -42,7 +45,7 @@ public class BSplines {
 		plotWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	}
 
-	public void init(double[] z, double[] Wx, double[] Wy) {
+	public void init(double[] z, double[] Wx, double[] Wy, double e[]) {
 		zgrid=z;
 		this.Wx = Wx;							// width in x of the PSF
 		this.Wy = Wy;							// width in y of the PSF
@@ -54,10 +57,14 @@ public class BSplines {
 		calculateKnots(z, Wy, kz, kwy);
 		fwx = interpolator.interpolate(kz, kwx);
 		fwy = interpolator.interpolate(kz, kwy);
+		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(0).withStartPoint(new double[] {-10,10,-10,10,-10});
+		final WeightedObservedPoints obs = new WeightedObservedPoints();
+		for (int i=0;i<z.length;i++)
+			obs.add(z[i],e[i]);
+		bestE = fitter.fit(obs.toList());
 	}
 	
 	private void calculateKnots(double[] z, double[] w, double[] kz, double[] kw){
-		
 		float jump = (float)z.length / (numKnots-1);
 		for (int i=0;i<numKnots-1;i++){
 			int index = Math.round(i*jump);
@@ -96,12 +103,6 @@ public class BSplines {
 		}
 		return zgrid[index];
 	}
-
-	public BSplines(double[] z, double[] wx, double[] wy) {
-		SplineInterpolator interpolator = new SplineInterpolator();
-		fwx = interpolator.interpolate(z, wx);
-		fwy = interpolator.interpolate(z, wx);
-	}
 	
 	public void saveAsCSV(String path){
 		final PolynomialFunction[] polynomsX = fwx.getPolynomials();
@@ -122,6 +123,7 @@ public class BSplines {
 			w.write("--\n");
 			w.write(Double.toString(findIntersection())+"\n");
 			w.write(Double.toString(zStep)+"\n");
+			w.write(LemmingUtils.doubleArrayToString(bestE)+"\n");
 			w.close();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -16,7 +16,6 @@ import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 
-import ij.gui.Roi;
 import net.imglib2.Cursor;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.IntervalView;
@@ -35,7 +34,6 @@ public class GaussianFitterZ<T extends RealType<T>> {
 	private static final int INDEX_Bg = 4;
 	private static final int PARAM_LENGTH = 5;
 	
-	private Roi roi;
 	private int maxIter;
 	private int maxEval;
 	private int[] xgrid;
@@ -115,10 +113,6 @@ public class GaussianFitterZ<T extends RealType<T>> {
         	return null;
 		}
         
-		//check bounds
-		if (!roi.contains((int)FastMath.round(fittedEG[0]), (int)FastMath.round(fittedEG[1])))
-			return null;
-		
 		double[] result = new double[10];
 		double[] error = get3DError(fittedEG, eg);
 		result[0] = fittedEG[0]; // X								

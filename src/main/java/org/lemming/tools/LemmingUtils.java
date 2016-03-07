@@ -282,6 +282,8 @@ public class LemmingUtils {
 			map.put("z0", Double.parseDouble(line.trim()));
 			line=br.readLine();
 			map.put("zStep", Double.parseDouble(line.trim()));
+			line=br.readLine();
+			map.put("ellipticity", new PolynomialFunction(stringToDoubleArray(line)));
 			br.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

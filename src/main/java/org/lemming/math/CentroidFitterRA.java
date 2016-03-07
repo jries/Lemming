@@ -1,6 +1,7 @@
 package org.lemming.math;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.lemming.interfaces.Element;
@@ -117,45 +118,82 @@ public class CentroidFitterRA<T extends RealType<T>>  {
 	}
 	
 	public double[] fitXYE() {
-		Cursor<T> c = op.cursor();
-		int n = op.numDimensions();
+		final Cursor<T> c = op.cursor();
+		final int n = op.numDimensions();
 
 		double[] r = new double[n + 1];
-		double[] sum = new double[n];
-		double s;
+		double[] t = new double[n];
+		double[][] sum = new double[n][];
+		for (int i = 0; i < n; i++) sum[i]=new double[(int) op.dimension(i)];
+		double[] min = new double[n];
+		Arrays.fill(min, Double.MAX_VALUE);
+		double[] sumsum = new double[n];
+		double[] W = new double[n];
+		double[] W2 = new double[n];
+		double s; 
+		int localPos, i, j;
+		long[] pos = new long[n];
 
 		while (c.hasNext()) {
 			c.fwd();
 
 			s = c.get().getRealDouble() - thresh;
+			c.localize(pos);
 			if (s > 0) {
-				for (int i = 0; i < n; i++) {
-					int pos = c.getIntPosition(i);
-					r[i] += (center.getDoublePosition(i) - pos) * s;
-					sum[i] += s;
-				}
+				for (i = 0; i < n; i++){ 
+					localPos = (int) (pos[i]-op.min(i));
+					sum[i][localPos] += s;	
+					}
 			}
 		}
-
-		for (int i = 0; i < n; i++){
-			if (sum[i] == 0)
-				return null;
-			r[i] = (r[i] / sum[i]);
-		}
-
-		double[] dev = new double[n];
-		c.reset();
-		while (c.hasNext()) {
-			c.fwd();
-			s = c.get().getRealDouble() - thresh;
-			if (s > 0)
-				for (int i = 0; i < n; i++) {
-					dev[i] += Math.abs(c.getIntPosition(i) - r[i]) * s;
-				}
-		}
 		
-		r[n]= (dev[1] / sum[1])/(dev[0] / sum[0]);
+		for (i = 0; i < n; i++)
+			for (j = 0; j<op.dimension(i); j++)
+				if (min[i]>sum[i][j]) min[i]=sum[i][j];
 
+		for (i = 0; i < n; i++)
+			for (j = 0; j<op.dimension(i); j++){
+				sum[i][j] -= min[i];
+				sumsum[i] += sum[i][j];
+				t[i] += sum[i][j]*(j+1);
+			}
+		
+		for (i = 0; i < n; i++)
+			t[i] /= sumsum[i];
+		
+		for (i = 0; i < n; i++)
+			for (j = 0; j<op.dimension(i); j++){
+				W[i] += sum[i][j]*Math.abs(1-t[i]+j);
+			}
+		
+		for (i = 0; i < n; i++)
+			W[i] = W[i] / sumsum[i] * 3;
+		
+		Arrays.fill(sumsum, 0);
+		
+		for (i = 0; i < n; i++)
+			for (j = 0; j<op.dimension(i); j++)
+				if(j >= Math.floor(t[i]-W[i]) && j < Math.floor(t[i]+W[i])){
+					sumsum[i] += sum[i][j];
+					r[i] += sum[i][j]*(j+1);
+				}
+		
+		for (i = 0; i < n; i++)
+			r[i] /= sumsum[i];
+		
+		for (i = 0; i < n; i++)
+			for (j = 0; j<op.dimension(i); j++)
+				if(j >= Math.floor(r[i]-W[i]) && j < Math.floor(r[i]+W[i]))
+					W2[i] += sum[i][j]*Math.abs(1-r[i]+j);
+		
+		for (i = 0; i < n; i++)
+			W2[i] = W2[i] / sumsum[i];
+		
+		for (i = 0; i < n; i++)
+			r[i] = (r[i]-(op.dimension(i)-1)/2-1);
+		r[n]=W2[n-1];
+		for (i = n-2; i >= 0; i--)
+			r[n] /= W2[i];
 		return r;
 	}
 
