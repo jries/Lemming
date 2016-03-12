@@ -283,6 +283,8 @@ public class LemmingUtils {
 			line=br.readLine();
 			map.put("zStep", Double.parseDouble(line.trim()));
 			line=br.readLine();
+			map.put("zgrid", stringToDoubleArray(line));
+			line=br.readLine();
 			map.put("ellipticity", new PolynomialFunction(stringToDoubleArray(line)));
 			br.close();
 		} catch (FileNotFoundException e) {

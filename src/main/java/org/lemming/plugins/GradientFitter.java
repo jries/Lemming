@@ -35,11 +35,13 @@ public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
 	private PolynomialFunction zFunction;
 
+	private double[] zgrid;
+
 	//private double zStep;
 
 	public GradientFitter(int halfkernel, final Map<String,Object> params) {
 		super(halfkernel);
-		//zStep=(double) params.get("zStep");
+		zgrid = (double[]) params.get("zgrid");
 		zFunction = (PolynomialFunction) params.get("ellipticity");
 	}
 
@@ -65,11 +67,35 @@ public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				result[0] *= pixelDepth;
 				result[1] *= pixelDepth;
 
-				found.add(new LocalizationPrecision3D(result[0], result[1], zFunction.value(result[2]), 0, 0, 0,
+				found.add(new LocalizationPrecision3D(result[0], result[1], calculateZ(result[2]), 0, 0, 0,
 						result[3], loc.getFrame()));
 			}
 		}
 		return found;
+	}
+	
+	private double calculateZ(final double e) {
+		return calcIterZ(e, zgrid[0], zgrid[zgrid.length-1], 1e-4);
+	}
+	
+	private double calcIterZ(double value, double start_, double end, double precision) {
+		double zStep = Math.abs(end - start_) / 10;
+
+		double calib = zFunction.value(start_);
+		double distance = Math.abs(calib - value);
+		double idx = start_;
+		for (double c = start_ + zStep; c <= end; c += zStep) {
+			calib = zFunction.value(c);
+			double cdistance = Math.abs(calib - value);
+			if (cdistance < distance) {
+				idx = c;
+				distance = cdistance;
+			}
+		}
+		if (zStep <= precision) {
+			return idx;
+		}
+		return calcIterZ(value, idx - zStep, idx + zStep, precision);
 	}
 
 	@Plugin(type = FitterFactory.class, visible = true)

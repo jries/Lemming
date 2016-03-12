@@ -118,7 +118,7 @@ public class Calibrator {
 				b.init(rangedZ, rangedWx, rangedWy, rangedE);
 				
 				// Display result
-				b.plotWxWyFitCurves();
+				//b.plotWxWyFitCurves();
 				b.plot(rangedE, "ellipticity");
 			}
 		});

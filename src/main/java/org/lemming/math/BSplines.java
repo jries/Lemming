@@ -57,7 +57,7 @@ public class BSplines {
 		calculateKnots(z, Wy, kz, kwy);
 		fwx = interpolator.interpolate(kz, kwx);
 		fwy = interpolator.interpolate(kz, kwy);
-		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(0).withStartPoint(new double[] {-10,10,-10,10,-10});
+		final PolynomialCurveFitter fitter = PolynomialCurveFitter.create(0).withStartPoint(new double[] {-1,1,-1,1,-1,1,-1,1,-1,1,-1,1});
 		final WeightedObservedPoints obs = new WeightedObservedPoints();
 		for (int i=0;i<z.length;i++)
 			obs.add(z[i],e[i]);
@@ -77,9 +77,8 @@ public class BSplines {
 	
 	private static double[] valuesWith(double z[], PolynomialSplineFunction function) {
 		double[] values = new double[z.length];
-		for (int i = 0; i < z.length; ++i) {
+		for (int i = 0; i < z.length; ++i) 
 			values[i] = function.value(z[i]);
-		}
 		return values;
 	}
 	
@@ -123,6 +122,7 @@ public class BSplines {
 			w.write("--\n");
 			w.write(Double.toString(findIntersection())+"\n");
 			w.write(Double.toString(zStep)+"\n");
+			w.write(LemmingUtils.doubleArrayToString(zgrid));
 			w.write(LemmingUtils.doubleArrayToString(bestE)+"\n");
 			w.close();
 		} catch (IOException e) {
@@ -134,7 +134,12 @@ public class BSplines {
 	///////////////////////////////////////// Plot
 	public void plot(double[] W, String title){
 		if(W.length > 0){
-			createXYDots(createDataSet(zgrid, W, "Width in x"), "Z (nm)", "Width", title);
+			PolynomialFunction function = new PolynomialFunction(bestE);
+			double[] curveE = new double[zgrid.length];
+			for (int i = 0; i < W.length; ++i) {
+				curveE[i] = function.value(zgrid[i]);
+			}
+			createXYDotsAndLines(createDataSet(zgrid, W, "calculated"), createDataSet(zgrid, curveE, "fitted"),"Z (nm)", "e", title);
 		}
 	}	
 
@@ -178,30 +183,6 @@ public class BSplines {
 		
 	    dataset.addSeries(series1);	 
 	    return dataset;
-	}
-	
-	private void createXYDots(XYDataset xy, String domainName, String rangeName, String plotTitle){															////////////////////////////// change to be less redundant with previous function
-		// Create a single plot
-		XYPlot plot = new XYPlot();
-
-		/* SETUP SCATTER */
-
-		// Create the scatter data, renderer, and axis
-		XYDataset collection = xy;
-		XYItemRenderer renderer = new XYLineAndShapeRenderer(false, true);   // Shapes only
-		ValueAxis domain = new NumberAxis(domainName);
-		ValueAxis range = new NumberAxis(rangeName);
-
-		// Set the scatter data, renderer, and axis into plot
-		plot.setDataset(0, collection);
-		plot.setRenderer(0, renderer);
-		plot.setDomainAxis(0, domain);
-		plot.setRangeAxis(0, range);
-
-		// Map the scatter to the first Domain and first Range
-		plot.mapDatasetToDomainAxis(0, 0);
-		plot.mapDatasetToRangeAxis(0, 0);
-		createPlot(plotTitle, plot);
 	}
 	
 	private void createXYDotsAndLines(XYDataset dataset1, XYDataset dataset2, String domainName, String rangeName,String plotTitle) {
