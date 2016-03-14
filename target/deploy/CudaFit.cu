@@ -1,6 +1,6 @@
 #define MEM 524288		//!< max memory 524288
 #define IMSZBIG 21		//!< maximum fitting window size
-#define pi  3.141592654f		//!< ensure a consistent value for pi
+#define pi  3.141592654f	//!< ensure a consistent value for pi
 #define pi2 6.283185307f  	//!< ensure a consistent value for 2*pi
 #define sq2pi 2.506628275f	//!< ensure value of sqrt of 2*pi
 //#define two_sqrtpi 1.12837916f// 2/sqrt(pi)
