@@ -1,3 +1,5 @@
-Offset=400
-EM-Gain=100
-Conversion=10.5
+Offset=0
+EM-Gain=1
+Conversion=1
+PixelSize=130
+StepSize=10

@@ -14,6 +14,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.lemming.math.Calibrator;
+import org.lemming.tools.LemmingUtils;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -191,7 +192,7 @@ public class CalibrationDialog extends JDialog {
 		} 
 		
 		int zstep = (int) this.spinnerStepSize.getValue();
-		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);	
+		calibrator = new Calibrator(calibWindow.getImagePlus(), LemmingUtils.readCameraSettings("camera.props"),zstep, calibRoi);	
 		calibrator.fitStack();
 		double[] zgrid = calibrator.getZgrid();
 		Arrays.sort(zgrid);

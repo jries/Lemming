@@ -89,7 +89,7 @@ public class EllipticalGaussian implements OptimizationData {
 		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];    
 	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
 	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
-	    initialGuess[INDEX_I0] = Short.MAX_VALUE;
+	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
 	    initialGuess[INDEX_Bg] = 0;
 		
 		return initialGuess;

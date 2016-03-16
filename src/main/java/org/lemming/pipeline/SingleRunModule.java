@@ -9,10 +9,17 @@ import org.lemming.interfaces.Element;
  *
  */
 public abstract class SingleRunModule extends AbstractModule {
+	
+	private String name;
+	private static int nr=0;
+	
+	public SingleRunModule(){
+		name = this.getClass().getSimpleName();
+	}
 
 	@Override
 	public void run() {
-
+		Thread.currentThread().setName(name+nr++);
 		if (!inputs.isEmpty() && !outputs.isEmpty()) {
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();

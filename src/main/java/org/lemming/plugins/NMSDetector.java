@@ -3,6 +3,9 @@ package org.lemming.plugins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -39,11 +42,13 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 
 	private int gaussian;
 
+	private ExecutorService gaussService;
+
 	public NMSDetector(final double threshold, final int size, final int gaussian) {
 		this.threshold = threshold;
 		this.n_ = size;
 		this.gaussian = gaussian;
-		//this.service = Executors.newSingleThreadExecutor();
+		this.gaussService = Executors.newCachedThreadPool();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -68,7 +73,7 @@ public class NMSDetector<T extends RealType<T>, F extends Frame<T>> extends Dete
 			final RandomAccessibleInterval<FloatType> dog = Views.offset(Util.getArrayOrCellImgFactory(pixels, type).create(pixels, type), min);
 			
 			try {
-				Gauss3.gauss(sigma, extended, dog, 1);
+				Gauss3.gauss(sigma, extended, dog, gaussService);
 			} catch (Exception e) {
 				return null;
 			}

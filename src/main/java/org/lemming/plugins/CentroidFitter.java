@@ -16,10 +16,10 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.FitterPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.LocalizationInterface;
 import org.lemming.math.CentroidFitterRA;
 import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
-import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.scijava.plugin.Plugin;
 
@@ -46,14 +46,14 @@ public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		final int halfKernel = size;
 
 		for (Element el : sliceLocs) {
-			final Localization loc = (Localization) el;
+			final LocalizationInterface loc = (LocalizationInterface) el;
 			
 			double x = loc.getX().doubleValue()/pixelDepth;
 			double y = loc.getY().doubleValue()/pixelDepth;
 
-			final Interval roi = new FinalInterval(new long[] { (long) StrictMath.floor(x - halfKernel),
-					(long) StrictMath.floor(y - halfKernel) }, new long[] { (long) StrictMath.ceil(x + halfKernel),
-					(long) StrictMath.ceil(y + halfKernel) });
+			final Interval roi = new FinalInterval(new long[] { (long) Math.floor(x - halfKernel),
+					(long) Math.floor(y - halfKernel) }, new long[] { (long) Math.ceil(x + halfKernel),
+					(long) Math.ceil(y + halfKernel) });
 			IntervalView<T> interval = Views.interval(source, roi);
 
 			CentroidFitterRA<T> cf = new CentroidFitterRA<>(interval, thresh);

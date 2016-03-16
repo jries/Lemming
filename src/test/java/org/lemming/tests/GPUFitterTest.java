@@ -37,8 +37,7 @@ public class GPUFitterTest {
 		
         //File file = new File("D:/Images/DRG_KO_5_1.tif");
 		//File file = new File("D:/Images/DRG_WT_MT_A647_1.tif");
-        File file = new File("/media/backup/ownCloud/Tubulin1-1.tif");
-		//File file = new File("D:/ownCloud/Tubulin1.tif");
+		File file = new File("D:/ownCloud/Tubulin1.tif");
         
 		if (file.isDirectory()){
         	FolderOpener fo = new FolderOpener();
@@ -53,18 +52,18 @@ public class GPUFitterTest {
 	    if (loc_im ==null)
 		    throw new Exception("File not found");
 	    
-		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings("camera.props"));
+		AbstractModule tif = new ImageLoader<>(loc_im, LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"));
 		//AbstractModule filter = new FastMedianFilter(3, false);
 		//ImageMath substracter = new ImageMath(3);
 		//substracter.setOperator(ImageMath.operators.SUBSTRACTION);
 		//AbstractModule peak = new NMSDetector(70,7);
-		AbstractModule peak = new NMSDetector(350,6,10); //
+		AbstractModule peak = new NMSDetector(35,6,10); //
 		//AbstractModule peak = new DoGFinder(4.5f,13); //DRG_KO_5_1.tif
 		//AbstractModule peak = new NMSDetector(2000,5); //DRG_WT_MT_A647_1.tif
 		AbstractModule fitter = new MLE_Fitter<>(6);
-		AbstractModule saver = new SaveLocalizations(new File("/media/backup/ownCloud/Tubulin1-1.csv"));
+		AbstractModule saver = new SaveLocalizations(new File("D:/ownCloud/Tubulin1.csv"));
 		AbstractModule unpacker = new UnpackElements();
-		AbstractModule saver2 = new SaveLocalizations(new File("/media/backup/ownCloud/Tubulin1-1det.csv"));
+		AbstractModule saver2 = new SaveLocalizations(new File("D:/ownCloud/Tubulin1.det.csv"));
 		
 		pipe = new Manager();
 		pipe.add(tif);

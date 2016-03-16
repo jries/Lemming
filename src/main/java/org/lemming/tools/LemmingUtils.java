@@ -55,9 +55,8 @@ public class LemmingUtils {
 		List<Element> me = new ArrayList<>();
 		float[] xs = p.xpoints;
 		float[] ys = p.ypoints;
-		for (int i=0;i<xs.length;i++) {
+		for (int i=0;i<xs.length;i++) 
 			me.add(new Localization(xs[i]*pixelSize, ys[i]*pixelSize, 1, frame));
-		}
 		return me;
 	}
 
@@ -340,30 +339,6 @@ public class LemmingUtils {
 
 		Locale.setDefault(curLocale);
 		return result;
-	}
-
-	public static List<Double> readProps(String path) {
-		final Locale curLocale = Locale.getDefault();
-		final Locale usLocale = new Locale( "en", "US" ); // setting us locale
-		Locale.setDefault( usLocale );
-		
-		List<Double> params = new ArrayList<>();
-		try {
-			FileReader reader = new FileReader( new File(path) );
-			final Properties props = new Properties();
-			props.load( reader );
-			String[] paramParser = props.getProperty( "FitParameter", "" ).split( "[,\n]" );
-			for (int i=0; i<paramParser.length; i++)
-				params.add(Double.parseDouble(paramParser[i].trim()));
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		Locale.setDefault( curLocale );
-		return params;
 	}
 	
 	public static List<Double> readCameraSettings(String path) {

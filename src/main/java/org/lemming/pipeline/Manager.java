@@ -74,6 +74,7 @@ public class Manager extends SwingWorker<Void,Void> {
 	@Override
 	protected Void doInBackground() throws Exception {
 		if (modules.isEmpty()) return null;
+		Thread.currentThread().setName("Manager");
 		StoreMonitor sm = new StoreMonitor();
 		sm.addPropertyChangeListener(new PropertyChangeListener(){
 			@Override
@@ -128,6 +129,7 @@ public class Manager extends SwingWorker<Void,Void> {
 
 		@Override
 		protected Void doInBackground() throws Exception {
+			Thread.currentThread().setName("StoreMonitor");
 			while(!done){
 				try {
 	                Thread.sleep(200);

@@ -138,7 +138,7 @@ public class GaussianFitterZ<T extends RealType<T>> {
 	    initialGuess[INDEX_X0] = centroid[INDEX_X0];
 	    initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
 	    initialGuess[INDEX_Z0] = (double) params.get("z0");
-	    initialGuess[INDEX_I0] = Short.MAX_VALUE;
+	    initialGuess[INDEX_I0] = centroid[INDEX_Bg];
 	    initialGuess[INDEX_Bg] = 0;
 	    
 		return initialGuess;

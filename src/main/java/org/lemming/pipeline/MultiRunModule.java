@@ -15,11 +15,16 @@ import org.lemming.interfaces.Element;
  */
 public abstract class MultiRunModule extends AbstractModule{
 	
+	private String name;
+	private static int nr=0;
+
 	public MultiRunModule(){
+		name = this.getClass().getSimpleName();
 	}
 	
 	@Override
 	public void run() {
+		Thread.currentThread().setName(name+nr++);
 		if (!inputs.isEmpty() && !outputs.isEmpty()) { // first check for existing inputs
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();

@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import javolution.util.FastTable;
 import jcuda.CudaException;
@@ -124,12 +122,13 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	}
 	
 	private void processGPU(double pixelDepth){
-		ExecutorService singleService = Executors.newSingleThreadExecutor();
 		GPUBlockThread t = new GPUBlockThread(device, kernelList, kernelSize, kernelList.size(), PARAMETER_LENGTH, "kernel_MLEFit_sigmaxy");
+		FutureTask<Map<String, float[]>> ft = new FutureTask<>(t);
 		//MLE t = new MLE(kernelList, kernelSize, kernelList.size());
-		Future<Map<String, float[]>> f = singleService.submit(t);
+		new Thread(ft).start();
+		//Future<Map<String, float[]>> f = singleService.submit(t);
 		try {
-			Map<String, float[]> res = f.get();
+			Map<String, float[]> res = ft.get();
 			float[] par = res.get("Parameters");
 			float[] fits = res.get("CRLBs");
 			int ksize = kernelList.size();
@@ -150,7 +149,6 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 		}
-		singleService.shutdown();
 	}
 	
 	@Override
@@ -175,6 +173,7 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
 	@Override
 	public void run() {
+		Thread.currentThread().setName("MLE");
 		if (!inputs.isEmpty() && !outputs.isEmpty()) {
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
@@ -243,7 +242,10 @@ public class MLE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		private static final float PSFSigma = 1.3f;
 		private static final int iterations = 200;
 		private static final String ptxFileName = "resources/CudaFit.ptx";
+		//private static final String ptxFileName = "resources/GPUgaussMLEv2_noShared.ptx";
 		private static final float sharedMemPerBlock = 262144;
+		//private static final float sharedMemPerBlock = 15000;
+
 
 		public GPUBlockThread(CUdevice device, List<Kernel> kernelList, int sz, int nKernels, int numParameters, String functionName) {
 			this.sz = sz;

@@ -122,7 +122,7 @@ public class BSplines {
 			w.write("--\n");
 			w.write(Double.toString(findIntersection())+"\n");
 			w.write(Double.toString(zStep)+"\n");
-			w.write(LemmingUtils.doubleArrayToString(zgrid));
+			w.write(LemmingUtils.doubleArrayToString(zgrid)+"\n");
 			w.write(LemmingUtils.doubleArrayToString(bestE)+"\n");
 			w.close();
 		} catch (IOException e) {

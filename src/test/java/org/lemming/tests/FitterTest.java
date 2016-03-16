@@ -3,13 +3,15 @@ package org.lemming.tests;
 import java.util.ArrayList;
 import java.util.List;
 import org.lemming.interfaces.Frame;
+import org.lemming.interfaces.LocalizationInterface;
 import org.lemming.interfaces.Store;
-import org.lemming.modules.CPU_Fitter;
+import org.lemming.pipeline.AbstractModule;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.ImgLib2Frame;
 import org.lemming.pipeline.LinkedStore;
 import org.lemming.pipeline.Localization;
 import org.lemming.plugins.GaussianFitter;
+import org.lemming.plugins.GradientFitter;
 import org.lemming.plugins.MLE_Fitter;
 import org.lemming.plugins.QuadraticFitter;
 import org.lemming.plugins.SymmetricGaussianFitter;
@@ -17,23 +19,26 @@ import org.lemming.tools.LemmingUtils;
 import org.lemming.interfaces.Element;
 
 import ij.ImagePlus;
+import net.imglib2.FinalInterval;
+import net.imglib2.FinalRealInterval;
+import net.imglib2.Interval;
 import net.imglib2.img.Img;
+import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 public class FitterTest<T extends RealType<T> & NativeType<T>> {
 
-	private GaussianFitter<T> mf;
-	FrameElements<T> el;
-	private Store store;
+	private static Store store;
+	private static int halfKernel=6;
+	private static double pixelDepth=138.0;
 
-	public void setUp() {
-		store = new LinkedStore(19);
-		mf = new GaussianFitter<T>(6);
-		//mf = new QuadraticFitter<T>(6);
-		mf.setOutput(store);
+	public FrameElements<T> setUp() {
 		// load input image
-		final String filename = "/media/backup/ownCloud/test.tif";
+		final String filename = "D:/ownCloud/test.tif";
 		ImagePlus img = new ImagePlus(filename);
 		Object ip = img.getStack().getPixels(1);
 		
@@ -82,17 +87,61 @@ public class FitterTest<T extends RealType<T> & NativeType<T>> {
 		locList.add(new Localization(18L, 8850, 10350, 810, 1L));
 		locList.add(new Localization(19L, 10850, 18600, 500, 1L));
 		
-		el = new FrameElements<T>(locList, f);
+		FrameElements<T> el = new FrameElements<T>(locList, f);
 		el.setLast(true);
-		mf.processData(el);
-		while(!store.isEmpty()) 
-			System.out.println(store.poll().toString());
+		
+		store = new LinkedStore(19);
+		return el;
 	}
 
-	public static void main(String[] args) {
-		@SuppressWarnings("rawtypes")
-		FitterTest ft = new FitterTest();
-		ft.setUp();
+	public static <T extends RealType<T> & NativeType<T>> void main(String[] args) {
+		final FitterTest<T> ft = new FitterTest<T>();
+		final FrameElements<T> el = ft.setUp();
+		NearestNeighborInterpolatorFactory< FloatType > factory = new NearestNeighborInterpolatorFactory< FloatType >();
+		for (Element peak:el.getList()){
+			final LocalizationInterface loc = (LocalizationInterface) peak;
+			
+			double x = loc.getX().doubleValue()/pixelDepth;
+			double y = loc.getY().doubleValue()/pixelDepth;
+
+			final FinalRealInterval roi = new FinalRealInterval(new double[] { x - halfKernel, y - halfKernel }, new double[] { Math.ceil(x + halfKernel),
+					Math.ceil(y + halfKernel) });
+		}
+		// Gaussian
+		AbstractModule mf = new GaussianFitter<T>(halfKernel,LemmingUtils.readCSV("D:/ownCloud/set1-calb.csv"));
+		mf.setOutput(store);
+		mf.processData(el);
+		System.out.println("Gaussian\n");
+		while(!store.isEmpty()) 
+			System.out.println(store.poll().toString());
+		// Quadratic 
+		AbstractModule qf = new QuadraticFitter<T>(halfKernel);
+		qf.setOutput(store);
+		qf.processData(el);
+		System.out.println("Quadratic\n");
+		while(!store.isEmpty()) 
+			System.out.println(store.poll().toString());
+		// Symmetric Gaussian 
+		AbstractModule sf = new SymmetricGaussianFitter<T>(halfKernel);
+		sf.setOutput(store);
+		sf.processData(el);
+		System.out.println("SymmetricGaussian\n");
+		while(!store.isEmpty()) 
+			System.out.println(store.poll().toString());
+		// Gradient 
+		AbstractModule gf = new GradientFitter<T>(halfKernel,LemmingUtils.readCSV("D:/ownCloud/set1-calb.csv"));
+		gf.setOutput(store);
+		gf.processData(el);
+		System.out.println("Gradient\n");
+		while(!store.isEmpty()) 
+			System.out.println(store.poll().toString());
+		//MLE
+		AbstractModule mlf = new MLE_Fitter<T>(halfKernel);
+		mlf.setOutput(store);
+		mlf.preview(el);
+		System.out.println("MLE\n");
+		while(!store.isEmpty()) 
+			System.out.println(store.poll().toString());
 		return;
 	}
 
