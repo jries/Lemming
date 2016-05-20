@@ -25,13 +25,13 @@ import org.scijava.plugin.Plugin;
 
 public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Astigmatism";
+	private static final String NAME = "Astigmatism";
 
-	public static final String KEY = "ASTIGFITTER";
+	private static final String KEY = "ASTIGFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "Astigmatism Fitter with Z" + "</html>";
+	private static final String INFO_TEXT = "<html>" + "Astigmatism Fitter with Z" + "</html>";
 
-	private Map<String, Object> params;
+	private final Map<String, Object> params;
 
 	public AstigFitter(final int windowSize, final Map<String,Object> params) {
 		super(windowSize);
@@ -53,8 +53,8 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			pixels.max(imageMax);
 			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
 			
-			GaussianFitterZ<T> gf = new GaussianFitterZ<T>(Views.interval(pixels, roi), 1000, 1000, pixelDepth, params);
-			double[] result = null;
+			GaussianFitterZ<T> gf = new GaussianFitterZ<>(Views.interval(pixels, roi), 1000, 1000, pixelDepth, params);
+			double[] result;
 			result = gf.fit();
 			
 			if (result != null){
@@ -70,11 +70,11 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		return found;
 	}
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class)
 	public static class Factory implements FitterFactory {
 
 		private Map<String, Object> settings;
-		private FitterPanel configPanel = new FitterPanel();
+		private final FitterPanel configPanel = new FitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -94,9 +94,7 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			if (settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null)
-				return true;
-			return false;
+			return settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null;
 		}
 
 		@Override
@@ -121,6 +119,9 @@ public class AstigFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			return size;
 		}
 
+		@Override
+		public boolean hasGPU() {
+			return false;
+		}
 	}
-
 }

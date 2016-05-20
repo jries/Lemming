@@ -1,6 +1,7 @@
 package org.lemming.interfaces;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -9,26 +10,31 @@ import java.util.Map;
  * @author Ronny Sczech
  */
 
-public interface ModuleInterface{
+public interface ModuleInterface extends Runnable{
 	
-	public void cancel();
+	void cancel();
 	
-	public Object getInput(Integer key);
+	Object getInput(Integer key);
 	
-	public Map<Integer, Element> getInputs();
+	Map<Integer, Element> getInputs();
 	
-	public Object getOutput(Integer key);
+	Object getOutput(Integer key);
 	
-	public Map<Integer, Element> getOutputs();
+	Map<Integer, Element> getOutputs();
 	
-	public void setInput(Integer key, Store store);
+	void setInput(Integer key, Store store);
 	
-	public void setInputs(Map<Integer, Store> storeMap);
+	void setInputs(Map<Integer, Store> storeMap);
 	
-	public void setOutput(Integer key, Store store);
+	void setOutput(Integer key, Store store);
 	
-	public void setOutputs(Map<Integer, Store> storeMap);
+	void setOutputs(Map<Integer, Store> storeMap);
 	
-	public boolean check();
+	void setOutput(Store s);
+
+	void setInput(Store s);
 	
+	boolean check();
+
+	void setService(ExecutorService service);
 }

@@ -8,7 +8,7 @@ import java.io.Serializable;
  * @author Ronny Sczech
  *
  */
-public class LogHistogramBin implements Cloneable, Serializable {
+class LogHistogramBin implements Cloneable, Serializable {
 
 	/** For serialization. */
     private static final long serialVersionUID = 7614685080015589931L;

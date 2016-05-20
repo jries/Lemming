@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import ij.IJ;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import org.lemming.factories.FitterFactory;
 import org.lemming.gui.FitterPanel;
@@ -14,11 +15,10 @@ import org.lemming.math.Gaussian2DFitter;
 import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
 import org.lemming.pipeline.LocalizationPrecision3D;
-import org.lemming.tools.LemmingUtils;
 import org.lemming.pipeline.Localization;
+import org.lemming.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
 
-import ij.IJ;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -26,12 +26,11 @@ import net.imglib2.view.Views;
 
 public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Gaussian";
-	public static final String KEY = "GAUSSIANFITTER";
-	public static final String INFO_TEXT = "<html>" + "Gaussian Fitter Plugin (with sx and sy)" + "</html>";
+	private static final String NAME = "Gaussian";
+	private static final String KEY = "GAUSSIANFITTER";
+	private static final String INFO_TEXT = "<html>" + "Gaussian Fitter Plugin (with sx and sy)" + "</html>";
 
-	private Map<String, Object> params;
-
+	private final Map<String, Object> params;
 
 	public GaussianFitter(int windowSize, final Map<String,Object> params) {
 		super(windowSize);
@@ -52,8 +51,8 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			pixels.min(imageMin);
 			pixels.max(imageMax);
 			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			Gaussian2DFitter<T> gf = new Gaussian2DFitter<T>(Views.interval(pixels, roi), 200, 200);
-			double[] result = null;
+			Gaussian2DFitter<T> gf = new Gaussian2DFitter<>(Views.interval(pixels, roi), 200, 200);
+			double[] result;
 			result = gf.fit();
 			if (result != null) {
 				double SxSy = result[2] * result[2] - result[3] * result[3];
@@ -61,7 +60,7 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 				result[1] *= pixelDepth;
 				result[6] *= pixelDepth;
 				result[7] *= pixelDepth;
-				found.add(new LocalizationPrecision3D( result[0], result[1], calculateZ(SxSy) 
+				found.add(new LocalizationPrecision3D( result[0], result[1], calculateZ(SxSy)
 					,result[6], result[7], result[8], result[4], loc.getFrame()));
 			}
 		}
@@ -104,11 +103,11 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 	}
 
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class)
 	public static class Factory implements FitterFactory {
 
 		private Map<String, Object> settings;
-		private FitterPanel configPanel = new FitterPanel();
+		private final ConfigurationPanel configPanel = new FitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -128,9 +127,7 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
 			this.settings = settings;
-			if (settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null)
-				return true;
-			return false;
+			return settings.get(FitterPanel.KEY_CALIBRATION_FILENAME) != null;
 		}
 
 		@Override
@@ -155,6 +152,10 @@ public class GaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		public int getHalfKernel() {
 			return size;
 		}
-
+		
+		@Override
+		public boolean hasGPU() {
+			return false;
+		}
 	}
 }

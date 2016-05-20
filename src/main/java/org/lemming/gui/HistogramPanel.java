@@ -32,16 +32,15 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
 import java.awt.GridBagConstraints;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.awt.event.FocusEvent;
@@ -53,73 +52,41 @@ import javax.swing.DefaultComboBoxModel;
 public class HistogramPanel extends JPanel
 {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6491446979855209762L;
-
-	static final Font FONT = new Font( "Arial", Font.PLAIN, 11 );
-
-	static final Font SMALL_FONT = FONT.deriveFont( 10f );
-
+	private static final Font FONT = new Font( "Arial", Font.PLAIN, 11 );
+	private static final Font SMALL_FONT = FONT.deriveFont( 10f );
 	private static final Color annotationColor = new java.awt.Color( 252, 117, 0 );
-
 	private static final String DATA_SERIES_NAME = "Data";
-
 	private static final int maxCount = 1000;
-	
 	private static final int maxBins = 80;
-
 	private final ChangeEvent CHANGE_EVENT = new ChangeEvent( this );
-
 	JComboBox<String> jComboBoxFeature;
-
 	private ChartPanel chartPanel;
-
 	private LogHistogramDataset dataset;
-
-	private JFreeChart chart;
-
 	private XYPlot plot;
-
 	private IntervalMarker intervalMarker;
-
 	private XYTextSimpleAnnotation annotationUpper;
-	
 	private XYTextSimpleAnnotation annotationLower;
-	
 	private String key;
-
 	private final List< String > allKeys;
-
 	private final ArrayList< ChangeListener > listeners = new ArrayList<>();
-
 	private double threshold;
-
 	private double upperThreshold;
-	
 	private boolean upperSelected;
-
 	protected double offset;
-
 	protected boolean lowerDragging;
-
 	protected boolean upperDragging;
-
-	private ExtendableTable table;
-
-	private Random rnd;
-	
+	private final ExtendableTable table;
+	private final Random rnd;
 
 	/**
 	 * CONSTRUCTOR
 	 */
-	public HistogramPanel(ExtendableTable table) {
+	HistogramPanel(ExtendableTable table) {
 		super();
 		allKeys = new ArrayList<>();
 		this.table = table;
-		for (String k : table.getNames().keySet())
-			allKeys.add(k);
+		allKeys.addAll(table.getNames().keySet());
 		this.rnd = new Random(System.currentTimeMillis());
 		initGUI();
 		jComboBoxFeature.setSelectedIndex( 0 );
@@ -188,11 +155,6 @@ public class HistogramPanel extends JPanel
 		return listeners.remove( listener );
 	}
 
-	public Collection< ChangeListener > getChangeListeners()
-	{
-		return listeners;
-	}
-
 	/**
 	 * Refreshes the histogram content. Call this method when the values in the
 	 * {@link #valuesMap} changed to update histogram display.
@@ -254,7 +216,7 @@ public class HistogramPanel extends JPanel
 		if (rowD != null)							// set first and last to get the whole range
 			histogram.add(rowD.doubleValue());		// in sequential data
 		
-		if ( null == col || 0 == col.size() )
+		if ( 0 == col.size() )
 		{
 			dataset = new LogHistogramDataset();
 			setThreshold(Double.NaN);
@@ -305,13 +267,9 @@ public class HistogramPanel extends JPanel
 			jComboBoxFeature.setPreferredSize(new Dimension(80, 27));
 			jComboBoxFeature.setModel( jComboBoxFeatureModel );
 			jComboBoxFeature.setFont( FONT );
-			jComboBoxFeature.addActionListener( new ActionListener(){
+			jComboBoxFeature.addActionListener(new ActionListener(){
 				@Override
-				public void actionPerformed( final ActionEvent e1 )
-				{
-					comboBoxSelectionChanged();
-				}
-			} );
+				public void actionPerformed(ActionEvent e){comboBoxSelectionChanged();}});
 
 			createHistogramPlot();
 			chartPanel.setPreferredSize( new Dimension( 0, 0 ) );
@@ -331,7 +289,7 @@ public class HistogramPanel extends JPanel
 	private void createHistogramPlot()
 	{
 		dataset = new LogHistogramDataset();
-		chart = ChartFactory.createHistogram( null, null, null, dataset, PlotOrientation.VERTICAL, false, false, false );
+		JFreeChart chart = ChartFactory.createHistogram(null, null, null, dataset, PlotOrientation.VERTICAL, false, false, false);
 
 		plot = chart.getXYPlot();
 		final XYBarRenderer renderer = ( XYBarRenderer ) plot.getRenderer();
@@ -357,7 +315,7 @@ public class HistogramPanel extends JPanel
 		intervalMarker = new IntervalMarker( 0, 0, new Color( 0.3f, 0.5f, 0.8f ), new BasicStroke(), new Color( 0, 0, 0.5f ), new BasicStroke( 1.5f ), 0.5f );
 		plot.addDomainMarker( intervalMarker );
 
-		chartPanel = new ChartPanel( chart );
+		chartPanel = new ChartPanel(chart);
 		final MouseListener[] mls = chartPanel.getMouseListeners();
 		for ( final MouseListener ml : mls )
 			chartPanel.removeMouseListener( ml );
@@ -511,7 +469,7 @@ public class HistogramPanel extends JPanel
 		annotationLower.setLocation( x, y );
 	}
 
-	public void resetAxes()
+	private void resetAxes()
 	{
 		plot.getRangeAxis().setLowerMargin( 0 );
 		plot.getRangeAxis().setUpperMargin( 0 );

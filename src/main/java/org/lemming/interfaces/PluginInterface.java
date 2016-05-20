@@ -17,7 +17,7 @@ public interface PluginInterface extends SciJavaPlugin {
 	 *
 	 * @return a html string.
 	 */
-	public String getInfoText();
+	String getInfoText();
 
 
 	/**
@@ -25,12 +25,12 @@ public interface PluginInterface extends SciJavaPlugin {
 	 *
 	 * @return the action key, as a string.
 	 */
-	public String getKey();
+	String getKey();
 
 	/**
 	 * Returns the human-compliant name of this module.
 	 *
 	 * @return the name, as a String.
 	 */
-	public String getName();
+	String getName();
 }

@@ -28,7 +28,7 @@ import javolution.util.FastTable;
  */
 public class TableLoader {
 
-	private File file;
+	private final File file;
 	private ExtendableTable table;
 
 	public TableLoader(File file) {

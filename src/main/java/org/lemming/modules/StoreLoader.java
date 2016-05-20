@@ -1,6 +1,5 @@
 package org.lemming.modules;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
@@ -17,6 +16,7 @@ import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.SingleRunModule;
 
 import ij.IJ;
+import org.lemming.tools.CharBufferedReader;
 
 /**
  * loading localizations onto a queue
@@ -26,13 +26,13 @@ import ij.IJ;
  */
 public class StoreLoader extends SingleRunModule {
 	
-	private File file;
-	private BufferedReader br;
-	private String delimiter;
+	private final File file;
+	private CharBufferedReader br;
+	private final String delimiter;
 	private String sCurrentLine;
 	private Locale curLocale;
-	private Map<String,Object> metaData = new HashMap<>();
-	private Set<String> header = new LinkedHashSet<>();
+	private final Map<String,Object> metaData = new HashMap<>();
+	private final Set<String> header = new LinkedHashSet<>();
 	private String[] nameArray = null;
 
 	public StoreLoader(File f, String d){
@@ -50,7 +50,7 @@ public class StoreLoader extends SingleRunModule {
 		Locale.setDefault(usLocale);
 		
 		try {
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));	
+			br = new CharBufferedReader(new InputStreamReader(new FileInputStream(file)));
 			sCurrentLine = br.readLine();	
 			if (sCurrentLine==null) throw new NullPointerException("first line is null!");
 			while (sCurrentLine.startsWith("#")){

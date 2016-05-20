@@ -23,9 +23,9 @@ import javolution.util.function.Predicate;
  */
 public class ExtendableTable {
 	
-	private Map<String, List<Number>> table;
-	public Map<String, Predicate<Number>> filtersCollection;
-	private Map<String, String> names;
+	private final Map<String, List<Number>> table;
+	public final Map<String, Predicate<Number>> filtersCollection;
+	private final Map<String, String> names;
 	
 	/**
 	 * 
@@ -55,7 +55,7 @@ public class ExtendableTable {
 	 * @param member - member
 	 */
 	public void addNewMember(String member) {
-		table.put(member,new FastTable<Number>());
+		table.put(member, new FastTable<Number>());
 		names.put(member,member);
 	}
 	
@@ -72,7 +72,7 @@ public class ExtendableTable {
 		return table.keySet();
 	}
 	
-	public Map<String, List<Number>> getTable(){
+	private Map<String, List<Number>> getTable(){
 		return table;
 	}
 	
@@ -81,19 +81,16 @@ public class ExtendableTable {
 		if (filtersCollection.isEmpty()) return this;
 		
 		final ExtendableTable filteredTable = new ExtendableTable(); //new instance
-		for (String col: this.columnNames())
+		for (String col: columnNames())
 			filteredTable.addNewMember(col);
 		
 		Map<String, Number> row;
 		for (int index = 0 ; index < getNumberOfRows(); index++){
 			row = getRow(index);
 			boolean filtered = true;
-			for (String key : filtersCollection.keySet()){
+			for (String key : filtersCollection.keySet()) {
 				Number value = row.get(key);
-				if (value!=null)
-					filtered = filtered && (filtered == filtersCollection.get(key).test(value));
-				else
-					filtered = false;
+				filtered = value != null && filtered && (filtered == filtersCollection.get(key).test(value));
 			}
 			if(filtered)
 				filteredTable.addRow(row);
@@ -105,10 +102,9 @@ public class ExtendableTable {
 		Predicate<Number> p = new Predicate<Number>(){
 
 			@Override
-			public boolean test(Number t) {				
+			public boolean test(Number t) { 
 				return (t.doubleValue()>=min) && (t.doubleValue()<=max);
 			}
-			
 		};
 		filtersCollection.put(col, p);
 	}
@@ -117,10 +113,9 @@ public class ExtendableTable {
 		Predicate<Number> p = new Predicate<Number>(){
 
 			@Override
-			public boolean test(Number t) {	
+			public boolean test(Number t) {  
 				return t.equals(o);
 			}
-			
 		};
 		filtersCollection.put(col, p);
 	}
@@ -159,6 +154,7 @@ public class ExtendableTable {
 	
 	/**
 	 * @param col - colummn
+	 * @param row - row
 	 * @return column
 	 */
 	public Object getData(String col, int row){
@@ -174,7 +170,7 @@ public class ExtendableTable {
 	 * @param member - member 
 	 * @param o - object
 	 */
-	public void add(String member, Number o){
+	private void add(String member, Number o){
 		List<Number> t = table.get(member);
 		if (t!=null){
 			t.add(o);
@@ -234,7 +230,7 @@ public class ExtendableTable {
 
 			@Override
 			public synchronized Element poll() {
-				ElementMap em = null;
+				ElementMap em;
 				if (!isEmpty())	
 					em = new ElementMap(getRow(lastRow++).entrySet());
 				else{

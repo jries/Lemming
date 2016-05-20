@@ -18,17 +18,17 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
- * Calculating centroids on a {@link #RandomAccessibleInterval}
+ * Calculating centroids on a
  * 
  * @author Ronny Sczech
  *
- * @param <T>
+ * @param <T> data type
  */
 public class CentroidFitterRA<T extends RealType<T>>  {
 	
-	private IntervalView<T> op;
-	private double thresh;
-	private RealPoint center;
+	private final IntervalView<T> op;
+	private final double thresh;
+	private final RealPoint center;
 
 	public CentroidFitterRA(IntervalView<T> op_, double threshold_) {
 		op = op_;
@@ -92,7 +92,7 @@ public class CentroidFitterRA<T extends RealType<T>>  {
 		for (int i = 0; i < n; i++){
 			if (sum[i] == 0)
 				return null;
-			r[i] = (r[i] / sum[i]) + center.getDoublePosition(i);
+			r[i] = (r[i] / sum[i]) + center.getDoublePosition(i) + 0.5;
 		}
 
 		double[] dev = new double[n];
@@ -210,7 +210,7 @@ public class CentroidFitterRA<T extends RealType<T>>  {
 			curImage.min(imageMin);
 			curImage.max(imageMax);
 			final Interval roi = Fitter.cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			final CentroidFitterRA<T> cf = new CentroidFitterRA<T>(Views.interval(curImage, roi),0);
+			final CentroidFitterRA<T> cf = new CentroidFitterRA<>(Views.interval(curImage, roi), 0);
             final double[] res = cf.fit();
          
             found.add(new Localization(res[0]*pixelSize, res[1]*pixelSize, res[4], 1L));

@@ -1,10 +1,5 @@
 package org.lemming.math;
 
-import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.IntervalView;
-
-import java.util.Arrays;
-
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.optim.OptimizationData;
@@ -17,26 +12,25 @@ import org.apache.commons.math3.util.FastMath;
  * @author Ronny Sczech
  *
  */
-public class EllipticalGaussian implements OptimizationData {
-	private int[] xgrid, ygrid;
-	double[] params;
-	double[] initialGuess;
+class EllipticalGaussian implements OptimizationData {
+	private final int[] xgrid;
+	private final int[] ygrid;
 
-	private static int INDEX_X0 = 0;
-	private static int INDEX_Y0 = 1;
-	private static int INDEX_SX = 2;
-	private static int INDEX_SY = 3;
-	private static int INDEX_I0 = 4;
-	private static int INDEX_Bg = 5;
-	private static int PARAM_LENGTH = 6;
-	private static double sqrt2 = Math.sqrt(2);
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_SX = 2;
+	private static final int INDEX_SY = 3;
+	private static final int INDEX_I0 = 4;
+	private static final int INDEX_Bg = 5;
+	private static final int PARAM_LENGTH = 6;
+	private static final double sqrt2 = Math.sqrt(2);
 	
 	public EllipticalGaussian(int[] xgrid, int[] ygrid){
 		this.xgrid = xgrid;
 		this.ygrid = ygrid;
 	}
 	
-    public static double getValue(double[] params, double x, double y) {
+    private static double getValue(double[] params, double x, double y) {
 
         return params[INDEX_I0]*Ex(x,params)*Ey(y,params)+params[INDEX_Bg];
     }
@@ -46,7 +40,7 @@ public class EllipticalGaussian implements OptimizationData {
         return new MultivariateVectorFunction() {
             @Override
             public double[] value(double[] params_) throws IllegalArgumentException {
-                double[] retVal = new double[xgrid.length];
+            	final double[] retVal = new double[xgrid.length];
                 for(int i = 0; i < xgrid.length; i++) {
                     retVal[i] = getValue(params_, xgrid[i], ygrid[i]);
                 }
@@ -60,7 +54,7 @@ public class EllipticalGaussian implements OptimizationData {
             @Override
             public double[][] value(double[] point) throws IllegalArgumentException {
 
-            	 double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
+            	final double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
             	 
         	     for (int i = 0; i < xgrid.length; ++i) {
         	    	 final double ex = Ex(xgrid[i], point);
@@ -77,23 +71,6 @@ public class EllipticalGaussian implements OptimizationData {
             }
         };
     }
- 
-    public <T extends RealType<T>> double[] getInitialGuess(IntervalView<T> interval) {
-		initialGuess = new double[PARAM_LENGTH];
-	    Arrays.fill(initialGuess, 0);
-   
-	    CentroidFitterRA<T> cf = new CentroidFitterRA<T>(interval, 0);
-	    double[] centroid = cf.fit();
-
-		initialGuess[INDEX_X0] = centroid[INDEX_X0];
-		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];    
-	    initialGuess[INDEX_SX] = centroid[INDEX_SX];
-	    initialGuess[INDEX_SY] = centroid[INDEX_SY];
-	    initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
-	    initialGuess[INDEX_Bg] = 0;
-		
-		return initialGuess;
-	}
 
 	///////////////////////////////////////////////////////////////
 	// Math functions

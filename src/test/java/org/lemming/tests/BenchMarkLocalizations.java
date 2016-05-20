@@ -15,9 +15,9 @@ import org.lemming.tools.FloatingDecimal;
 
 import ij.IJ;
 
-public class BenchMarkLocalizations {
+class BenchMarkLocalizations {
 	
-	public static ExtendableTable readCSV(File file, char delimiter) {
+	private static ExtendableTable readCSV(File file, char delimiter) {
 		long start = System.currentTimeMillis();
 		final Locale curLocale = Locale.getDefault();
 		final Locale usLocale = new Locale("en", "US"); // setting us locale

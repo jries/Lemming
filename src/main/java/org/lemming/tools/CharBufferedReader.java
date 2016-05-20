@@ -28,8 +28,8 @@ public class CharBufferedReader extends Reader {
     /** The skipLF flag when the mark was set */
     private boolean markedSkipLF = false;
 
-    private static int defaultCharBufferSize = 8192;
-    private static int defaultExpectedLineLength = 80;
+    private static final int defaultCharBufferSize = 8192;
+    private static final int defaultExpectedLineLength = 80;
 
     /**
      * Creates a buffering character-input stream that uses an input buffer of
@@ -40,7 +40,7 @@ public class CharBufferedReader extends Reader {
      *
      * @exception  IllegalArgumentException  If sz is <= 0
      */
-    public CharBufferedReader(Reader in, int sz) {
+    private CharBufferedReader(Reader in, int sz) {
         super(in);
         if (sz <= 0)
             throw new IllegalArgumentException("Buffer size <= 0");
@@ -252,7 +252,7 @@ public class CharBufferedReader extends Reader {
      *
      * @exception  IOException  If an I/O error occurs
      */
-    String readLine(boolean ignoreLF) throws IOException {
+    private String readLine(boolean ignoreLF) throws IOException {
         StringBuffer s = null;
         int startChar;
 
@@ -279,12 +279,11 @@ public class CharBufferedReader extends Reader {
                 skipLF = false;
                 omitLF = false;
 
-            charLoop:
                 for (i = nextChar; i < nChars; i++) {
                     c = cb[i];
                     if ((c == '\n') || (c == '\r')) {
                         eol = true;
-                        break charLoop;
+                        break;
                     }
                 }
 
@@ -354,13 +353,12 @@ public class CharBufferedReader extends Reader {
                 if (skipLF && (cb[nextChar] == '\n'))
                     nextChar++;
                 skipLF = false;
-            	
-            charLoop:
+
                 for (i = nextChar; i < nChars; i++) {
                     c = cb[i];
                     if ((c == '\n') || (c == '\r')) {
                         eol = true;
-                        break charLoop;
+                        break;
                     }
                 }
 
@@ -371,7 +369,7 @@ public class CharBufferedReader extends Reader {
                 
             	
                 if (eol) {
-                    char[] linebuf = null;
+                    char[] linebuf;
                     if (s == null) {
                     	linebuf = new char[linebufLength];// (cb, startChar, i - startChar);
                     	System.arraycopy(cb, startChar, linebuf, 0, linebufLength);
@@ -484,16 +482,6 @@ public class CharBufferedReader extends Reader {
      * Marks the present position in the stream.  Subsequent calls to reset()
      * will attempt to reposition the stream to this point.
      *
-     * @param readAheadLimit   Limit on the number of characters that may be
-     *                         read while still preserving the mark. An attempt
-     *                         to reset the stream after reading characters
-     *                         up to this limit or beyond may fail.
-     *                         A limit value larger than the size of the input
-     *                         buffer will cause a new buffer to be allocated
-     *                         whose size is no smaller than limit.
-     *                         Therefore large values should be used with care.
-     *
-     * @exception  IllegalArgumentException  If readAheadLimit is < 0
      * @exception  IOException  If an I/O error occurs
      */
     public void mark(int readAheadLimit_) throws IOException {

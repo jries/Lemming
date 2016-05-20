@@ -8,9 +8,6 @@ public class RendererProvider extends AbstractProvider<RendererFactory> {
 		super(RendererFactory.class);
 	}
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		final RendererProvider provider = new RendererProvider();
 		System.out.println( provider.echo() );

@@ -1,7 +1,6 @@
 package org.lemming.math;
 
 import java.awt.Rectangle;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.lemming.tools.LemmingUtils;
@@ -24,23 +23,24 @@ import net.imglib2.view.Views;
 public class Calibrator {	
 	/////////////////////////////
 	// Results
-	private double[] zgrid;									// z positions of the slices in the stack
-	private volatile double[] Wx, Wy; 
-	private double[] E;
+	private final double[] zgrid;									// z positions of the slices in the stack
+	private final double[] Wx;
+	private final double[] Wy;
+	private final double[] E;
 	/////////////////////////////
     // Parameters from ImageStack
-	private int nSlice;
+	private final int nSlice;
 
 	/////////////////////////////
 	// Input from user
-    private int zstep;
+    private final int zstep;
     private int rangeStart, rangeEnd;					// Both ends of the restricted z range and length of the restriction
-    private volatile Rectangle roi;
+    private final Rectangle roi;
     
-	private ImageStack is;
-	private BSplines b;
+	private final ImageStack is;
+	private final BSplines b;
 	
-	public Calibrator(ImagePlus im, List<Double> cameraSettings, int zstep, Roi r){
+	public Calibrator(ImagePlus im, int zstep, Roi r){
 		this.is = im.getStack();
 		this.zstep = zstep;
     	this.nSlice = im.getNSlices(); 
@@ -71,13 +71,6 @@ public class Calibrator {
 					for (int i = ai.getAndIncrement(); i < nSlice; i = ai.getAndIncrement()) {
 						final ImageProcessor ip = is.getProcessor(i + 1);
 						final Img<T> theImage = LemmingUtils.wrap(ip.getPixels(), new long[]{is.getWidth(), is.getHeight()});
-						/*final Cursor<T> it = theImage.cursor();
-						while(it.hasNext()){
-							it.fwd();
-							final double adu = Math.max((it.get().getRealDouble()-offset), 0);
-							final double im2phot = adu*conversion/em_gain;
-							it.get().setReal(im2phot);
-						}*/
 						final IntervalView<T> view = Views.interval(theImage, new long[]{roi.x,roi.y},  new long[]{roi.x+roi.width, roi.y+roi.height});
 						final Gaussian2DFitter<T> gf = new Gaussian2DFitter<>(view, 200, 200);
 						final double[] results = gf.fit();
@@ -123,13 +116,13 @@ public class Calibrator {
 
 			@Override
 			public void run() {
-				b.init(rangedZ, rangedWx, rangedWy, rangedE);
-				
-				// Display result
-				b.plotWxWyFitCurves();
-				//b.plot(rangedE, "ellipticity");
+	            b.init(rangedZ, rangedWx, rangedWy, rangedE);
+	
+	            // Display result
+	            //b.plotWxWyFitCurves();
+	            b.plot(rangedE, "ellipticity");
 			}
-		});
+        });
 		t.start();
 		try {
 			t.join();

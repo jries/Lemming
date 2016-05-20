@@ -23,11 +23,11 @@ import org.scijava.plugin.Plugin;
 
 public class SymmetricGaussianFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Symmetric Gaussian";
+	private static final String NAME = "Symmetric Gaussian";
 
-	public static final String KEY = "SYMMETRICFITTER";
+	private static final String KEY = "SYMMETRICFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "2D symmetric Gaussian" + "</html>";
+	private static final String INFO_TEXT = "<html>" + "2D symmetric Gaussian" + "</html>";
 
 
 	public SymmetricGaussianFitter(final int halfkernel) {
@@ -48,8 +48,8 @@ public class SymmetricGaussianFitter<T extends RealType<T>> extends CPU_Fitter<T
 			pixels.min(imageMin);
 			pixels.max(imageMax);
 			Interval roi = cropInterval(imageMin,imageMax,new long[]{x - halfKernel,y - halfKernel},new long[]{x + halfKernel,y + halfKernel});
-			Symmetric2DFitter<T> gf = new Symmetric2DFitter<T>(Views.interval(pixels, roi), 200, 200);
-			double[] result = null;
+			Symmetric2DFitter<T> gf = new Symmetric2DFitter<>(Views.interval(pixels, roi), 200, 200);
+			double[] result;
 			result = gf.fit();
 			
 			if (result != null){
@@ -61,11 +61,11 @@ public class SymmetricGaussianFitter<T extends RealType<T>> extends CPU_Fitter<T
 		return found;
 	}
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class )
 	public static class Factory implements FitterFactory {
 
 		private Map<String, Object> settings;
-		private FitterPanel configPanel = new FitterPanel();
+		private final FitterPanel configPanel = new FitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -104,7 +104,11 @@ public class SymmetricGaussianFitter<T extends RealType<T>> extends CPU_Fitter<T
 		public int getHalfKernel() {
 			return size;
 		}
-
+		
+		@Override
+		public boolean hasGPU() {
+			return false;
+		}
 	}
 
 }

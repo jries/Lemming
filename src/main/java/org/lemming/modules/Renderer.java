@@ -15,11 +15,11 @@ import org.lemming.interfaces.Element;
  */
 public abstract class Renderer extends MultiRunModule {
 	
-	protected ImagePlus ip;
-	final protected String title = "Renderer Window"; // title of the image
+	protected final ImagePlus ip;
 
-	public Renderer() {
+	protected Renderer() {
 		ip = new ImagePlus();
+		String title = "Renderer Window";
 		ip.setTitle(title);
 	}
 	
@@ -27,11 +27,6 @@ public abstract class Renderer extends MultiRunModule {
 		return ip;
 	}
 	
-	public void resetInputStore(){
-		inputs.clear();
-		iterator=null;
-	}
-
 	@Override
 	public boolean check() {
 		return inputs.size()==1;
@@ -41,7 +36,7 @@ public abstract class Renderer extends MultiRunModule {
 	public void afterRun(){
 		double max = ip.getStatistics().histMax;
 		ip.getProcessor().setMinAndMax(0, max);
-		ip.updateAndRepaintWindow();;
+		ip.updateAndRepaintWindow();
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
 	}
@@ -55,8 +50,7 @@ public abstract class Renderer extends MultiRunModule {
 	}
 	
 	public void preview(List<Element> previewList) {
-		for (Element el : previewList)
-			processData(el);
+		for(Element l:previewList) newOutput(l);
 		double max = ip.getStatistics().histMax;
 		ip.getProcessor().setMinAndMax(0, max);
 		ip.updateAndRepaintWindow();

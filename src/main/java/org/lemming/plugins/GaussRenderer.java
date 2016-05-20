@@ -20,26 +20,26 @@ import org.scijava.plugin.Plugin;
 
 public class GaussRenderer extends Renderer {
 	
-	public static final String NAME = "GaussRenderer";
-	public static final String KEY = "GAUSSRENDERER";
-	public static final String INFO_TEXT = "<html>"
+	private static final String NAME = "GaussRenderer";
+	private static final String KEY = "GAUSSRENDERER";
+	private static final String INFO_TEXT = "<html>"
 											+ "Gauss Renderer Plugin"
 											+ "</html>";
-	private double xmin;
-	private double xmax;
-	private double ymin;
-	private double ymax;
-	private double xwidth;
-	private double ywidth;
+	private final double xmin;
+	private final double xmax;
+	private final double ymin;
+	private final double ymax;
+	private final double xwidth;
+	private final double ywidth;
 	private volatile float[] pixels;
 	private double[] template;
-	private static double sqrt2 = FastMath.sqrt(2);
-	private static int sizeGauss = 600;
-	private static double roiks = 2.5;
-	private static int maxKernel = 30;
-	private double sigmaTemplate = sizeGauss/(8*roiks);
-	private int xbins;
-	private int ybins;
+	private static final double sqrt2 = FastMath.sqrt(2);
+	private static final int sizeGauss = 600;
+	private static final double roiks = 2.5;
+	private static final int maxKernel = 30;
+	private final double sigmaTemplate = sizeGauss/(8*roiks);
+	private final int xbins;
+	private final int ybins;
 
 	
 	public GaussRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax) {
@@ -148,8 +148,8 @@ public class GaussRenderer extends Renderer {
 	private double[] createGaussTemplate(){
 		final int w = 2 * sizeGauss + 1;
 		final double[] T = new double[w*w];
-		int index = 0;
-		double value = 0;
+		int index;
+		double value;
 		final double factor = 0.5/Math.pow(sigmaTemplate, 2);
 		for (int yg = -sizeGauss ; yg<=sizeGauss; yg++)
 			for(int xg = -sizeGauss; xg <= sizeGauss; xg++){
@@ -166,11 +166,11 @@ public class GaussRenderer extends Renderer {
 	}
 
 	
-	@Plugin( type = RendererFactory.class, visible = true )
+	@Plugin( type = RendererFactory.class )
 	public static class Factory implements RendererFactory{
 
 		private Map<String, Object> settings;
-		private GaussRendererPanel configPanel = new GaussRendererPanel();
+		private final GaussRendererPanel configPanel = new GaussRendererPanel();
 
 		@Override
 		public String getInfoText() {

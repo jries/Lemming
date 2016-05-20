@@ -18,16 +18,13 @@ import javax.swing.SwingConstants;
 
 public class HistogramRendererPanel extends ConfigurationPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3031663211936690561L;
-	private JTextField textXBins;
-	private JTextField textYBins;
-	private JLabel lblX;
-	private JLabel lblY;
-	private JLabel labelX2;
-	private JLabel labelY2;
+	private final JTextField textXBins;
+	private final JTextField textYBins;
+	private final JLabel lblX;
+	private final JLabel lblY;
+	private final JLabel labelX2;
+	private final JLabel labelY2;
 	private double zmin,zmax;
 
 	public HistogramRendererPanel() {
@@ -44,7 +41,7 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		textXBins = new JTextField();
 		textXBins.setHorizontalAlignment(SwingConstants.TRAILING);
 		textXBins.setText("500");
-		textXBins.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+		textXBins.addKeyListener(new WaitForKeyListener(500, new Runnable() {
 			@Override
 			public void run() {
 				fireChanged();
@@ -54,7 +51,7 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 		textYBins = new JTextField();
 		textYBins.setHorizontalAlignment(SwingConstants.TRAILING);
 		textYBins.setText("500");
-		textYBins.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+		textYBins.addKeyListener(new WaitForKeyListener(500, new Runnable() {
 			@Override
 			public void run() {
 				fireChanged();
@@ -118,10 +115,10 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		lblX.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmin)));
-		lblY.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymin)));
-		labelX2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmax)));
-		labelY2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymax)));
+		lblX.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_xmin)));
+		lblY.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_ymin)));
+		labelX2.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_xmax)));
+		labelY2.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_ymax)));
 		textXBins.setText(String.valueOf(settings.get(RendererFactory.KEY_xBins)));
 		textYBins.setText(String.valueOf(settings.get(RendererFactory.KEY_yBins)));
 		zmin = (Double) settings.get(RendererFactory.KEY_zmin);
@@ -144,22 +141,19 @@ public class HistogramRendererPanel extends ConfigurationPanel {
 	
 	public static Map<String, Object> getInitialSettings(){
 		final Map<String, Object> settings = new HashMap<>(8);
-		settings.put(RendererFactory.KEY_xmin, new Double(0));
-		settings.put(RendererFactory.KEY_ymin, new Double(0));
-		settings.put(RendererFactory.KEY_xmax, new Double(100));
-		settings.put(RendererFactory.KEY_ymax, new Double(100));
-		settings.put(RendererFactory.KEY_xBins,new Integer(500));
-		settings.put(RendererFactory.KEY_yBins,new Integer(500));
-		settings.put(RendererFactory.KEY_zmin,new Double(0));
-		settings.put(RendererFactory.KEY_zmax,new Double(255));
+		settings.put(RendererFactory.KEY_xmin, 0d);
+		settings.put(RendererFactory.KEY_ymin, 0d);
+		settings.put(RendererFactory.KEY_xmax, 100d);
+		settings.put(RendererFactory.KEY_ymax, 100d);
+		settings.put(RendererFactory.KEY_xBins, 500);
+		settings.put(RendererFactory.KEY_yBins, 500);
+		settings.put(RendererFactory.KEY_zmin, 0d);
+		settings.put(RendererFactory.KEY_zmax, 255d);
 		return settings;
 	}
-	/**
-	 * Display this JPanel inside a new JFrame.
-	 */
+
 	public static void main( final String[] args )
 	{
-		
 		// Create GUI
 		final HistogramRendererPanel tp = new HistogramRendererPanel( );
 		final JFrame frame = new JFrame();

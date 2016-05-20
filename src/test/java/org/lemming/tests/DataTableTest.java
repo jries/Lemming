@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +21,10 @@ public class DataTableTest {
 	private Map<Integer, Store> map;
 
 	@Before
-	public void setUp() throws Exception {
-		pipe = new Manager();
+	public void setUp() {
+		pipe = new Manager(Executors.newCachedThreadPool());
 		
-		ReadLocalizationPrecision3D reader = new ReadLocalizationPrecision3D(new File("/home/ronny/Bilder/fitted.csv"),",");
+		ReadLocalizationPrecision3D reader = new ReadLocalizationPrecision3D(new File(System.getProperty("user.home")+"/ownCloud/Tubulin1.csv"),",");
 		pipe.add(reader);
 		
 		DataTable workspace = new DataTable();

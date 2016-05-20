@@ -23,7 +23,7 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 
 	protected static int size;
 
-	public Fitter(int halfkernel) {
+	protected Fitter(int halfkernel) {
 		size = halfkernel;
 	}
 	
@@ -56,5 +56,5 @@ public abstract class Fitter<T extends RealType<T>> extends AbstractModule {
 		return new FinalInterval(new long[] { x1, y1 }, new long[]{ x2, y2 });
 	}
 
-	public abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) ;
+	protected abstract List<Element> fit(List<Element> sliceLocs, Frame<T> frame, long windowSize) ;
 }

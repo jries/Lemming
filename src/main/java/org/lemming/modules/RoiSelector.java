@@ -17,7 +17,7 @@ import org.lemming.pipeline.SingleRunModule;
 @SuppressWarnings("deprecation")
 public class RoiSelector<T> extends SingleRunModule {
 	
-	private RectangleRegionOfInterest roi;
+	private final RectangleRegionOfInterest roi;
 	private int counter=0;
 	private int skipFrames;
 

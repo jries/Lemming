@@ -1,14 +1,12 @@
 package org.lemming.pipeline;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.lemming.interfaces.Element;
-import org.lemming.interfaces.Frame;
 import org.lemming.interfaces.ModuleInterface;
 import org.lemming.interfaces.Store;
 
@@ -18,10 +16,10 @@ import org.lemming.interfaces.Store;
  * @author Ronny Sczech
  *
  */
-public abstract class AbstractModule implements ModuleInterface,Runnable {
+public abstract class AbstractModule implements ModuleInterface {
 	
 	protected int numTasks;
-	protected int numThreads = Runtime.getRuntime().availableProcessors()-1;
+	protected final int numThreads = Runtime.getRuntime().availableProcessors()-1;
 	protected ExecutorService service;
 	protected Map<Integer, Store> inputs = new LinkedHashMap<>();
 	protected Map<Integer, Store> outputs = new LinkedHashMap<>();
@@ -30,11 +28,12 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	protected Integer iterator;
 	
 	
-	public AbstractModule(){
+	protected AbstractModule(){
 		if(service == null)
 			service = Executors.newCachedThreadPool();
 	}
 	
+	@Override
 	public void setService(ExecutorService service){
 		this.service = service;
 	}
@@ -42,15 +41,14 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	public void reset(){
 		inputs.clear();
 		outputs.clear();
+		running = true;
 		iterator = null;
 	}
 	
 	protected void newOutput(final Element data) {
 		if (outputs.isEmpty()) throw new NullPointerException("No Output Mappings!");
 		if (data == null) return;
-		Iterator<Integer> it = outputs.keySet().iterator();
-		while(it.hasNext()){
-			Integer key = it.next();
+		for (Integer key : outputs.keySet()) {
 			try {
 				outputs.get(key).put(data);
 			} catch (InterruptedException e) {
@@ -71,16 +69,13 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 
 	@Override
 	public Element getInput(Integer key) {
-		Element el = inputs.get(key).poll();
-		return el;
+		return inputs.get(key).poll();
 	}
 
 	@Override
 	public Map<Integer, Element> getInputs() {
 		Map<Integer, Element> outMap = new HashMap<>();
-		Iterator<Integer> it = inputs.keySet().iterator();
-		while(it.hasNext()){
-			Integer key = it.next();
+		for (Integer key : inputs.keySet()) {
 			outMap.put(key, inputs.get(key).poll());
 		}
 		return outMap;
@@ -94,9 +89,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	@Override
 	public Map<Integer, Element> getOutputs() {
 		Map<Integer, Element> outMap = new HashMap<>();
-		Iterator<Integer> it = outputs.keySet().iterator();
-		while(it.hasNext()){
-			Integer key = it.next();
+		for (Integer key : outputs.keySet()) {
 			outMap.put(key, outputs.get(key).poll());
 		}
 		return outMap;
@@ -107,6 +100,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		inputs.put(key, store);		
 	}
 	
+	@Override
 	public void setInput(Store store) {
 		inputs.put(store.hashCode(), store);		
 	}
@@ -121,6 +115,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 		outputs.put(key, store);		
 	}
 	
+	@Override
 	public void setOutput(Store store) {
 		outputs.put(store.hashCode(), store);		
 	}
@@ -146,11 +141,7 @@ public abstract class AbstractModule implements ModuleInterface,Runnable {
 	public Element preview(Element el){
 		return processData(el);
 	}
-	
-	public <T> Element preview(Frame<T> el){
-		return processData(el);
-	}	
-	
+
 	/**
 	 * Method to be overwritten by children of this class.
 	 * @param data - data to process

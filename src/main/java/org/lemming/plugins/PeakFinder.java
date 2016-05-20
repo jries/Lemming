@@ -3,15 +3,15 @@ package org.lemming.plugins;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.lemming.factories.DetectorFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.PeakFinderPanel;
+import org.lemming.interfaces.Detector;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
-import org.lemming.modules.Detector;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.MultiRunModule;
 import org.scijava.plugin.Plugin;
 
 import net.imglib2.Cursor;
@@ -21,6 +21,7 @@ import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.exception.IncompatibleTypeException;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
@@ -28,23 +29,20 @@ import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
-public class PeakFinder<T extends RealType<T>> extends Detector<T> {
+public class PeakFinder<T extends RealType<T>> extends MultiRunModule implements Detector<T>{
 
-	public static final String NAME = "Peak Finder";
-
-	public static final String KEY = "PEAKFINDER";
-
-	public static final String INFO_TEXT = "<html>" + "Peak Finder Plugin" + "</html>";
-	private int size;
+	private static final String NAME = "Peak Finder";
+	private static final String KEY = "PEAKFINDER";
+	private static final String INFO_TEXT = "<html>" + "Peak Finder Plugin" + "</html>";
+	private final int size;
 	private double threshold;
-	private int counter;
-	private int gaussian;
-
+	private final int gaussian;
 	/**
 	 * @param threshold
 	 *            - threshold for subtracting background
 	 * @param size
 	 *            - kernel size
+	 * @param gaussian - gaussian size (0=omit)
 	 */
 	public PeakFinder(final double threshold, final int size, final int gaussian) {
 		setThreshold(threshold);
@@ -54,6 +52,32 @@ public class PeakFinder<T extends RealType<T>> extends Detector<T> {
 
 	private void setThreshold(double threshold) {
 		this.threshold = threshold;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Element processData(Element data) {
+		Frame<T> frame = (Frame<T>) data;
+		if (frame == null)
+			return null;
+
+		if (frame.isLast()) { // make the poison pill
+			cancel();
+			FrameElements<T> res = detect(frame);
+			if (res!=null){
+				res.setLast(true);
+				counterList.add(res.getList().size());
+				return res;
+			} else {
+				res = new FrameElements<>(null, frame);
+				res.setLast(true);
+				return res;
+			}
+		}
+		FrameElements<T> res = detect(frame);
+		if (res != null)
+			counterList.add(res.getList().size());
+		return res;
 	}
 
 	@Override
@@ -133,7 +157,6 @@ public class PeakFinder<T extends RealType<T>> extends Detector<T> {
 						center.getIntPosition(1) * frame.getPixelDepth(),
 						centerValue.getRealDouble(),
 						frame.getFrameNumber()));
-				counter++;
 			}
 		}
 		return new FrameElements<>(found, frame);
@@ -142,15 +165,30 @@ public class PeakFinder<T extends RealType<T>> extends Detector<T> {
 	/**
 	 * @return Threshold
 	 */
-	public double getThreshold() {
+	private double getThreshold() {
 		return threshold;
 	}
+	
+	@Override
+	protected void afterRun() {
+		Integer cc=0;
+		for (Integer i : counterList)
+			cc+=i;
+		System.out.println("Detector found "
+				+ cc + " peaks in "
+				+ (System.currentTimeMillis() - start) + "ms.");
+	}
 
-	@Plugin(type = DetectorFactory.class, visible = true)
+	@Override
+	public boolean check() {
+		return inputs.size()==1 && outputs.size()>=1;
+	}
+
+	@Plugin(type = DetectorFactory.class )
 	public static class Factory implements DetectorFactory {
 
 		private Map<String, Object> settings;
-		private PeakFinderPanel configPanel = new PeakFinderPanel();
+		private final PeakFinderPanel configPanel = new PeakFinderPanel();
 
 		@Override
 		public String getInfoText() {
@@ -174,7 +212,7 @@ public class PeakFinder<T extends RealType<T>> extends Detector<T> {
 		}
 
 		@Override
-		public <T extends RealType<T>> Detector<T> getDetector() {
+		public <T extends RealType<T> & NativeType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(PeakFinderPanel.KEY_THRESHOLD);
 			final int kernelSize = (Integer) settings.get(PeakFinderPanel.KEY_KERNEL_SIZE);
 			final int gaussian = (Integer) settings.get(PeakFinderPanel.KEY_GAUSSIAN_SIZE);
@@ -185,6 +223,11 @@ public class PeakFinder<T extends RealType<T>> extends Detector<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+		
+		@Override
+		public boolean hasPreProcessing() {
+			return false;
 		}
 
 	}

@@ -18,19 +18,15 @@ import javax.swing.SwingConstants;
 
 public class GaussRendererPanel extends ConfigurationPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3031663211936690561L;
-	private JTextField textXBins;
-	private JTextField textYBins;
-	private JLabel lblX;
-	private JLabel lblY;
-	private JLabel labelX2;
-	private JLabel labelY2;
-	private Map<String, Object> settings = new HashMap<>();
-	private Map<String, Object> initialSettings;
-	private JLabel lblRanges;;
+	private final JTextField textXBins;
+	private final JTextField textYBins;
+	private final JLabel lblX;
+	private final JLabel lblY;
+	private final JLabel labelX2;
+	private final JLabel labelY2;
+	private final Map<String, Object> settings = new HashMap<>();
+	private final Map<String, Object> initialSettings;
 
 	public GaussRendererPanel() {
 		setBorder(null);
@@ -46,7 +42,7 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		textXBins = new JTextField();
 		textXBins.setHorizontalAlignment(SwingConstants.TRAILING);
 		textXBins.setText("512");
-		textXBins.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+		textXBins.addKeyListener(new WaitForKeyListener(500, new Runnable() {
 			@Override
 			public void run() {
 				fireChanged();
@@ -56,7 +52,7 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		textYBins = new JTextField();
 		textYBins.setHorizontalAlignment(SwingConstants.TRAILING);
 		textYBins.setText("512");
-		textYBins.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+		textYBins.addKeyListener(new WaitForKeyListener(500, new Runnable() {
 			@Override
 			public void run() {
 				fireChanged();
@@ -66,8 +62,8 @@ public class GaussRendererPanel extends ConfigurationPanel {
 		labelX2 = new JLabel("100");
 		
 		labelY2 = new JLabel("100");
-		
-		lblRanges = new JLabel("Ranges");
+
+		JLabel lblRanges = new JLabel("Ranges");
 		GroupLayout groupLayout = new GroupLayout(this);
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.TRAILING)
@@ -123,21 +119,21 @@ public class GaussRendererPanel extends ConfigurationPanel {
 					.addContainerGap(159, Short.MAX_VALUE))
 		);
 		setLayout(groupLayout);
-		settings.put(RendererFactory.KEY_xmin, new Double(0));
-		settings.put(RendererFactory.KEY_ymin, new Double(0));
-		settings.put(RendererFactory.KEY_xmax, new Double(100));
-		settings.put(RendererFactory.KEY_ymax, new Double(100));
-		settings.put(RendererFactory.KEY_xBins,new Integer(512));
-		settings.put(RendererFactory.KEY_yBins,new Integer(512));
+		settings.put(RendererFactory.KEY_xmin, 0d);
+		settings.put(RendererFactory.KEY_ymin, 0d);
+		settings.put(RendererFactory.KEY_xmax, 100d);
+		settings.put(RendererFactory.KEY_ymax, 100d);
+		settings.put(RendererFactory.KEY_xBins, 512);
+		settings.put(RendererFactory.KEY_yBins, 512);
 		initialSettings = new HashMap<>(settings);
 	}
 
 	@Override
 	public void setSettings(Map<String, Object> settings) {
-		lblX.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmin)));
-		lblY.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymin)));
-		labelX2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_xmax)));
-		labelY2.setText(String.format("%.4f",settings.get(RendererFactory.KEY_ymax)));
+		lblX.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_xmin)));
+		lblY.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_ymin)));
+		labelX2.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_xmax)));
+		labelY2.setText(String.format("%.4f",(double)settings.get(RendererFactory.KEY_ymax)));
 		textXBins.setText(String.valueOf(settings.get(RendererFactory.KEY_xBins)));
 		textYBins.setText(String.valueOf(settings.get(RendererFactory.KEY_yBins)));
 		for (String key : settings.keySet())
@@ -153,12 +149,9 @@ public class GaussRendererPanel extends ConfigurationPanel {
 	public Map<String, Object> getInitialSettings(){
 		return initialSettings;
 	}
-	/**
-	 * Display this JPanel inside a new JFrame.
-	 */
+
 	public static void main( final String[] args )
 	{
-		
 		// Create GUI
 		final GaussRendererPanel tp = new GaussRendererPanel( );
 		final JFrame frame = new JFrame();

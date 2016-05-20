@@ -9,19 +9,20 @@ import org.apache.commons.math3.optim.OptimizationData;
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
 
-public class EllipticalGaussianZ implements OptimizationData {
+class EllipticalGaussianZ implements OptimizationData {
 
-	private int[] xgrid, ygrid;
-	private PolynomialSplineFunction psx;
-	private PolynomialSplineFunction psy;
+	private final int[] xgrid;
+	private final int[] ygrid;
+	private final PolynomialSplineFunction psx;
+	private final PolynomialSplineFunction psy;
 
-	public static int INDEX_X0 = 0;
-	public static int INDEX_Y0 = 1;
-	public static int INDEX_Z0 = 2;
-	public static int INDEX_I0 = 3;
-	public static int INDEX_Bg = 4;
-	public static int PARAM_LENGTH = 5;
-	private static double sqrt2 = FastMath.sqrt(2);
+	private static final int INDEX_X0 = 0;
+	private static final int INDEX_Y0 = 1;
+	private static final int INDEX_Z0 = 2;
+	private static final int INDEX_I0 = 3;
+	private static final int INDEX_Bg = 4;
+	private static final int PARAM_LENGTH = 5;
+	private static final double sqrt2 = FastMath.sqrt(2);
 
 	public EllipticalGaussianZ(int[] xgrid, int[] ygrid, Map<String,Object> params){
 
@@ -31,46 +32,45 @@ public class EllipticalGaussianZ implements OptimizationData {
 		psy = (PolynomialSplineFunction) params.get("psy");
 	}
 
-	public double getValue(double[] parameter, double x, double y) {
+	private double getValue(double[] parameter, double x, double y) {
 		return parameter[INDEX_I0] * Ex(x, parameter) * Ey(y, parameter) + parameter[INDEX_Bg];
 	}
 
 	public MultivariateVectorFunction getModelFunction() {
-		return new MultivariateVectorFunction() {
-			@Override
-			public double[] value(double[] parameter) throws IllegalArgumentException {
-				double[] retVal = new double[xgrid.length];
-				for (int i = 0; i < xgrid.length; i++) {
-					retVal[i] = getValue(parameter, xgrid[i], ygrid[i]);
-				}
-				return retVal;
-			}
-		};
-	}
+        return new MultivariateVectorFunction() {
+            @Override
+            public double[] value(double[] parameter) throws IllegalArgumentException {
+                final double[] retVal = new double[xgrid.length];
+                for(int i = 0; i < xgrid.length; i++) {
+                    retVal[i] = getValue(parameter, xgrid[i], ygrid[i]);
+                }
+                return retVal;
+            }
+        };
+    }
+    
+    public MultivariateMatrixFunction getModelFunctionJacobian() {
+        return new MultivariateMatrixFunction() {
+            @Override
+            public double[][] value(double[] point) throws IllegalArgumentException {
 
-	public MultivariateMatrixFunction getModelFunctionJacobian() {
-		return new MultivariateMatrixFunction() {
-			@Override
-			public double[][] value(double[] point) throws IllegalArgumentException {
-
-				double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
-
-				double dsx = dSx(point[INDEX_Z0]);
-	           	double dsy = dSy(point[INDEX_Z0]);
-	           	 
-	       	    for (int i = 0; i < xgrid.length; ++i) {
-	       	    	 double ex = Ex(xgrid[i], point);
-	       	    	 double ey = Ey(ygrid[i], point);
-	       	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*ey*dEx(xgrid[i],point);
-	       	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*ex*dEy(ygrid[i],point); 
-	       	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*(dEsx(xgrid[i],point)*ey*dsx + ex*dEsy(ygrid[i], point)*dsy);
-	       	    	 jacobian[i][INDEX_I0] = ex*ey;
-	       	    	 jacobian[i][INDEX_Bg] = 1;
-	       	    }
-				return jacobian;
-			}
-		};
-	}
+            	 final double[][] jacobian = new double[xgrid.length][PARAM_LENGTH];
+            	 final double dsx = dSx(point[INDEX_Z0]);
+            	 final double dsy = dSy(point[INDEX_Z0]);
+            	 
+        	     for (int i = 0; i < xgrid.length; ++i) {
+        	    	 final double ex = Ex(xgrid[i], point);
+        	    	 final double ey = Ey(ygrid[i], point);
+        	    	 jacobian[i][INDEX_X0] = point[INDEX_I0]*ey*dEx(xgrid[i],point);
+        	    	 jacobian[i][INDEX_Y0] = point[INDEX_I0]*ex*dEy(ygrid[i],point); 
+        	    	 jacobian[i][INDEX_Z0] = point[INDEX_I0]*(dEsx(xgrid[i],point)*ey*dsx + ex*dEsy(ygrid[i], point)*dsy);
+        	    	 jacobian[i][INDEX_I0] = ex*ey;
+        	    	 jacobian[i][INDEX_Bg] = 1;
+        	     }
+        	     return jacobian;
+            }
+        };
+    }
 
 	// /////////////////////////////////////////////////////////////
 	// Math functions
@@ -82,35 +82,35 @@ public class EllipticalGaussianZ implements OptimizationData {
 		return 2 * FastMath.exp(-x * x) / FastMath.sqrt(FastMath.PI);
 	}
 
-	public double Ex(double x, double[] variables) {
+	private double Ex(double x, double[] variables) {
 		double tsx = sqrt2 * Sx(variables[INDEX_Z0]);
 		double xm = x - variables[INDEX_X0] - 0.5;
 		double xp = x - variables[INDEX_X0] + 0.5;
 		return 0.5 * erf(xp / tsx) - 0.5 * erf(xm / tsx);
 	}
 
-	public double Ey(double y, double[] variables) {
+	private double Ey(double y, double[] variables) {
 		double tsy = sqrt2 * Sy(variables[INDEX_Z0]);
 		double ym = y - variables[INDEX_Y0] - 0.5;
 		double yp = y - variables[INDEX_Y0] + 0.5;
 		return 0.5 * erf(yp / tsy) - 0.5 * erf(ym / tsy);
 	}
 
-	public double dEx(double x, double[] variables) {
+	private double dEx(double x, double[] variables) {
 		double xm = x - variables[INDEX_X0] - 0.5;
 		double xp = x - variables[INDEX_X0] + 0.5;
 		double tsx = sqrt2 * Sx(variables[INDEX_Z0]);
 		return 0.5 * (dErf(xm / tsx) - dErf(xp / tsx)) / tsx;
 	}
 
-	public double dEy(double y, double[] variables) {
+	private double dEy(double y, double[] variables) {
 		double ym = y - variables[INDEX_Y0] - 0.5;
 		double yp = y - variables[INDEX_Y0] + 0.5;
 		double tsy = sqrt2 * Sy(variables[INDEX_Z0]);
 		return 0.5 * (dErf(ym / tsy) - dErf(yp / tsy)) / tsy;
 	}
 
-	public double dEsx(double x, double[] variables) {
+	private double dEsx(double x, double[] variables) {
 		double tsx = sqrt2 * Sx(variables[INDEX_Z0]);
 		double xm = x - variables[INDEX_X0] - 0.5;
 		double xp = x - variables[INDEX_X0] + 0.5;
@@ -118,7 +118,7 @@ public class EllipticalGaussianZ implements OptimizationData {
 				/ Sx(variables[INDEX_Z0]) / tsx;
 	}
 
-	public double dEsy(double y, double[] variables) {
+	private double dEsy(double y, double[] variables) {
 		double tsy = sqrt2 * Sy(variables[INDEX_Z0]);
 		double ym = y - variables[INDEX_Y0] - 0.5;
 		double yp = y - variables[INDEX_Y0] + 0.5;
@@ -140,14 +140,14 @@ public class EllipticalGaussianZ implements OptimizationData {
 		return valuey;
 	}
 
-	public double dSx(double z) {
+	private double dSx(double z) {
 		double value = 1.;
 		if(psx.isValidPoint(z))
 			value = psx.derivative().value(z);
 		return value;
 	}
 
-	public double dSy(double z) {
+	private double dSy(double z) {
 		double value = 1.;
 		if(psy.isValidPoint(z))
 			value = psy.derivative().value(z);

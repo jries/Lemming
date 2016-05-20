@@ -10,5 +10,5 @@ import org.lemming.interfaces.PluginInterface;
  */
 public interface ActionFactory extends PluginInterface {
 	
-	public Runnable create();
+	Runnable create();
 }

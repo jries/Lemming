@@ -27,11 +27,10 @@ public class CentroidFitterPanel extends ConfigurationPanel {
 	public static final String KEY_CALIBRATION_FILENAME = "CALIBRATION_FILENAME";
 	public static final String KEY_CAMERA_FILENAME = "CAMERA_FILENAME";
 	public static final String KEY_CENTROID_THRESHOLD = "CENTROID_THRESHOLD";
-	private JSpinner spinnerWindowSize;
+	private final JSpinner spinnerWindowSize;
 	private File calibFile;
 	private File camFile;
-	private JLabel lblCentroidThreshold;
-	private JTextField textFieldThreshold;
+	private final JTextField textFieldThreshold;
 	
 	public CentroidFitterPanel() {
 		setBorder(null);
@@ -39,17 +38,17 @@ public class CentroidFitterPanel extends ConfigurationPanel {
 		JLabel lblWindowSize = new JLabel("Window Size");
 		
 		spinnerWindowSize = new JSpinner();
-		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable(){
+		spinnerWindowSize.addChangeListener(new WaitForChangeListener(500, new Runnable() {
 			@Override
 			public void run() {
 				fireChanged();
 			}
 		}));
-		spinnerWindowSize.setModel(new SpinnerNumberModel(new Integer(10), null, null, new Integer(1)));
-		
-		lblCentroidThreshold = new JLabel("Centroid Threshold");
+		spinnerWindowSize.setModel(new SpinnerNumberModel(10, null, null, 1));
+
+		JLabel lblCentroidThreshold = new JLabel("Centroid Threshold");
 		textFieldThreshold = new JTextField();
-		textFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable(){
+		textFieldThreshold.addKeyListener(new WaitForKeyListener(500, new Runnable() {
 			@Override
 			public void run() {
 				fireChanged();
@@ -96,7 +95,7 @@ public class CentroidFitterPanel extends ConfigurationPanel {
 			textFieldThreshold.setText(String.valueOf(settings.get(KEY_CENTROID_THRESHOLD)));
 			calibFile = (File) settings.get(KEY_CALIBRATION_FILENAME);
 			camFile = (File) settings.get(KEY_CAMERA_FILENAME);
-		} catch (Exception e){}
+		} catch (Exception e){e.printStackTrace();}
 	}
 
 	@Override

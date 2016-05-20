@@ -9,17 +9,10 @@ import org.lemming.interfaces.Element;
  *
  */
 public abstract class SingleRunModule extends AbstractModule {
-	
-	private String name;
-	private static int nr=0;
-	
-	public SingleRunModule(){
-		name = this.getClass().getSimpleName();
-	}
 
 	@Override
 	public void run() {
-		Thread.currentThread().setName(name+nr++);
+
 		if (!inputs.isEmpty() && !outputs.isEmpty()) {
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
@@ -28,8 +21,6 @@ public abstract class SingleRunModule extends AbstractModule {
 			
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = nextInput();
 				if (data != null) 
 					processData(data);
@@ -46,8 +37,6 @@ public abstract class SingleRunModule extends AbstractModule {
 			
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = nextInput();
 				if (data != null) 
 					processData(data);
@@ -59,15 +48,11 @@ public abstract class SingleRunModule extends AbstractModule {
 		if (!outputs.isEmpty()) { // no inputs
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = processData(null);
 				newOutput(data);
 			}
 			afterRun();
-			return;
 		}
-		return;
 	}
 
 	protected void afterRun() {
@@ -75,6 +60,7 @@ public abstract class SingleRunModule extends AbstractModule {
 
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
+		running = true;
 	}
 	
 }

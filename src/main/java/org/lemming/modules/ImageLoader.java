@@ -25,12 +25,12 @@ import org.lemming.tools.LemmingUtils;
 public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRunModule{
 	
 	private int curSlice = 0;
-	private ImageStack img;
-	private int stackSize;
-	private double pixelDepth;
-	private Double offset;
-	private Double em_gain;
-	private Double conversion;
+	private final ImageStack img;
+	private final int stackSize;
+	private final double pixelDepth;
+	private final Double offset;
+	private final Double em_gain;
+	private final Double conversion;
 
 	public ImageLoader(ImagePlus loc_im, List<Double> cameraSettings) {
 		this.img = loc_im.getStack();
@@ -59,7 +59,7 @@ public class ImageLoader<T extends RealType<T> & NativeType<T>> extends SingleRu
 			final double im2phot = adu*conversion/em_gain;
 			it.get().setReal(im2phot);
 		}
-		ImgLib2Frame<T> frame = new ImgLib2Frame<T>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
+		ImgLib2Frame<T> frame = new ImgLib2Frame<>(curSlice, img.getWidth(), img.getHeight(), pixelDepth, theImage);
 
 		if (curSlice >= stackSize){
 			frame.setLast(true);

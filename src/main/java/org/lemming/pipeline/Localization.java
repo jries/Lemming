@@ -12,7 +12,7 @@ public class Localization implements LocalizationInterface {
 
 	final private Number X;
 	final private Number Y;
-	final protected long ID;
+	private final long ID;
 	static private long curID = 0;
 	private boolean isLast;
 	final private Long frame;

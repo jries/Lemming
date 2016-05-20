@@ -16,22 +16,22 @@ import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.FitterPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
-import org.lemming.interfaces.LocalizationInterface;
 import org.lemming.math.CentroidFitterRA;
 import org.lemming.modules.CPU_Fitter;
 import org.lemming.modules.Fitter;
+import org.lemming.pipeline.Localization;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.scijava.plugin.Plugin;
 
 public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Centroid Fitter";
+	private static final String NAME = "Centroid Fitter";
 
-	public static final String KEY = "CENTROIDFITTER";
+	private static final String KEY = "CENTROIDFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "Centroid Fitter Plugin" + "</html>";
+	private static final String INFO_TEXT = "<html>" + "Centroid Fitter Plugin" + "</html>";
 
-	private double thresh;
+	private final double thresh;
 
 	public CentroidFitter(int halfkernel, double threshold_) {
 		super(halfkernel);
@@ -46,14 +46,14 @@ public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		final int halfKernel = size;
 
 		for (Element el : sliceLocs) {
-			final LocalizationInterface loc = (LocalizationInterface) el;
+			final Localization loc = (Localization) el;
 			
 			double x = loc.getX().doubleValue()/pixelDepth;
 			double y = loc.getY().doubleValue()/pixelDepth;
 
-			final Interval roi = new FinalInterval(new long[] { (long) Math.floor(x - halfKernel),
-					(long) Math.floor(y - halfKernel) }, new long[] { (long) Math.ceil(x + halfKernel),
-					(long) Math.ceil(y + halfKernel) });
+			final Interval roi = new FinalInterval(new long[] { (long) StrictMath.floor(x - halfKernel),
+					(long) StrictMath.floor(y - halfKernel) }, new long[] { (long) StrictMath.ceil(x + halfKernel),
+					(long) StrictMath.ceil(y + halfKernel) });
 			IntervalView<T> interval = Views.interval(source, roi);
 
 			CentroidFitterRA<T> cf = new CentroidFitterRA<>(interval, thresh);
@@ -68,11 +68,11 @@ public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		return found;
 	}
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class)
 	public static class Factory implements FitterFactory {
 
 		private Map<String, Object> settings;
-		private FitterPanel configPanel = new FitterPanel();
+		private final FitterPanel configPanel = new FitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -112,7 +112,11 @@ public class CentroidFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		public int getHalfKernel() {
 			return size;
 		}
-
+		
+		@Override
+		public boolean hasGPU() {
+			return false;
+		}
 	}
 
 }

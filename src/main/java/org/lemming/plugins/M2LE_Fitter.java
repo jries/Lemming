@@ -1,13 +1,6 @@
 package org.lemming.plugins;
 
-import static jcuda.driver.JCudaDriver.cuCtxCreate;
-import static jcuda.driver.JCudaDriver.cuCtxDestroy;
-import static jcuda.driver.JCudaDriver.cuCtxSynchronize;
-import static jcuda.driver.JCudaDriver.cuDeviceGet;
-import static jcuda.driver.JCudaDriver.cuInit;
-import static jcuda.driver.JCudaDriver.cuLaunchKernel;
-import static jcuda.driver.JCudaDriver.cuModuleGetFunction;
-import static jcuda.driver.JCudaDriver.cuModuleLoad;
+import static jcuda.driver.JCudaDriver.*;
 import static jcuda.runtime.JCuda.cudaFree;
 import static jcuda.runtime.JCuda.cudaMalloc;
 import static jcuda.runtime.JCuda.cudaMemcpy;
@@ -33,7 +26,8 @@ import jcuda.driver.CUfunction;
 import jcuda.driver.CUmodule;
 import jcuda.driver.CUresult;
 import jcuda.driver.JCudaDriver;
-
+import jcuda.runtime.JCuda;
+import jcuda.runtime.cudaDeviceProp;
 import net.imglib2.Cursor;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
@@ -44,7 +38,7 @@ import net.imglib2.view.Views;
 
 import org.lemming.factories.FitterFactory;
 import org.lemming.gui.ConfigurationPanel;
-import org.lemming.gui.FitterPanel;
+import org.lemming.gui.M2LE_FitterPanel;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
 import org.lemming.modules.Fitter;
@@ -56,42 +50,31 @@ import org.scijava.plugin.Plugin;
 
 public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
-	public static final String NAME = "Fast Maximum Likelihood";
-
-	public static final String KEY = "M2LEFITTER";
-
-	public static final String INFO_TEXT = "<html>" + "Maximum likelihood estimation using the NVIDIA CUDA capabilities " + "</html>";
-
+	private static final String NAME = "Fast Maximum Likelihood";
+	private static final String KEY = "M2LEFITTER";
+	private static final String INFO_TEXT = "<html>" + "Fast maximum likelihood estimation using CUDA" + "</html>";
 	private static final int PARAMETER_LENGTH = 8;
-
-	private int maxKernels;
-
-	private FastTable<Kernel> kernelList;
+	private final int maxKernels;
+	private final FastTable<Kernel> kernelList;
+	private final CUdevice device;
+	private final int kernelSize;
+	private final float usablepixel;
+	private final float wavenumber;
 	
-	private CUdevice device;
-
-	private int kernelSize;
-
-	private float usablepixel;
-
-	private float wavenumber;
-
-	
-	public M2LE_Fitter(int windowSize, float usablepixel, float wavenumber) {
+	public M2LE_Fitter(int windowSize, int maxKernels, float usablepixel, float wavenumber) {
 		super(windowSize);
 		kernelSize = 2 * size + 1;
-		//maxKernels = (int) (40000/Math.pow(kernelSize, 3)*1500);
-		maxKernels = 1152*9;
+		this.maxKernels = maxKernels;
 		this.usablepixel = usablepixel;
 		this.wavenumber = wavenumber;
 		kernelList = new FastTable<>();
 		JCudaDriver.setExceptionsEnabled(true);
- 		cuInit(0);
+		JCudaDriver.cuInit(0);
  		device = new CUdevice();
  		cuDeviceGet(device, 0); 
 	}
 
-	public void process(FrameElements<T> fe) {
+	private void process(FrameElements<T> fe) {
 		final List<Element> sliceLocs = fe.getList();
 		final float pixelDepth = (float) fe.getFrame().getPixelDepth();
 		final RandomAccessible<T> source = Views.extendMirrorSingle(fe.getFrame().getPixels());
@@ -110,7 +93,7 @@ public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 			IntervalView<T> interval = Views.interval(source, roi); 
 			
 			Cursor<T> c = interval.cursor();
-			float[] IVal = new float[(int) (kernelSize * kernelSize)];
+			float[] IVal = new float[kernelSize * kernelSize];
 			int index=0;
 			while (c.hasNext()){
 				IVal[index++]=c.next().getRealFloat();
@@ -125,7 +108,6 @@ public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 			processGPU(pixelDepth, usablepixel, wavenumber);
 			kernelList.clear();
 			cancel();
-			return;
 		}
 	}
 	
@@ -144,14 +126,16 @@ public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 				long ystart = kernelList.get(i).getRoi().min(1);
 				float x = par[i] + xstart;
 				float y = par[ksize+i] + ystart;
-				float intensity = par[2*ksize+i];
-				float fitI = par[2*ksize+i];
-				float bg = par[3*ksize+i];
+				float intX = par[2*ksize+i];
+				float intY = par[2*ksize+i];
 				float sx = par[4*ksize+i];
-				//float sy = par[5*ksize+i];
+				float sy = par[5*ksize+i];
+				float bgX = par[3*ksize+i];
+				float bgY = par[3*ksize+i];
+
 				long frame = kernelList.get(i).getFrame();
 				long id = kernelList.get(i).getID();
-				newOutput(new LocalizationPrecision3D(id, x*pixelDepth, y*pixelDepth, fitI, sx*pixelDepth, 0/*sy*pixelDepth*/, bg, intensity, frame));
+				newOutput(new LocalizationPrecision3D(id, x*pixelDepth, y*pixelDepth, intY, sx*pixelDepth, sy*pixelDepth, bgX+bgY, intX, frame));
 			}
 		} catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
@@ -172,8 +156,8 @@ public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 		return null;
 	}
 	
-	protected void afterRun() {
-		Localization lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 0, 1l);
+	private void afterRun() {
+		Localization lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 0, 1L);
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
 		System.out.println("GPU Fitting done in " + (System.currentTimeMillis() - start) + "ms");
@@ -226,7 +210,6 @@ public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 				newOutput(data);
 			}
 			afterRun();
-			return;
 		}
 	}
 
@@ -237,25 +220,25 @@ public class M2LE_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
 private class GPUBlockThread implements Callable<Map<String,float[]>> {
 		
-		private int sz;
-		private int sz2;
-		private int nKernels;
-		private CUdevice device;
-		private List<Kernel> kList;
-		private int PARAMETER_LENGTH;
-		private String functionName;
+		private final int sz;
+		private final int sz2;
+		private final int nKernels;
+		private final CUdevice device;
+		private final List<Kernel> kList;
+		private final int PARAMETER_LENGTH;
+		private final String functionName;
 		private int count = 0;
-		private float pixelsize;
-		private float usablepixel;
-		private float wavenumber;
+		private final float pixelsize;
+		private final float usablepixel;
+		private final float wavenumber;
 		
 		private static final float PSFSigma = 1.3f;
 		private static final int iterations = 200;
-		private static final String ptxFileName = "resources/CudaFit.ptx";
+		private static final String ptxFileName = "resources/M2LE.ptx";
 		private static final float sharedMemPerBlock = 262144;
 
-		public GPUBlockThread(CUdevice device, List<Kernel> kernelList, int sz, float pixelsize, float usablepixel,
-				float wavenumber, int nKernels, int numParameters, String functionName) {
+		GPUBlockThread(CUdevice device, List<Kernel> kernelList, int sz, float pixelsize, float usablepixel,
+					   float wavenumber, int nKernels, int numParameters, String functionName) {
 			this.sz = sz;
 			this.sz2 = sz * sz;
 			this.device = device;
@@ -275,8 +258,7 @@ private class GPUBlockThread implements Callable<Map<String,float[]>> {
 			for(int k=0;k<nKernels;k++){
 				int sliceIndex = k*sz2;
 				float[] values = kList.get(k).getValues();
-				for (int l=0; l<sz2;l++)
-					Ival[sliceIndex+l]=values[l];
+				System.arraycopy(values, 0, Ival, sliceIndex, sz2);
 			}
 			return process(Ival, nKernels, BlockSize);
 		}
@@ -355,11 +337,11 @@ private class GPUBlockThread implements Callable<Map<String,float[]>> {
 	}
 	
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class )
 	public static class Factory implements FitterFactory {
 
-		private Map<String, Object> settings;
-		private FitterPanel configPanel = new FitterPanel();
+		private final Map<String, Object> settings=new HashMap<>(3);
+		private final ConfigurationPanel configPanel = new M2LE_FitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -378,8 +360,8 @@ private class GPUBlockThread implements Callable<Map<String,float[]>> {
 
 		@Override
 		public boolean setAndCheckSettings(Map<String, Object> settings) {
-			this.settings = settings;
-			return settings!=null;
+			this.settings.putAll(settings);
+			return settings!=null && hasGPU();
 		}
 
 
@@ -391,13 +373,38 @@ private class GPUBlockThread implements Callable<Map<String,float[]>> {
 
 		@Override
 		public <T extends RealType<T>> Fitter<T> getFitter() {
-			final int windowSize = (int) settings.get(FitterPanel.KEY_WINDOW_SIZE);
-			return new MLE_Fitter<>(windowSize);
+			final int windowSize = (int) settings.get(M2LE_FitterPanel.KEY_WINDOW_SIZE);
+			final float usablePixel = (float) settings.get(M2LE_FitterPanel.KEY_USABLE_PIXEL);
+			final float waveNumber = 728f;
+			final int maxKernels = (int) settings.get("MAXKERNELS");
+			return new M2LE_Fitter<>(windowSize, maxKernels, usablePixel, waveNumber);
 		}
 
 		@Override
 		public int getHalfKernel() {
 			return size;
+		}
+
+		@Override
+		public boolean hasGPU() {
+			if (System.getProperty("os.name").contains("inux"))
+			System.load(System.getProperty("user.dir")+"/lib/libJCudaDriver-linux-x86_64.so");
+			int res = JCudaDriver.cuInit(0);
+			if (res != CUresult.CUDA_SUCCESS) return false;
+			JCudaDriver.setExceptionsEnabled(true);
+	 		cudaDeviceProp prop = new cudaDeviceProp();
+			JCuda.cudaGetDeviceProperties(prop, 0);
+			int numProcessors = prop.multiProcessorCount;
+			int numCores;
+			switch (prop.major){
+				case 2: numCores = numProcessors*48;break;
+				case 3: numCores = numProcessors*192;break;
+				case 5: numCores = numProcessors*128;break;
+				default: numCores = numProcessors*128;
+			}
+			System.out.println(KEY+" using GPU cores:" +String.valueOf(numCores));
+			settings.put("MAXKERNELS", numCores*Runtime.getRuntime().availableProcessors());
+			return true;
 		}
 	}
 }

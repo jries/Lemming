@@ -20,11 +20,11 @@ import net.imglib2.view.Views;
 
 public class QuadraticFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Quadratic";
+	private static final String NAME = "Quadratic";
 
-	public static final String KEY = "QUADRATICFITTER";
+	private static final String KEY = "QUADRATICFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "Quadratic Fitter Plugin (without z-direction)" + "</html>";
+	private static final String INFO_TEXT = "<html>" + "Quadratic Fitter Plugin (without z-direction)" + "</html>";
 
 	public QuadraticFitter(int halfkernel) {
 		super(halfkernel);
@@ -37,17 +37,15 @@ public class QuadraticFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		final boolean[] allowedToMoveInDim = new boolean[ra.numDimensions()];
 		Arrays.fill(allowedToMoveInDim, true);
 
-		final List<Element> refined = SubpixelLocalization.refinePeaks(sliceLocs, ra, frame.getPixels(), true, size, true, 0.01f, allowedToMoveInDim,
+		return SubpixelLocalization.refinePeaks(sliceLocs, ra, frame.getPixels(), true, size, true, 0.01f, allowedToMoveInDim,
 				frame.getPixelDepth());
-
-		return refined;
 	}
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class )
 	public static class Factory implements FitterFactory {
 
 		private Map<String, Object> settings;
-		private QuadraticFitterPanel configPanel = new QuadraticFitterPanel();
+		private final QuadraticFitterPanel configPanel = new QuadraticFitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -86,7 +84,11 @@ public class QuadraticFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		public int getHalfKernel() {
 			return size;
 		}
-
+		
+		@Override
+		public boolean hasGPU() {
+			return false;
+		}
 	}
 
 }

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -21,26 +22,22 @@ import ij.ImagePlus;
 public class NMSFinderTest {
 
 	private Manager pipe;
-	private ImageLoader tif;
-	private SaveLocalizations saver;
-	private NMSDetector peak;
-	private UnpackElements unpacker;
 	private Map<Integer, Store> map;
 	
 	@Before
-	public void setUp() throws Exception {
-		pipe = new Manager();	
-		final ImagePlus image = new ImagePlus(System.getProperty("user.home")+"/ownCloud/storm/experiment3D.tif");
-		tif = new ImageLoader<>(image, LemmingUtils.readCameraSettings("camera.props"));
+	public void setUp() {
+		pipe = new Manager(Executors.newCachedThreadPool());
+		final ImagePlus image = new ImagePlus(System.getProperty("user.home")+"/ownCloud/p500ast_.tif");
+		ImageLoader tif = new ImageLoader<>(image, LemmingUtils.readCameraSettings("camera.props"));
 		pipe.add(tif);
-		
-		peak = new NMSDetector(700,9,0);
+
+		NMSDetector peak = new NMSDetector(700, 9, 0);
 		pipe.add(peak);
-		
-		unpacker = new UnpackElements();
+
+		UnpackElements unpacker = new UnpackElements();
 		pipe.add(unpacker);
-		
-		saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/nmsfinder.csv"));
+
+		SaveLocalizations saver = new SaveLocalizations(new File(System.getProperty("user.home") + "/ownCloud/nmsfinder.csv"));
 		pipe.add(saver);
 		
 		pipe.linkModules(tif, peak, true, image.getStackSize());

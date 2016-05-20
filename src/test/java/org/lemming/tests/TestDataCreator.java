@@ -16,22 +16,17 @@ import ij.IJ;
 
 public class TestDataCreator {
 	private BufferedWriter bw;
-	final int N = (int) 1e6;
-	final long[] T = new long[N];
-	long sum = 0;
-	long max = 0;
-	long id = 0;
-	long t0,t00;
-	final Random ran = new Random();
+	private final int N = (int) 1e6;
+	private final long[] T = new long[N];
+	private long sum = 0;
+	private long max = 0;
+	private long id = 0;
+	private long t0;
+	private long t00;
+	private final Random ran = new Random();
 	private ExtendableTable h;
-	private List<Number> colx;
-	private List<Number> coly;
-	private List<Number> colz;
-	private List<Number> colsX;
-	private List<Number> colsY;
-	private List<Number> colf;
 
-	
+
 	@Before
 	public void setUp() throws Exception {
 		t0 = System.nanoTime();
@@ -44,7 +39,7 @@ public class TestDataCreator {
 		h.addNewMember("sX");
 		h.addNewMember("sY");
 		
-		bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(System.getProperty("user.home")+"/ownCloud/storm/geomTable.csv")));
+		bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(System.getProperty("user.home")+"/ownCloud/geomTable.csv")));
 	}
 
 	@Test
@@ -57,12 +52,12 @@ public class TestDataCreator {
 		
 		try {
 			bw.write("x,y,z,frame,sx,sy\n");
-			colx = h.getColumn("x");
-			coly = h.getColumn("y");
-			colz = h.getColumn("z");
-			colf = h.getColumn("frame");
-			colsX = h.getColumn("sX");
-			colsY = h.getColumn("sY");
+			List<Number> colx = h.getColumn("x");
+			List<Number> coly = h.getColumn("y");
+			List<Number> colz = h.getColumn("z");
+			List<Number> colf = h.getColumn("frame");
+			List<Number> colsX = h.getColumn("sX");
+			List<Number> colsY = h.getColumn("sY");
 		
 			for (Integer i=0;i<N;i++){
 				final double gx = r + Math.cos(ran.nextDouble()*2*Math.PI)*meanx;

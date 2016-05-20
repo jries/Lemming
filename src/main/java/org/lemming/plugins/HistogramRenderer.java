@@ -16,22 +16,22 @@ import org.scijava.plugin.Plugin;
 
 public class HistogramRenderer extends Renderer {
 	
-	public static final String NAME = "Histogram Renderer";
-	public static final String KEY = "HISTOGRAMRENDERER";
-	public static final String INFO_TEXT = "<html>"
+	private static final String NAME = "Histogram Renderer";
+	private static final String KEY = "HISTOGRAMRENDERER";
+	private static final String INFO_TEXT = "<html>"
 											+ "Histogram Renderer Plugin"
 											+ "</html>";
 	
-	private int xBins;
-	private double xmin;
-	private double ymin;
-	private double xwidth;
-	private double ywidth;
+	private final int xBins;
+	private final double xmin;
+	private final double ymin;
+	private final double xwidth;
+	private final double ywidth;
 	private volatile byte[] values; // volatile keyword keeps the array on the heap available
-	private double xmax;
-	private double ymax;
-	private double zmin;
-	private double zmax;
+	private final double xmax;
+	private final double ymax;
+	private final double zmin;
+	private final double zmax;
 
 
 	public HistogramRenderer(){
@@ -96,10 +96,10 @@ public class HistogramRenderer extends Renderer {
 		return null;
 	}
 	
-	@Plugin( type = RendererFactory.class, visible = true )
+	@Plugin( type = RendererFactory.class )
 	public static class Factory implements RendererFactory{
 
-		private HistogramRendererPanel configPanel = new HistogramRendererPanel();
+		private final HistogramRendererPanel configPanel = new HistogramRendererPanel();
 		private Map<String, Object> settings;
 
 		@Override

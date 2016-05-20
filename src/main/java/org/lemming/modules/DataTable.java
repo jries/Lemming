@@ -22,8 +22,8 @@ import org.lemming.pipeline.SingleRunModule;
  */
 public class DataTable extends SingleRunModule {
 
-	private ExtendableTable table;
-	private List<PropertyDescriptor> descriptors;
+	private final ExtendableTable table;
+	private final List<PropertyDescriptor> descriptors;
 
 	public DataTable() {
 		table = new ExtendableTable();

@@ -10,17 +10,17 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
- * Calculating centroids on a {@link #RandomAccessibleInterval}
+ * Calculating centroids on a
  * 
  * @author Ronny Sczech
  *
- * @param <T>
+ * @param <T> data type
  */
 public class Gradient<T extends RealType<T>>  {
 	
-	private IntervalView<T> op;
+	private final IntervalView<T> op;
 	private final double thresh;
-	private int radiusGrad;
+	private final int radiusGrad;
 
 	public Gradient(IntervalView<T> op_, final double threshold_, int radiusGrad_){
 		op = op_;
@@ -79,8 +79,8 @@ public class Gradient<T extends RealType<T>>  {
 		
 		// calculate the measured gradients
 		int index=0;
-		double valuex=0;
-		double valuey=0;
+		double valuex;
+		double valuey;
 		for (long y=dim-radiusGrad-1;y<dim+radiusGrad-1;y++)
 			for (long x=dim-radiusGrad-1;x<dim+radiusGrad-1;x++){
 				valuex=0;valuey=0;
@@ -186,7 +186,6 @@ public class Gradient<T extends RealType<T>>  {
 		
 		if (cx<op.min(0) || cx>op.max(0) || cy<op.min(1) || cy>op.max(1))
 			return null;
-		
 		final RealRandomAccess<T> interpolant = Views.interpolate(op, new LanczosInterpolatorFactory<T>()).realRandomAccess();
 		interpolant.setPosition(new double[]{cx, cy});
 		final double intensity = interpolant.get().getRealDouble();

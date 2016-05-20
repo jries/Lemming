@@ -1,6 +1,8 @@
 package org.lemming.tests;
 
 import java.io.File;
+import java.util.concurrent.Executors;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.lemming.modules.DataTable;
@@ -23,7 +25,7 @@ public class ExtendableTableTest2 {
 	@SuppressWarnings("rawtypes")
 	@Before
 	public void setUp() throws Exception {
-		pipe = new Manager();
+		pipe = new Manager(Executors.newCachedThreadPool());
 		
 		File file = new File("/Users/ronny/ownCloud/storm/p500ast.tif");
         

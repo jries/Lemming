@@ -22,7 +22,6 @@ import org.lemming.pipeline.SingleRunModule;
  * @author Ronny Sczech
  *
  * @param <T> - data type
- * @param <F> - frame type
  */
 public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 	
@@ -34,7 +33,7 @@ public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 	private int counter;
 	private Store inputA;
 	private Store inputB;
-	private int frames;
+	private final int frames;
 	
 	public ImageMath(int frames){
 		this.frames = frames;
@@ -81,6 +80,7 @@ public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 			try {
 				inputA.put(test);
 			} catch (InterruptedException e) {
+				System.out.println(e.getMessage());
 			}
 		}
 		Frame<T> frameA = test;
@@ -111,10 +111,9 @@ public class ImageMath<T extends RealType<T>> extends SingleRunModule {
 			newOutput(process1(framePair));
 			counter++;
 		} catch (InterruptedException e) {
+			System.out.println(e.getMessage());
 		}
 
-		// if (counter % 100 == 0)
-		// System.out.println("Frames calculated:" + counter);
 		return null;
 	}
 

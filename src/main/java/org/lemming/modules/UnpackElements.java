@@ -12,7 +12,7 @@ import org.lemming.pipeline.SingleRunModule;
  * 
  * @author Ronny Sczech
  *
- * @param <T>
+ * @param <T> data type
  */
 public class UnpackElements<T> extends SingleRunModule {
 
@@ -34,17 +34,15 @@ public class UnpackElements<T> extends SingleRunModule {
 				if (!list.isEmpty()){
 					Element last = list.remove(list.size()-1);
 					last.setLast(true);
-					for (Element l :list)
-						newOutput(l);
+					for(Element l:list) newOutput(l);
 					newOutput(last);
 				} else {
 					newOutput(el);
 				}
 				return data;
 			}
-			
-			for (Element l :list)
-				newOutput(l);
+
+			for(Element l:list) newOutput(l);
 		} else if (data instanceof Localization){
 			counter++;
 			if (data.isLast()){

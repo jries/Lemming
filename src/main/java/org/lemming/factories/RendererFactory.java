@@ -21,27 +21,27 @@ public interface RendererFactory extends PluginInterface {
 	 * the map to test.
 	 * @return <code>true</code> if the settings map is valid.
 	 */
-	public boolean setAndCheckSettings( final Map< String, Object > settings );
+	boolean setAndCheckSettings(final Map<String, Object> settings);
 	
 	/**
 	 *  @return  Renderer to process
 	 */
-	public Renderer getRenderer();
+	Renderer getRenderer();
 	
 	/**
-	 * Returns a new GUI panel able to configure the settings suitable for this
+	 * @return  getConfigurationPanel Returns a new GUI panel able to configure the settings suitable for this
 	 * specific factory.
 	 */
-	public ConfigurationPanel getConfigurationPanel();
+	ConfigurationPanel getConfigurationPanel();
 	
-	public Map<String, Object> getInitialSettings();
+	Map<String, Object> getInitialSettings();
 	
-	public static final String KEY_xmin = "xmin";
-	public static final String KEY_xmax = "xmax";
-	public static final String KEY_ymin = "ymin";
-	public static final String KEY_ymax = "ymax";
-	public static final String KEY_xBins = "xbins";
-	public static final String KEY_yBins = "ybins";
-	public static final String KEY_zmin = "zmin";
-	public static final String KEY_zmax = "zmax";
+	String KEY_xmin = "xmin";
+	String KEY_xmax = "xmax";
+	String KEY_ymin = "ymin";
+	String KEY_ymax = "ymax";
+	String KEY_xBins = "xbins";
+	String KEY_yBins = "ybins";
+	String KEY_zmin = "zmin";
+	String KEY_zmax = "zmax";
 }

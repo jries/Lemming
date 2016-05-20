@@ -11,10 +11,9 @@ import java.util.Random;
  * guarantees, it appears to work well with adequate data and a large (e.g., 20-80) number
  * of histogram bins.
  */
+
 public class NumericHistogram {
-  /**
-   * The Coord class defines a histogram bin, which is just an (x,y) pair.
-   */
+  /* The Coord class defines a histogram bin, which is just an (x,y) pair.*/
   static class Coord implements Comparable<Object> {
     double x;
     double y;
@@ -22,13 +21,13 @@ public class NumericHistogram {
     public int compareTo(Object other) {
       return Double.compare(x, ((Coord) other).x);
     }
-  };
+  }
 
   // Class variables
   private int nbins;
   private int nusedbins;
   private ArrayList<Coord> bins;
-  private Random prng;
+  private final Random prng;
 
   /**
    * Creates a new histogram object. Note that the allocate() or merge()
@@ -55,14 +54,14 @@ public class NumericHistogram {
   }
 
   /**
-   * Returns the number of bins currently being used by the histogram.
+   * @return getUsedBins Number of non-uniform-width histogram bins to useReturns the number of bins currently being used by the histogram.
    */
   public int getUsedBins() {
     return nusedbins;
   }
 
   /**
-   * Returns true if this histogram object has been initialized by calling merge()
+   * @return isReady Returns true if this histogram object has been initialized by calling merge()
    * or allocate().
    */
   public boolean isReady() {
@@ -72,7 +71,7 @@ public class NumericHistogram {
   /**
    * Returns a particular histogram bin.
    */
-  public Coord getBin(int b) {
+  private Coord getBin(int b) {
     return bins.get(b);
   }
 
@@ -201,9 +200,8 @@ public class NumericHistogram {
         }
 
         csum -= bins.get(b).y;
-        double r = bins.get(b-1).x +
+        return bins.get(b-1).x +
           (q*sum - csum) * (bins.get(b).x - bins.get(b-1).x)/(bins.get(b).y);
-        return r;
       }
     }
     return -1; // for Xlint, code will never reach here

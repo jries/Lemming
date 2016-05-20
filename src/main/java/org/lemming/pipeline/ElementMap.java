@@ -16,7 +16,7 @@ import org.lemming.interfaces.Element;
 public class ElementMap extends AbstractMap<String,Number> implements Element {
 	
 	private boolean isLast;
-	private Set<Entry<String, Number>> entrySet;
+	private final Set<Entry<String, Number>> entrySet;
 	
 	public ElementMap(Set<Entry<String, Number>> set){
 		this.entrySet = set;

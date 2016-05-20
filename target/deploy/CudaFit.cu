@@ -379,10 +379,11 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 		memset(NR_Numerator, 0, NV_P*sizeof(float));
 		memset(NR_Denominator, 0, NV_P*sizeof(float));
 
-		for (ii = 0; ii<sz; ii++)
-			for (jj = 0; jj<sz; jj++) {
+		for (jj = 0; jj<sz; jj++){
+			PSFy = kernel_IntGauss1D(jj, theta[1], PSFSigma);
+			
+			for (ii = 0; ii<sz; ii++) {
 				PSFx = kernel_IntGauss1D(ii, theta[0], PSFSigma);
-				PSFy = kernel_IntGauss1D(jj, theta[1], PSFSigma);
 
 				model = theta[3] + theta[2] * PSFx*PSFy;
 				data = s_data[sz*jj + ii];
@@ -407,6 +408,7 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 					NR_Denominator[ll] += d2udt2[ll] * cf - dudt[ll] * dudt[ll] * df;
 				}
 			}
+		}
 
 		// The update
 		if (kk<2)
@@ -423,10 +425,12 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 
 	// Calculating the CRLB and LogLikelihood
 	Div = 0.0;
-	for (ii = 0; ii<sz; ii++)
-		for (jj = 0; jj<sz; jj++) {
+	dudt[3] = 1.0f;
+	for (jj = 0; jj<sz; jj++){
+		PSFy = kernel_IntGauss1D(jj, theta[1], PSFSigma);
+		
+		for (ii = 0; ii<sz; ii++) {
 			PSFx = kernel_IntGauss1D(ii, theta[0], PSFSigma);
-			PSFy = kernel_IntGauss1D(jj, theta[1], PSFSigma);
 
 			model = theta[3] + theta[2] * PSFx*PSFy;
 			data = s_data[sz*jj + ii];
@@ -435,7 +439,7 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 			kernel_DerivativeIntGauss1D(ii, theta[0], PSFSigma, theta[2], PSFy, &dudt[0], NULL);
 			kernel_DerivativeIntGauss1D(jj, theta[1], PSFSigma, theta[2], PSFx, &dudt[1], NULL);
 			dudt[2] = PSFx*PSFy;
-			dudt[3] = 1.0f;
+		
 
 			//Building the Fisher Information Matrix
 			for (kk = 0; kk<NV; kk++)
@@ -445,15 +449,13 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 				}
 
 			//LogLikelyhood
-			if (model>0){
-				if (data>0){
+			if (model>0)
+				if (data>0)
 					Div += data*logf(model) - model - data*logf(data) + data;
-				}
-				else {
-					Div += -model;
-				}
-			}
+				else 
+					Div += -model;		
 		}
+	}
 
 	// Matrix inverse (CRLB=F^-1) and output assignments
 	kernel_MatInvN(M, Minv, Diag, NV);
@@ -471,7 +473,7 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 extern "C"
 __global__ void kernel_MLEFit_sigma(float *d_data, float PSFSigma, int sz, int iterations,
 float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
-
+	int NV = NV_PS;
 	float M[NV_PS*NV_PS], Diag[NV_PS], Minv[NV_PS*NV_PS];
 	int tx = threadIdx.x;
 	int bx = blockIdx.x;
@@ -480,15 +482,13 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 	float model, cf, df, data;
 	float Div;
 	float PSFy, PSFx;
-	int NV = NV_PS;
 	float dudt[NV_PS];
 	float d2udt2[NV_PS];
 	float NR_Numerator[NV_PS], NR_Denominator[NV_PS];
 	float theta[NV_PS];
 	float maxjump[NV_PS] = { 1.0f, 1.0f, 200.0f, 10.0f, 0.1f};
 	float gamma[NV_PS] = { 1.0f, 1.0f, 0.5f, 1.0f, 1.0f };
-	float Nmax;
-	float diff;
+	float Nmax, diff;
 	float sums[NV_PS];
 
 	//Prevent read/write past end of array
@@ -515,9 +515,10 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 		memset(NR_Numerator, 0, NV_P*sizeof(float));
 		memset(NR_Denominator, 0, NV_P*sizeof(float));
 
-		for (ii = 0; ii<sz; ii++){
+		for (jj = 0; jj<sz; jj++){
 			PSFy = kernel_IntGauss1D(jj, theta[1], theta[4]);
-			for (jj = 0; jj<sz; jj++) {
+			
+			for (ii = 0; ii<sz; ii++) {
 				PSFx = kernel_IntGauss1D(ii, theta[0], theta[4]);
 
 				model = theta[3] + theta[2] * PSFx * PSFy;
@@ -563,31 +564,34 @@ float *d_Parameters, float *d_CRLBs, float *d_LogLikelihood, int Nfits){
 
 	// Calculating the CRLB and LogLikelihood
 	Div = 0.0f;
-	for (ii = 0; ii<sz; ii++) for (jj = 0; jj<sz; jj++) {
-		PSFx = kernel_IntGauss1D(ii, theta[0], PSFSigma);
-		PSFy = kernel_IntGauss1D(jj, theta[1], PSFSigma);
+	for (jj = 0; jj<sz; jj++){
+			PSFy = kernel_IntGauss1D(jj, theta[1], theta[4]);
+			
+			for (ii = 0; ii<sz; ii++) {
+				PSFx = kernel_IntGauss1D(ii, theta[0], theta[4]);
 
-		model = theta[3] + theta[2] * PSFx*PSFy;
-		data = s_data[sz*jj + ii];
+			model = theta[3] + theta[2] * PSFx*PSFy;
+			data = s_data[sz*jj + ii];
 
-		//calculating derivatives
-		kernel_DerivativeIntGauss1D(ii, theta[0], theta[4], theta[2], PSFy, &dudt[0], NULL);
-		kernel_DerivativeIntGauss1D(jj, theta[1], theta[4], theta[2], PSFx, &dudt[1], NULL);
-		kernel_DerivativeIntGauss2DSigma(ii, jj, theta[0], theta[1], theta[4], theta[2], PSFx, PSFy, &dudt[4], NULL);
-		dudt[2] = PSFx*PSFy;
-		dudt[3] = 1.0f;
+			//calculating derivatives
+			kernel_DerivativeIntGauss1D(ii, theta[0], theta[4], theta[2], PSFy, &dudt[0], NULL);
+			kernel_DerivativeIntGauss1D(jj, theta[1], theta[4], theta[2], PSFx, &dudt[1], NULL);
+			kernel_DerivativeIntGauss2DSigma(ii, jj, theta[0], theta[1], theta[4], theta[2], PSFx, PSFy, &dudt[4], NULL);
+			dudt[2] = PSFx*PSFy;
+			dudt[3] = 1.0f;
 
-		//Building the Fisher Information Matrix
-		for (kk = 0; kk<NV; kk++)for (ll = kk; ll<NV; ll++){
-			M[kk*NV + ll] += dudt[ll] * dudt[kk] / model;
-			M[ll*NV + kk] = M[kk*NV + ll];
+			//Building the Fisher Information Matrix
+			for (kk = 0; kk<NV; kk++)for (ll = kk; ll<NV; ll++){
+				M[kk*NV + ll] += dudt[ll] * dudt[kk] / model;
+				M[ll*NV + kk] = M[kk*NV + ll];
+			}
+
+			//LogLikelyhood
+			if (model>0)
+				if (data>0)Div += data*logf(model) - model - data*logf(data) + data;
+				else
+					Div += -model;
 		}
-
-		//LogLikelyhood
-		if (model>0)
-			if (data>0)Div += data*logf(model) - model - data*logf(data) + data;
-			else
-				Div += -model;
 	}
 
 	// Matrix inverse (CRLB=F^-1) and output assigments

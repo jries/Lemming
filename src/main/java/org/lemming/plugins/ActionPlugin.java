@@ -5,11 +5,11 @@ import org.scijava.plugin.Plugin;
 
 public class ActionPlugin implements Runnable {
 	
-	public static final String NAME = "Empty Action Plugin";
+	private static final String NAME = "Empty Action Plugin";
 
-	public static final String KEY = "ACTIONPLUGIN";
+	private static final String KEY = "ACTIONPLUGIN";
 
-	public static final String INFO_TEXT = "<html>"
+	private static final String INFO_TEXT = "<html>"
 			+ "Empty Action Plugin"
 			+ "</html>";
 
@@ -18,7 +18,7 @@ public class ActionPlugin implements Runnable {
 		
 	}
 
-	@Plugin( type = ActionFactory.class, visible = true )
+	@Plugin( type = ActionFactory.class)
 	public static class Factory implements ActionFactory{
 
 		@Override

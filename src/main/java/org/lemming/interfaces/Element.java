@@ -10,10 +10,10 @@ public interface Element{
 	/**
 	 * @return checks if Element is the last in the queue.
 	 */
-	public boolean isLast();
+	boolean isLast();
 	
 	/**
 	 * @param last - set this Element object as last
 	 */
-	public void setLast(boolean last);
+	void setLast(boolean last);
 }

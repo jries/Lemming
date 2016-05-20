@@ -8,11 +8,17 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+/**
+ * A  that waits a certain before reading the input from a widget.
+ *
+ * @author Ronny Sczech
+ *
+ */
 public class WaitForChangeListener implements ChangeListener {
 
-	private long delay;
-	private Runnable command;
-	private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private final long delay;
+	private final Runnable command;
+	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture< ? > future;
 	
 

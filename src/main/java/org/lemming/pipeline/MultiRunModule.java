@@ -2,6 +2,7 @@ package org.lemming.pipeline;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -15,16 +16,13 @@ import org.lemming.interfaces.Element;
  */
 public abstract class MultiRunModule extends AbstractModule{
 	
-	private String name;
-	private static int nr=0;
-
-	public MultiRunModule(){
-		name = this.getClass().getSimpleName();
+	protected final ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
+	
+	protected MultiRunModule(){
 	}
 	
 	@Override
 	public void run() {
-		Thread.currentThread().setName(name+nr++);
 		if (!inputs.isEmpty() && !outputs.isEmpty()) { // first check for existing inputs
 			if (inputs.keySet().iterator().hasNext() && iterator==null)
 				iterator = inputs.keySet().iterator().next();
@@ -40,18 +38,17 @@ public abstract class MultiRunModule extends AbstractModule{
 
 					@Override
 					public Void call() {
-						while (running) {
-							if (Thread.currentThread().isInterrupted())
-								break;
-							Element data = nextInput();
-							if (data != null)
-								newOutput(processData(data));
-							else
-								pause(10);
-						}
-						return null;
+	                    while (running) {
+	                        if (Thread.currentThread().isInterrupted())
+	                            break;
+	                        Element data = nextInput();
+	                        if (data != null)
+	                            newOutput(processData(data));
+	                        else
+	                            pause(10);
+	                    }
+	                    return null;
 					}
-
 				};
 				futures.add(service.submit(r));
 			}
@@ -82,18 +79,17 @@ public abstract class MultiRunModule extends AbstractModule{
 
 					@Override
 					public Void call() {
-						while (running) {
-							if (Thread.currentThread().isInterrupted())
-								break;
-							Element data = nextInput();
-							if (data != null) 
-								processData(data);
-							else pause(10);
-						}
-						return null;
+	                    while (running) {
+	                        if (Thread.currentThread().isInterrupted())
+	                            break;
+	                        Element data = nextInput();
+	                        if (data != null)
+	                            processData(data);
+	                        else pause(10);
+	                    }
+	                    return null;
 					}
-
-				};
+                };
 				futures.add(service.submit(r));
 			}
 
@@ -110,15 +106,11 @@ public abstract class MultiRunModule extends AbstractModule{
 		if (!outputs.isEmpty()) { // only output
 			beforeRun();
 			while (running) {
-				if (Thread.currentThread().isInterrupted())
-					break;
 				Element data = processData(null);
 				newOutput(data);
 			}
 			afterRun();
-			return;
 		}
-		return;
 	}
 
 	protected void afterRun() {		
@@ -126,5 +118,6 @@ public abstract class MultiRunModule extends AbstractModule{
 
 	protected void beforeRun() {
 		start = System.currentTimeMillis();
+		running = true;
 	}
 }

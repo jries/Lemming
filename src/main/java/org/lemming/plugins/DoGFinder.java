@@ -16,6 +16,7 @@ import net.imglib2.algorithm.gauss3.Gauss3;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
 import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.exception.IncompatibleTypeException;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
@@ -27,26 +28,26 @@ import net.imglib2.view.Views;
 import org.lemming.factories.DetectorFactory;
 import org.lemming.gui.ConfigurationPanel;
 import org.lemming.gui.DoGFinderPanel;
+import org.lemming.interfaces.Detector;
 import org.lemming.interfaces.Element;
 import org.lemming.interfaces.Frame;
-import org.lemming.modules.Detector;
 import org.lemming.pipeline.FrameElements;
 import org.lemming.pipeline.Localization;
+import org.lemming.pipeline.MultiRunModule;
 import org.scijava.plugin.Plugin;
 
-public class DoGFinder<T extends RealType<T>> extends Detector<T> {
+public class DoGFinder<T extends RealType<T>> extends MultiRunModule implements Detector<T>{
 
-	public static final String NAME = "DoG Finder";
+	private static final String NAME = "DoG Finder";
 
-	public static final String KEY = "DOGFINDER";
+	private static final String KEY = "DOGFINDER";
 
-	public static final String INFO_TEXT = "<html>" + "Difference of Gaussian Finder" + "</html>";
-	private double radius;
-	private float threshold;
-	private double[] calibration;
-	private int counter = 0;
+	private static final String INFO_TEXT = "<html>" + "Difference of Gaussian Finder" + "</html>";
+	private final double radius;
+	private final float threshold;
+	private final double[] calibration;
 
-	public DoGFinder(final double radius, final float threshold) {
+	private DoGFinder(final double radius, final float threshold) {
 		super();
 		this.radius = radius;
 		this.threshold = threshold;
@@ -88,8 +89,8 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 		final RandomAccessibleInterval<FloatType> dog = Views.offset(Util.getArrayOrCellImgFactory(interval, type).create(interval, type), min);
 		final RandomAccessibleInterval<FloatType> dog2 = Views.offset(Util.getArrayOrCellImgFactory(interval, type).create(interval, type), min);
 
-		final double sigma1 = radius / Math.sqrt(interval.numDimensions()) * 0.9;
-		final double sigma2 = radius / Math.sqrt(interval.numDimensions()) * 1.1;
+		final double sigma1 = radius / Math.sqrt(interval.numDimensions()) * 0.85;
+		final double sigma2 = radius / Math.sqrt(interval.numDimensions()) * 1.15;
 		final double[][] sigmas = DifferenceOfGaussian.computeSigmas(0.5, 2, calibration, sigma1, sigma2);
 
 		try {
@@ -123,9 +124,9 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 			double y = p.getDoublePosition(1);
 			ra.setPosition(p);
 			found.add(new Localization(x * frame.getPixelDepth(), y * frame.getPixelDepth(), ra.get().getRealDouble(), frame.getFrameNumber()));
-			counter++;
+			
 		}
-
+		counterList.add(found.size());
 		return new FrameElements<>(found, frame);
 	}
 
@@ -155,7 +156,7 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 		 * @param minPeakValue
 		 *            - minimum PeakValue
 		 */
-		public MaximumCheck(final T minPeakValue) {
+		MaximumCheck(final T minPeakValue) {
 			this.minPeakValue = minPeakValue;
 		}
 
@@ -174,15 +175,25 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 	}
 
 	@Override
-	public boolean check() {
-		return inputs.size() == 1 && outputs.size() >= 1;
+	protected void afterRun() {
+		Integer cc=0;
+		for (Integer i : counterList)
+			cc+=i;
+		System.out.println("Detector found "
+				+ cc + " peaks in "
+				+ (System.currentTimeMillis() - start) + "ms.");
 	}
 
-	@Plugin(type = DetectorFactory.class, visible = true)
+	@Override
+	public boolean check() {
+		return inputs.size()==1 && outputs.size()>=1;
+	}
+
+	@Plugin(type = DetectorFactory.class)
 	public static class Factory implements DetectorFactory {
 
 		private Map<String, Object> settings;
-		private DoGFinderPanel configPanel = new DoGFinderPanel();
+		private final DoGFinderPanel configPanel = new DoGFinderPanel();
 
 		@Override
 		public String getInfoText() {
@@ -206,7 +217,7 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 		}
 
 		@Override
-		public <T extends RealType<T>> Detector<T> getDetector() {
+		public <T extends RealType<T> & NativeType<T>> Detector<T> getDetector() {
 			final double threshold = (Double) settings.get(DoGFinderPanel.KEY_THRESHOLD);
 			final int radius = (Integer) settings.get(DoGFinderPanel.KEY_RADIUS);
 			return new DoGFinder<>(threshold, radius);
@@ -216,6 +227,11 @@ public class DoGFinder<T extends RealType<T>> extends Detector<T> {
 		public ConfigurationPanel getConfigurationPanel() {
 			configPanel.setName(KEY);
 			return configPanel;
+		}
+		
+		@Override
+		public boolean hasPreProcessing() {
+			return false;
 		}
 
 	}

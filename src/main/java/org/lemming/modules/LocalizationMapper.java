@@ -13,7 +13,7 @@ import org.lemming.pipeline.SingleRunModule;
  */
 public class LocalizationMapper extends SingleRunModule {
 
-	private String[] nameArray;
+	private final String[] nameArray;
 
 	public LocalizationMapper(String[] nameArray) {
 		this.nameArray = nameArray;
@@ -32,8 +32,7 @@ public class LocalizationMapper extends SingleRunModule {
 			double col2 = (Double) me.get(nameArray[1]);
 			double col3 = (Double) me.get(nameArray[2]);
 			long col4 = (Long) me.get(nameArray[3]);
-			Localization loc = new Localization(col1, col2, col3,col4);
-			return loc;
+			return new Localization(col1, col2, col3,col4);
 		} catch (ClassCastException | NullPointerException e){
 			return null;
 		}

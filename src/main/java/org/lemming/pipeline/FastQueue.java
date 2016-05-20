@@ -18,13 +18,13 @@ import javolution.util.FastTable;
  *
  * @param <E> - element type
  */
-public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
+class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 
 	    /** The queued items */
-	    final FastTable<E> items;
+	    private final FastTable<E> items;
 
 	    /** Number of elements in the queue */
-	    int count;
+		private int count;
 
 	    /*
 	     * Concurrency control uses the classic two-condition algorithm
@@ -32,7 +32,7 @@ public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 	     */
 
 	    /** Main lock guarding all access */
-	    final ReentrantLock lock;
+	    private final ReentrantLock lock;
 
 	    /** Condition for waiting takes */
 	    private final Condition notEmpty;
@@ -97,7 +97,7 @@ public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 	     *        if {@code false} the access order is unspecified.
 	     * @throws IllegalArgumentException if {@code capacity < 1}
 	     */
-	    public FastQueue(int capacity, boolean fair) {
+		private FastQueue(int capacity, boolean fair) {
 	        if (capacity <= 0)
 	            throw new IllegalArgumentException();
 	        this.capacity = capacity;
@@ -342,11 +342,8 @@ public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 	        final ReentrantLock lock_ = this.lock;
 	        lock_.lock();
 	        try {
-	            if (count > 0) {
-	                return items_.remove(o);
-	            }
-	            return false;
-	        } finally {
+				return count > 0 && items_.remove(o);
+			} finally {
 	        	lock_.unlock();
 	        }
 	    }
@@ -365,11 +362,8 @@ public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 	        final ReentrantLock lock_ = this.lock;
 	        lock_.lock();
 	        try {
-	            if (count > 0) {
-	                return items_.contains(o);
-	            }
-	            return false;
-	        } finally {
+				return count > 0 && items_.contains(o);
+			} finally {
 	        	lock_.unlock();
 	        }
 	    }
@@ -440,8 +434,8 @@ public class FastQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
 	        final ReentrantLock lock_ = this.lock;
 	        lock_.lock();
 	        try {
-	            items_.toArray(a);
-	        } finally {
+				items_.toArray(a);
+			} finally {
 	            lock_.unlock();
 	        }
 	        return a;

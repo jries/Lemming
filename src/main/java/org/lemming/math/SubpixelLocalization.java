@@ -114,6 +114,8 @@ public class SubpixelLocalization {
 
 			if (foundStableMaxima) {
 				// set the results if everything went well
+				subpixelOffset.move(0.5, 0);
+				subpixelOffset.move(0.5, 1);
 				final double sx = FastMath.pow(subpixelOffset.getDoublePosition(0),2);
 				final double sy = FastMath.pow(subpixelOffset.getDoublePosition(1),2);
 				access.setPosition(currentPosition);
@@ -150,8 +152,8 @@ public class SubpixelLocalization {
 	 * @param <T>	
 	 * 			  data type
 	 */
-	protected static <T extends RealType<T>> void quadraticFitOffset(final Localizable p, final RandomAccess<T> access, final Matrix g,
-			final Matrix H, final RealPositionable offset) {
+	private static <T extends RealType<T>> void quadraticFitOffset(final Localizable p, final RandomAccess<T> access, final Matrix g,
+																   final Matrix H, final RealPositionable offset) {
 		final int n = p.numDimensions();
 
 		access.setPosition(p);
@@ -231,7 +233,7 @@ public class SubpixelLocalization {
 			}
 		} else {
 			for (int d = 0; d < n; d++) {
-				offset.setPosition(0l, d);
+				offset.setPosition(0L, d);
 			}
 		}
 	}

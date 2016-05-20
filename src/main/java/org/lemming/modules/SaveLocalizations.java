@@ -26,10 +26,10 @@ import org.lemming.pipeline.SingleRunModule;
 public class SaveLocalizations extends SingleRunModule {
 
 	final private Locale curLocale;
-	private File file;
+	private final File file;
 	private FileWriter w;
 	private int counter=0;
-	private static String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","intensity","frame"}; 
+	private static final String[] preferredOrder= new String[]{"ID","x","y","z","sX","sY","sZ","intensity","frame"};
 
 	public SaveLocalizations(File file) {
 		this.curLocale = Locale.getDefault();
@@ -53,9 +53,9 @@ public class SaveLocalizations extends SingleRunModule {
 				}
 			}
 			String headline="";
-			for (int n=0; n<preferredOrder.length; n++){
-				if(headset.contains(preferredOrder[n]))
-					headline += preferredOrder[n]+ "\t";
+			for (String aPreferredOrder : preferredOrder) {
+				if (headset.contains(aPreferredOrder))
+					headline += aPreferredOrder + "\t";
 			}
 			headline = headline.substring(0, headline.length()-1);
 			w.write(headline+"\n");
@@ -74,7 +74,10 @@ public class SaveLocalizations extends SingleRunModule {
 			}
 			try {
 				inputs.get(iterator).put(data);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e)
+			{
+				System.out.println(e.getMessage());
+			}
 			return null;
 		}
 		

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,7 @@ public class ManagerTest2 {
 
 		AbstractModule saver = new SaveLocalizations(new File(System.getProperty("user.home")+"/ownCloud/storm/fitted2.csv"));
 		
-		pipe = new Manager();
+		pipe = new Manager(Executors.newCachedThreadPool());
 		pipe.add(tif);
 		pipe.add(peak);
 		pipe.add(fitter);

@@ -10,7 +10,6 @@ import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Ellipse2D;
 
-import javax.swing.BoundedRangeModel;
 import javax.swing.JComponent;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
@@ -24,38 +23,9 @@ import javax.swing.plaf.basic.BasicSliderUI;
  * @author Ronny Sczech
  *
  */
-public class RangeSlider extends JSlider {
+class RangeSlider extends JSlider {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3826054916840844269L;
-
-	public RangeSlider() {
-	}
-
-	public RangeSlider(int orientation) {
-		super(orientation);
-	}
-
-	public RangeSlider(BoundedRangeModel brm) {
-		super(brm);
-	}
-
-	public RangeSlider(int min, int max) {
-		super(min, max);
-		setValue(min);
-		setUpperValue(max);
-		setToolTipText("");
-	}
-
-	public RangeSlider(int min, int max, int value) {
-		super(min, max, value);
-	}
-
-	public RangeSlider(int orientation, int min, int max, int value) {
-		super(orientation, min, max, value);
-	}
 
 	/**
 	 * Overrides the superclass method to install the UI delegate to draw two
@@ -67,15 +37,6 @@ public class RangeSlider extends JSlider {
 		// Update UI for slider labels. This must be called after updating the
 		// UI of the slider. Refer to JSlider.updateUI().
 		updateLabelUIs();
-	}
-	
-
-	/**
-	 * Returns the lower value in the range.
-	 */
-	@Override
-	public int getValue() {
-		return super.getValue();
 	}
 
 	/**
@@ -100,14 +61,14 @@ public class RangeSlider extends JSlider {
 	/**
 	 * Returns the upper value in the range.
 	 */
-	public int getUpperValue() {
+	int getUpperValue() {
 		return getValue() + getExtent();
 	}
 
 	/**
 	 * Sets the upper value in the range.
 	 */
-	public void setUpperValue(int value) {
+	void setUpperValue(int value) {
 		// Compute new extent.
 		int lowerValue = getValue();
 		int newExtent = Math.min(Math.max(0, value - lowerValue), getMaximum() - lowerValue);
@@ -126,10 +87,10 @@ public class RangeSlider extends JSlider {
 	 * UI delegate for the RangeSlider component. RangeSliderUI paints two
 	 * thumbs, one for the lower value and one for the upper value.
 	 */
-	class RangeSliderUI extends BasicSliderUI {
+	private class RangeSliderUI extends BasicSliderUI {
 
 		/** Color of selected range. */
-		private Color rangeColor = Color.GREEN;
+		private final Color rangeColor = Color.GREEN;
 
 		/** Location and size of thumb for upper value. */
 		private Rectangle upperThumbRect;
@@ -148,7 +109,7 @@ public class RangeSlider extends JSlider {
 		 *            RangeSlider
 		 */
 
-		public RangeSliderUI(JSlider b) {
+		RangeSliderUI(JSlider b) {
 			super(b);
 		}
 
@@ -409,8 +370,7 @@ public class RangeSlider extends JSlider {
 		 */
 		private Shape createThumbShape(int width, int height) {
 			// Use circular shape.
-			Ellipse2D shape = new Ellipse2D.Double(0, 0, width, height);
-			return shape;
+			return new Ellipse2D.Double(0, 0, width, height);
 		}
 
 		/**
@@ -459,7 +419,7 @@ public class RangeSlider extends JSlider {
 		 */
 		public void scrollByUnit(int direction) {
 			synchronized (slider) {
-				int delta = 1 * ((direction > 0) ? POSITIVE_SCROLL : NEGATIVE_SCROLL);
+				int delta = ((direction > 0) ? POSITIVE_SCROLL : NEGATIVE_SCROLL);
 
 				if (upperThumbSelected) {
 					int oldValue = ((RangeSlider) slider).getUpperValue();
@@ -488,7 +448,7 @@ public class RangeSlider extends JSlider {
 		/**
 		 * Listener to handle mouse movements in the slider track.
 		 */
-		public class RangeTrackListener extends TrackListener {
+		private class RangeTrackListener extends TrackListener {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -592,7 +552,7 @@ public class RangeSlider extends JSlider {
 			 * value in the slider.
 			 */
 			private void moveLowerThumb() {
-				int thumbMiddle = 0;
+				int thumbMiddle;
 
 				switch (slider.getOrientation()) {
 				case JSlider.VERTICAL:
@@ -642,7 +602,6 @@ public class RangeSlider extends JSlider {
 					break;
 
 				default:
-					return;
 				}
 			}
 
@@ -651,7 +610,7 @@ public class RangeSlider extends JSlider {
 			 * value in the slider.
 			 */
 			private void moveUpperThumb() {
-				int thumbMiddle = 0;
+				int thumbMiddle;
 
 				switch (slider.getOrientation()) {
 				case JSlider.VERTICAL:
@@ -701,7 +660,6 @@ public class RangeSlider extends JSlider {
 					break;
 
 				default:
-					return;
 				}
 			}
 		}

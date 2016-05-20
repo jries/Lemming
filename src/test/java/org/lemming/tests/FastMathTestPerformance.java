@@ -23,13 +23,13 @@ public class FastMathTestPerformance {
     // Detail format
     private static final String FMT_DTL = "%-5s %6d %6.1f %6d %6.4f %6d %6.4f";
     /** Nanoseconds to milliseconds conversion factor ({@value}). */
-    public static final double NANO_TO_MILLI = 1e-6;
+    private static final double NANO_TO_MILLI = 1e-6;
     /** RNG. */
-    private static Random rng = new Random();
+    private static final Random rng = new Random();
 
 
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() {
 		System.out.println(String.format(FMT_HDR,
                 "Name","StrictMath","FastMath","Math",RUNS,
                 System.getProperty("java.version"),
@@ -40,12 +40,11 @@ public class FastMathTestPerformance {
 	}
 	
 	private static void report(String name, long strictMathTime, long fastMathTime, long mathTime) {
-        long unitTime = strictMathTime;
-        System.out.println(String.format(FMT_DTL,
+		System.out.println(String.format(FMT_DTL,
                 name,
-                strictMathTime / RUNS, (double) strictMathTime / unitTime,
-                fastMathTime / RUNS, (double) fastMathTime / unitTime,
-                mathTime / RUNS, (double) mathTime / unitTime
+                strictMathTime / RUNS, (double) strictMathTime / strictMathTime,
+                fastMathTime / RUNS, (double) fastMathTime / strictMathTime,
+                mathTime / RUNS, (double) mathTime / strictMathTime
                 ));
     }
 
@@ -1177,7 +1176,7 @@ public class FastMathTestPerformance {
                     });
 	    }
 
-	public static StatisticalSummary[] timeAndReport(String title, int repeatChunk, int repeatStat, boolean runGC, RunTest... methods) {
+	private static StatisticalSummary[] timeAndReport(String title, int repeatChunk, int repeatStat, boolean runGC, RunTest... methods) {
 		// Header format.
 		final String hFormat = "%s (calls per timed block: %d, timed blocks: %d, time unit: ms)";
 
@@ -1210,7 +1209,7 @@ public class FastMathTestPerformance {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static StatisticalSummary[] time(int repeatChunk, int repeatStat, boolean runGC, Callable<Double>... methods) {
+	private static StatisticalSummary[] time(int repeatChunk, int repeatStat, boolean runGC, Callable<Double>... methods) {
 		final double[][][] times = timesAndResults(repeatChunk, repeatStat, runGC, methods);
 
 		final int len = methods.length;
@@ -1227,7 +1226,7 @@ public class FastMathTestPerformance {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static double[][][] timesAndResults(int repeatChunk, int repeatStat, boolean runGC, Callable<Double>... methods) {
+	private static double[][][] timesAndResults(int repeatChunk, int repeatStat, boolean runGC, Callable<Double>... methods) {
 		final int numMethods = methods.length;
 		final double[][][] timesAndResults = new double[numMethods][repeatStat][2];
 
@@ -1245,7 +1244,7 @@ public class FastMathTestPerformance {
 					// Timed block.
 					final long start = System.nanoTime();
 					for (int i = 0; i < repeatChunk; i++) {
-						result[i] = r.call().doubleValue();
+						result[i] = r.call();
 					}
 					final long stop = System.nanoTime();
 

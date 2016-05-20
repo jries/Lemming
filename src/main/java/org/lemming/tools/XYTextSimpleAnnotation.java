@@ -26,7 +26,7 @@ public class XYTextSimpleAnnotation extends AbstractXYAnnotation {
 	private String text;
 	private Font font;
 	private Color color;
-	private ChartPanel chartPanel;
+	private final ChartPanel chartPanel;
 	
 	
 	public XYTextSimpleAnnotation(ChartPanel chartPanel) {

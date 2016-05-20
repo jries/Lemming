@@ -10,24 +10,22 @@ import org.lemming.pipeline.ExtendableTable;
 
 public class TableFilterTest {
 
-	private ExtendableTable table;
-
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		
 	}
 
 	@Test
 	public void test() {
 		
-		TableLoader loader = new TableLoader(new File("/home/ronny/ownCloud/storm/testTable.csv"));
+		TableLoader loader = new TableLoader(new File(System.getProperty("user.home")+"/ownCloud/testTable.csv"));
 		//loader.readObjects();
 		loader.readCSV(',');
-		table = loader.getTable();
+		ExtendableTable table = loader.getTable();
 		table.addFilterMinMax("x", 2, 7);
 		long start=System.currentTimeMillis();
 		ExtendableTable res = table.filter();
-		System.out.println("original:"+table.getNumberOfRows()+" filtered:"+res.getNumberOfRows()
+		System.out.println("original:"+ table.getNumberOfRows()+" filtered:"+res.getNumberOfRows()
 				+ " in " + (System.currentTimeMillis()-start) + "ms");
 		assertNotEquals(table.getNumberOfRows(),res.getNumberOfRows());
 	}

@@ -3,23 +3,23 @@ package org.lemming.tools;
 import java.util.Arrays;
 
 /**
- * Parser for the char buffered reader {@link #CharBufferedReader}
+ * Parser for the char buffered reader
  * 
  * @author Ronny Sczech
  *
  */
 public class FloatingDecimal {
 
-	private boolean isNegative;
-	private int decExponent;
-	private char[] digits;
-	private int nDigits;
+	private final boolean isNegative;
+	private final int decExponent;
+	private final char[] digits;
+	private final int nDigits;
 	private static final char zero[] = { '0', '0', '0', '0', '0', '0', '0', '0' };
-	static final int    maxDecimalDigits = 15;
-	static final int    intDecimalDigits = 9;
-    static final int    maxDecimalExponent = 308;
-    static final int    minDecimalExponent = -324;
-    static final int    bigDecimalExponent = 324;
+	private static final int    maxDecimalDigits = 15;
+	private static final int    intDecimalDigits = 9;
+    private static final int    maxDecimalExponent = 308;
+    private static final int    minDecimalExponent = -324;
+    private static final int    bigDecimalExponent = 324;
 	private static final double small10pow[] = {
 	        1.0e0,
 	        1.0e1, 1.0e2, 1.0e3, 1.0e4, 1.0e5,
@@ -44,15 +44,14 @@ public class FloatingDecimal {
         this.nDigits = n;
     }
 	
-	public static char[] trim(char[] array) {
+	private static char[] trim(char[] array) {
         int len = array.length;
         int st = 0;
-        char[] val = array;    /* avoid getfield opcode */
 
-        while ((st < len) && (val[st] <= ' ')) {
+        while ((st < len) && (array[st] <= ' ')) {
             st++;
         }
-        while ((st < len) && (val[len - 1] <= ' ')) {
+        while ((st < len) && (array[len - 1] <= ' ')) {
             len--;
         }
         return ((st > 0) || (len < array.length)) ? substring(array,st, len) : array;
@@ -77,7 +76,7 @@ public class FloatingDecimal {
         	int l = in.length;
             if ( l == 0 ) throw new NumberFormatException("empty String");
             int i = 0;
-            switch ( c = in[i] ){
+            switch ( in[i] ){
             case '-':
                 isNegative = true;
                 //FALLTHROUGH
@@ -85,7 +84,7 @@ public class FloatingDecimal {
                 i++;
                 signSeen = true;
             }
-            c = in[i];
+            //c = in[i];
             
             char[] digits = new char[ l ];
             int    nDigits= 0;
@@ -209,7 +208,10 @@ public class FloatingDecimal {
             }
             
             return new FloatingDecimal( isNegative, decExp, digits, nDigits);        	
-        } catch ( StringIndexOutOfBoundsException e ){ }
+        } catch ( StringIndexOutOfBoundsException e )
+        {
+            System.out.println(e.getMessage());
+        }
         throw new NumberFormatException("For input string: \"" + String.valueOf(in) + "\"");
 	 }
 	 

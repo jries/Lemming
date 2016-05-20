@@ -15,9 +15,9 @@ import net.imglib2.type.numeric.RealType;
 
 public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 	
-	private ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<Integer> counterList = new ConcurrentLinkedQueue<>();
 
-	public CPU_Fitter(int halfkernel) {
+	protected CPU_Fitter(int halfkernel) {
 		super(halfkernel);
 	}
 
@@ -38,19 +38,18 @@ public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 
 					@Override
 					public Void call() {
-						while (running) {
-							if (Thread.currentThread().isInterrupted())
-								break;
-							Element data = nextInput();
-							if (data != null)
-								newOutput(processData(data));
-							else
-								pause(10);
-						}
-						return null;
+		                while (running) {
+		                    if (Thread.currentThread().isInterrupted())
+		                        break;
+		                    Element data = nextInput();
+		                    if (data != null)
+		                        newOutput(processData(data));
+		                    else
+		                        pause(10);
+		                }
+		                return null;
 					}
-
-				};
+                };
 				futures.add(service.submit(r));
 			}
 
@@ -80,18 +79,17 @@ public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 
 					@Override
 					public Void call() {
-						while (running) {
-							if (Thread.currentThread().isInterrupted())
-								break;
-							Element data = nextInput();
-							if (data != null) 
-								processData(data);
-							else pause(10);
-						}
-						return null;
+	                    while (running) {
+	                        if (Thread.currentThread().isInterrupted())
+	                            break;
+	                        Element data = nextInput();
+	                        if (data != null)
+	                            processData(data);
+	                        else pause(10);
+	                    }
+	                    return null;
 					}
-
-				};
+                };
 				futures.add(service.submit(r));
 			}
 
@@ -114,7 +112,6 @@ public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 				newOutput(data);
 			}
 			afterRun();
-			return;
 		}
 	}
 	
@@ -132,18 +129,17 @@ public abstract class CPU_Fitter<T extends RealType<T>> extends Fitter<T> {
 		return null;
 	}
 
-	protected void process(FrameElements<T> data) {
+	private void process(FrameElements<T> data) {
 		List<Element> res = fit(data.getList(), data.getFrame(), size);
 		counterList.add(res.size());
-		for (Element el : res)
-			newOutput(el);
+		for (Element l:res) newOutput(l);
 	}
 
-	protected void afterRun() {
+	private void afterRun() {
 		Integer cc = 0;
 		for (Integer i : counterList)
 			cc += i;
-		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 1, 1l);
+		LocalizationPrecision3D lastLoc = new LocalizationPrecision3D(-1, -1, -1, 0, 0, 0, 1, 1L);
 		lastLoc.setLast(true);
 		newOutput(lastLoc);
 		System.out.println("Fitting of " + cc + " elements done in " + (System.currentTimeMillis() - start) + "ms");

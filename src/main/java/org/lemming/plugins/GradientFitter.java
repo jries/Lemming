@@ -27,15 +27,15 @@ import net.imglib2.view.Views;
 
 public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 
-	public static final String NAME = "Gradient";
+	private static final String NAME = "Gradient";
 
-	public static final String KEY = "GRADIENTFITTER";
+	private static final String KEY = "GRADIENTFITTER";
 
-	public static final String INFO_TEXT = "<html>" + "Gradient Fitter Plugin" + "</html>";
+	private static final String INFO_TEXT = "<html>" + "Gradient Fitter Plugin" + "</html>";
 
-	private PolynomialFunction zFunction;
+	private final PolynomialFunction zFunction;
 
-	private double[] zgrid;
+	private final double[] zgrid;
 
 	//private double zStep;
 
@@ -60,8 +60,8 @@ public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 			pixels.max(imageMax);
 			final Interval roi = cropInterval(imageMin, imageMax, new long[] { x - halfKernel, y - halfKernel },
 					new long[] { x + halfKernel, y + halfKernel });
-			final Gradient<T> gf = new Gradient<T>(Views.interval(pixels, roi), 0, (int) (halfKernel/2));
-			double[] result = null;
+			final Gradient<T> gf = new Gradient<>(Views.interval(pixels, roi), 0, (int) (halfKernel / 2));
+			double[] result;
 			result = gf.fit();
 			if (result != null) {
 				result[0] *= pixelDepth;
@@ -98,11 +98,11 @@ public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		return calcIterZ(value, idx - zStep, idx + zStep, precision);
 	}
 
-	@Plugin(type = FitterFactory.class, visible = true)
+	@Plugin(type = FitterFactory.class )
 	public static class Factory implements FitterFactory {
 
 		private Map<String, Object> settings;
-		private GradientFitterPanel configPanel = new GradientFitterPanel();
+		private final GradientFitterPanel configPanel = new GradientFitterPanel();
 
 		@Override
 		public String getInfoText() {
@@ -146,7 +146,11 @@ public class GradientFitter<T extends RealType<T>> extends CPU_Fitter<T> {
 		public int getHalfKernel() {
 			return size;
 		}
-
+		
+		@Override
+		public boolean hasGPU() {
+			return false;
+		}
 	}
 
 }

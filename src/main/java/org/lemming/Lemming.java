@@ -13,7 +13,7 @@ import ij.plugin.PlugIn;
  *
  */
 @SuppressWarnings("rawtypes")
-public class Lemming implements PlugIn {
+class Lemming implements PlugIn {
 
 	@Override
 	public void run(String arg) {
@@ -23,15 +23,17 @@ public class Lemming implements PlugIn {
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
+            
+			@Override
 			public void run() {
-				try {
-					Controller frame = new Controller();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			try {
+                Controller frame = new Controller();
+                frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 			}
-		});
+        });
 	}
 
 }

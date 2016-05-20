@@ -1,6 +1,5 @@
 package org.lemming.modules;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,13 +7,14 @@ import java.io.IOException;
 import org.lemming.interfaces.Element;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.lemming.pipeline.SingleRunModule;
+import org.lemming.tools.CharBufferedReader;
 
 
 public class ReadLocalizationPrecision3D extends SingleRunModule {
 	
-	private File file;
-	private BufferedReader br;
-	private String delimiter;
+	private final File file;
+	private CharBufferedReader br;
+	private final String delimiter;
 	private String sCurrentLine;
 
 	public ReadLocalizationPrecision3D(File f, String d){
@@ -28,7 +28,7 @@ public class ReadLocalizationPrecision3D extends SingleRunModule {
 		iterator = outputs.keySet().iterator().next();
 		
 		try {
-			br = new BufferedReader(new FileReader(file));	
+			br = new CharBufferedReader(new FileReader(file));
 			sCurrentLine = br.readLine();	
 			if (sCurrentLine==null) throw new NullPointerException("first line is null!");
 		} catch (IOException e) {

@@ -1,25 +1,24 @@
 package org.lemming.tests;
 
 import org.lemming.math.Calibrator;
-import org.lemming.tools.LemmingUtils;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.gui.StackWindow;
 
-public class CalibrationTest {
+class CalibrationTest {
 	
-	private StackWindow calibWindow;
+	private final StackWindow calibWindow;
 	private Calibrator calibrator;
 	
-	public CalibrationTest(){
-		ImagePlus calibImage = new ImagePlus("D:/ownCloud/z-stack_1.tif");
+	private CalibrationTest(){
+		final ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/set1.tif");
 		calibWindow = new StackWindow(calibImage);
-		calibImage.setRoi(45, 95, 21, 21);
+		calibImage.setRoi(19, 17, 25, 25);
 	}
 	
-	private boolean fitbeads() {
+	private void fitbeads() {
 		final Roi roitemp = calibWindow.getImagePlus().getRoi();
 		Roi calibRoi = null;
 		try {
@@ -27,7 +26,7 @@ public class CalibrationTest {
 			final double h = roitemp.getFloatHeight();
 			if (w != h) {
 				IJ.showMessage("Needs a quadratic ROI /n(hint: press Shift).");
-				return false;
+				return;
 			}
 			calibRoi = roitemp;
 		} catch (NullPointerException e) {
@@ -35,21 +34,19 @@ public class CalibrationTest {
 		}
 
 		final int zstep = 10; // set
-		calibrator = new Calibrator(calibWindow.getImagePlus(), LemmingUtils.readCameraSettings(System.getProperty("user.home")+"/camera.props"), zstep, calibRoi);
+		calibrator = new Calibrator(calibWindow.getImagePlus(), zstep, calibRoi);
 		calibrator.fitStack();
 		calibWindow.close();
-		return true;
 	}
 
-	private boolean fitCurve() {
-		final int rangeMin = 0; //set
-		final int rangeMax = 400; //set
+	private void fitCurve() {
+		final int rangeMin = 100; //set
+		final int rangeMax = 1100; //set
 		calibrator.fitBSplines(rangeMin, rangeMax);
-		return true;
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib("D:/ownCloud/set1-calb.csv");
+		calibrator.saveCalib(System.getProperty("user.home")+"/ownCloud/set1-calt.csv");
 		//calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}

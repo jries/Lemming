@@ -24,11 +24,11 @@ import ij.IJ;
 
 public class StoreSaver extends SingleRunModule {
 	
-	private File file;
+	private final File file;
 	private BufferedWriter br;
 	private Locale curLocale;
 	private Map<String,Object> metaData;
-	private static String[] preferredOrder= new String[]{"x","y","z","sX","sY","sZ","intensity","frame"}; 
+	private static final String[] preferredOrder= new String[]{"x","y","z","sX","sY","sZ","intensity","frame"};
 
 	public StoreSaver(File f){
 		this.file = f;
@@ -64,9 +64,9 @@ public class StoreSaver extends SingleRunModule {
 				}
 			}
 			String headline="";
-			for (int n=0; n<preferredOrder.length; n++){
-				if(headset.contains(preferredOrder[n]))
-					headline += preferredOrder[n]+ "\t";
+			for (String aPreferredOrder : preferredOrder) {
+				if (headset.contains(aPreferredOrder))
+					headline += aPreferredOrder + "\t";
 			}
 			headline = headline.substring(0, headline.length()-1);
 			br.write(headline+"\n");
@@ -78,7 +78,7 @@ public class StoreSaver extends SingleRunModule {
 	@Override
 	public Element processData(Element data) { // data not used here
 		
-		String converted = new String();
+		String converted = "";
 		if (data instanceof ElementMap){
 			ElementMap me = (ElementMap) data;
 			for (Entry<String, Number> entry : me.entrySet()){
