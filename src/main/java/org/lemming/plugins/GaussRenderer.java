@@ -1,11 +1,6 @@
 package org.lemming.plugins;
 
-import java.awt.image.IndexColorModel;
 import java.util.Map;
-
-import ij.process.ImageProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageStatistics;
 
 import org.apache.commons.math3.special.Erf;
 import org.apache.commons.math3.util.FastMath;
@@ -17,6 +12,9 @@ import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.LocalizationPrecision3D;
 import org.scijava.plugin.Plugin;
+
+import net.imglib2.RandomAccess;
+import net.imglib2.type.numeric.real.FloatType;
 
 public class GaussRenderer extends Renderer {
 	
@@ -31,33 +29,26 @@ public class GaussRenderer extends Renderer {
 	private final double ymax;
 	private final double xwidth;
 	private final double ywidth;
-	private volatile float[] pixels;
+	private volatile RandomAccess<FloatType> pixels;
 	private double[] template;
 	private static final double sqrt2 = FastMath.sqrt(2);
 	private static final int sizeGauss = 600;
 	private static final double roiks = 2.5;
 	private static final int maxKernel = 30;
 	private final double sigmaTemplate = sizeGauss/(8*roiks);
-	private final int xbins;
-	private final int ybins;
-
 	
 	public GaussRenderer(final int xBins, final int yBins, final double xmin, final double xmax, final double ymin, final double ymax) {
+		super(xBins, yBins);
 		this.xmin = xmin;
 		this.xmax = xmax;
 		this.ymin = ymin;
 		this.ymax = ymax;
 		this.xwidth = (xmax - xmin) / xBins;
 		this.ywidth = (ymax - ymin) / yBins;
-		this.xbins = xBins;
-    	this.ybins = yBins;
     	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
     		cancel(); return;
     	}
-    	pixels = new float[xBins*yBins];
-		ImageProcessor fp = new FloatProcessor(xbins, ybins, pixels, getDefaultColorModel());
-		ip.setProcessor(fp);
-		ip.updateAndRepaintWindow();
+    	pixels = img.randomAccess();
 	}
 	
 	@Override
@@ -106,9 +97,6 @@ public class GaussRenderer extends Renderer {
 	
 	@Override
 	public void afterRun(){
-		ImageStatistics stats = ip.getStatistics();
-		ip.setDisplayRange(stats.histMin, stats.histMax);
-		ip.updateAndDraw();
 		System.out.println("Rendering done in "	+ (System.currentTimeMillis() - start) + "ms.");
 	}
 	
@@ -118,27 +106,28 @@ public class GaussRenderer extends Renderer {
 		final double sigmaY = Math.max(sigmaY_, sigmaTemplate/sizeGauss);
 		final long dnx = (long) Math.min(Math.ceil(roiks*sigmaX), maxKernel) ;
 		final long dny = (long) Math.min(Math.ceil(roiks*sigmaY), maxKernel);
-	    final long xr = StrictMath.round(xpix);
-	    final long yr = StrictMath.round(ypix);
+	    final long xr = Math.round(xpix);
+	    final long yr = Math.round(ypix);
 	    final double dx = xpix-xr;
 	    final double dy = ypix-yr;
 	    final double intcorrectionx = Erf.erf((dnx+0.5)/sigmaX/sqrt2);
 	    final double intcorrectiony = Erf.erf((dny+0.5)/sigmaY/sqrt2);
 	    final double gaussnorm = 10/(2*Math.PI*sigmaX*sigmaY*intcorrectionx*intcorrectiony);
-	    int idx, t_idx;
+	    int t_idx;
 		long xt,yt,xax,yax,yp,xp;
 		
 	    for(xax = -dnx; xax <= dnx; xax++){
-	    	xt = StrictMath.round((xax+dx)*sigmaTemplate/sigmaX)+sizeGauss;
+	    	xt = Math.round((xax+dx)*sigmaTemplate/sigmaX)+sizeGauss;
 	    	for(yax = -dny; yax <= dny; yax++){
-	    		yt = StrictMath.round((yax+dy)*sigmaTemplate/sigmaY)+sizeGauss;
+	    		yt = Math.round((yax+dy)*sigmaTemplate/sigmaY)+sizeGauss;
 	    		xp = xr+xax; 
 	            yp = yr+yax;
-	            if (xp>=0 && yp>=0 && xt>=0 && yt>=0 && xt<w && yt<w && xp<xbins && yp<ybins){
-	            	idx = (int) (xp + yp * xbins);
+	            if (xp>=0 && yp>=0 && xt>=0 && yt>=0 && xt<w && yt<w && xp<xBins && yp<yBins){
+	            	pixels.setPosition(new long[]{xp, yp});
 	            	t_idx = (int) (xt + yt * w);
-	            	final double value = template[t_idx] * gaussnorm;
-	            	pixels[idx] += value;
+	            	final FloatType value = new FloatType();
+	            	value.setReal(template[t_idx] * gaussnorm);
+	            	pixels.get().add(value);
 	            }
 	    	}
 	    }
@@ -216,17 +205,4 @@ public class GaussRenderer extends Renderer {
 		}
 		
 	}
-	
-	private static IndexColorModel getDefaultColorModel() {
-		byte[] r = new byte[256];
-		byte[] g = new byte[256];
-		byte[] b = new byte[256];
-		for(int i=0; i<256; i++) {
-			r[i]=(byte)i;
-			g[i]=(byte)i;
-			b[i]=(byte)i;
-		}
-		return new IndexColorModel(8, 256, r, g, b);
-	}
-
 }

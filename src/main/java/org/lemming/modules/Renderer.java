@@ -3,6 +3,11 @@ package org.lemming.modules;
 import java.util.List;
 
 import ij.ImagePlus;
+import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.array.ArrayImgFactory;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.type.numeric.real.FloatType;
 
 import org.lemming.pipeline.MultiRunModule;
 import org.lemming.interfaces.Element;
@@ -15,15 +20,21 @@ import org.lemming.interfaces.Element;
  */
 public abstract class Renderer extends MultiRunModule {
 	
-	protected final ImagePlus ip;
+	protected final Img< FloatType > img;
+	protected final int yBins;
+	protected final int xBins;
 
-	protected Renderer() {
-		ip = new ImagePlus();
-		String title = "Renderer Window";
-		ip.setTitle(title);
+	protected Renderer(final int width, final int height) {
+		xBins=width;
+		yBins=height;
+		final ImgFactory< FloatType > imgFactory = new ArrayImgFactory< FloatType >();
+		img = imgFactory.create( new int[]{ width, height}, new FloatType() );
 	}
 	
 	public ImagePlus getImage(){
+		final ImagePlus ip = ImageJFunctions.wrap(img, "Renderer Window");
+		final double max = ip.getStatistics().histMax;
+		ip.getProcessor().setMinAndMax(0, max);
 		return ip;
 	}
 	
@@ -34,16 +45,16 @@ public abstract class Renderer extends MultiRunModule {
 	
 	@Override
 	public void afterRun(){
-		double max = ip.getStatistics().histMax;
-		ip.getProcessor().setMinAndMax(0, max);
-		ip.updateAndRepaintWindow();
 		System.out.println("Rendering done in "
 				+ (System.currentTimeMillis() - start) + "ms.");
 	}
 	
 	public void show(){
-		if (ip!=null){
-			ip.show();
+		if (img!=null){
+			final ImagePlus ip = ImageJFunctions.show( img );
+			double max = ip.getStatistics().histMax;
+			ip.getProcessor().setMinAndMax(0, max);
+			ip.updateAndDraw();
 			while (ip.isVisible())
 				pause(10);
 		}
@@ -51,9 +62,9 @@ public abstract class Renderer extends MultiRunModule {
 	
 	public void preview(List<Element> previewList) {
 		for(Element l:previewList) newOutput(l);
-		double max = ip.getStatistics().histMax;
-		ip.getProcessor().setMinAndMax(0, max);
-		ip.updateAndRepaintWindow();
+		//double max = ip.getStatistics().histMax;
+		//ip.getProcessor().setMinAndMax(0, max);
+		//ip.updateAndRepaintWindow();
 	}
 
 }

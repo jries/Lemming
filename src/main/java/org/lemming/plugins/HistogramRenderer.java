@@ -1,7 +1,5 @@
 package org.lemming.plugins;
 
-import ij.process.ByteProcessor;
-
 import java.util.Map;
 
 import org.lemming.factories.RendererFactory;
@@ -11,8 +9,10 @@ import org.lemming.interfaces.Element;
 import org.lemming.modules.Renderer;
 import org.lemming.pipeline.ElementMap;
 import org.lemming.pipeline.LocalizationPrecision3D;
-import org.lemming.tools.LemmingUtils;
 import org.scijava.plugin.Plugin;
+
+import net.imglib2.RandomAccess;
+import net.imglib2.type.numeric.real.FloatType;
 
 public class HistogramRenderer extends Renderer {
 	
@@ -21,18 +21,17 @@ public class HistogramRenderer extends Renderer {
 	private static final String INFO_TEXT = "<html>"
 											+ "Histogram Renderer Plugin"
 											+ "</html>";
-	
-	private final int xBins;
+
 	private final double xmin;
 	private final double ymin;
-	private final double xwidth;
-	private final double ywidth;
-	private volatile byte[] values; // volatile keyword keeps the array on the heap available
+	private volatile RandomAccess<FloatType> values; // volatile keyword keeps the array on the heap available
 	private final double xmax;
 	private final double ymax;
 	private final double zmin;
 	private final double zmax;
-
+	
+	private final double xwidth;
+	private final double ywidth;
 
 	public HistogramRenderer(){
 		this(256,256,0,256,0,256,0,255);
@@ -40,22 +39,20 @@ public class HistogramRenderer extends Renderer {
 
 	public HistogramRenderer(final int xBins, final int yBins, final double xmin, final double xmax, 
 			final double ymin, final double ymax, final double zmin, final double zmax) {
-		this.xBins = xBins;
+		super(xBins, yBins);
 		this.xmin = xmin;
 		this.ymin = ymin;
 		this.xmax = xmax;
 		this.ymax = ymax;
-		this.xwidth = (xmax - xmin) / xBins;
-    	this.ywidth = (ymax - ymin) / yBins;
     	this.zmin = zmin;
     	this.zmax = zmax;
+    	xwidth = (xmax - xmin) / xBins;
+    	ywidth = (ymax - ymin) / yBins;
+    	
     	if (Runtime.getRuntime().freeMemory()<(xBins*yBins*4)){ 
     		cancel(); return;
     	}
-    	values = new byte[xBins * yBins];
-		ByteProcessor sp = new ByteProcessor(xBins, yBins, values, LemmingUtils.Ice());
-		ip.setProcessor(sp);
-		ip.updateAndRepaintWindow();
+    	values = img.randomAccess();
 	}
 
 	@Override
@@ -80,18 +77,14 @@ public class HistogramRenderer extends Renderer {
 		}
 		if (data.isLast())
 			cancel();
-		long rz = StrictMath.round((z - zmin) / (zmax - zmin) * 256) + 1;
+		final FloatType rz = new FloatType();
+		rz.setReal((z - zmin) / (zmax - zmin));
 		
         if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	final long xindex = StrictMath.round((x - xmin) / xwidth);
-			final long yindex = StrictMath.round((y - ymin) / ywidth);
-			final int index = (int) (xindex + yindex * xBins);
-			if (index >= 0 && index < values.length) {
-				if (values[index] > 0)
-					values[index] = (byte) ((values[index] + rz + 1) / 2);
-				else
-					values[index] = (byte) rz;
-			}
+        	final long xindex = Math.round((x - xmin) / xwidth);
+			final long yindex = Math.round((y - ymin) / ywidth);
+			values.setPosition(new long[]{xindex, yindex});
+			values.get().add(rz);
         }   
 		return null;
 	}
