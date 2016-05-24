@@ -133,7 +133,6 @@ public class FitterPanel extends ConfigurationPanel {
 
 	protected void calibrate() {
         CalibrationDialog dlg = new CalibrationDialog(getFocusCycleRootAncestor());
-        dlg.setLocationRelativeTo(getFocusCycleRootAncestor());
         dlg.setVisible(true);
 		Map<String, Object> settings = dlg.getSettings();
 		dlg.dispose();

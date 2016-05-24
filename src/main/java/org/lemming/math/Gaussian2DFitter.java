@@ -38,14 +38,12 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 	private double[] Ival;
 	private final IntervalView<T> interval;
 	private final T bg;
-	private final T max;
 	
 	public Gaussian2DFitter(final IntervalView<T> interval_, int maxIter_, int maxEval_) {
 		interval = interval_;
 		maxIter = maxIter_;
 		maxEval = maxEval_;
 		bg = LemmingUtils.computeMin(interval);
-		max = LemmingUtils.computeMax(interval);
 	}
 	
 	private void createGrids(){
@@ -73,7 +71,7 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 		initialGuess[INDEX_Y0] = centroid[INDEX_Y0];
 		initialGuess[INDEX_SX] = centroid[INDEX_SX];
 		initialGuess[INDEX_SY] = centroid[INDEX_SY];
-		initialGuess[INDEX_I0] = max.getRealDouble();
+		initialGuess[INDEX_I0] = Short.MAX_VALUE-Short.MIN_VALUE;
 		initialGuess[INDEX_Bg] = bg.getRealDouble();
 
 		return initialGuess;
@@ -188,8 +186,8 @@ public class Gaussian2DFitter<T extends RealType<T>> {
 		public RealVector validate(RealVector arg) {
 			arg.setEntry(INDEX_SX, Math.abs(arg.getEntry(INDEX_SX)));
 			arg.setEntry(INDEX_SY, Math.abs(arg.getEntry(INDEX_SY)));
-			arg.setEntry(INDEX_I0, Math.max(1,Math.min(arg.getEntry(INDEX_I0), max.getRealDouble()*4)));
-			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/2));
+			arg.setEntry(INDEX_I0, Math.max(arg.getEntry(INDEX_I0),1));
+			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/4));
 			arg.setEntry(INDEX_X0, Math.abs(arg.getEntry(INDEX_X0)));
 			arg.setEntry(INDEX_Y0, Math.abs(arg.getEntry(INDEX_Y0)));
 			return arg;

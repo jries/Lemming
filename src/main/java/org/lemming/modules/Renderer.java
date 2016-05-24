@@ -10,6 +10,7 @@ import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.type.numeric.real.FloatType;
 
 import org.lemming.pipeline.MultiRunModule;
+import org.lemming.tools.LemmingUtils;
 import org.lemming.interfaces.Element;
 
 /**
@@ -52,6 +53,7 @@ public abstract class Renderer extends MultiRunModule {
 	public void show(){
 		if (img!=null){
 			final ImagePlus ip = ImageJFunctions.show( img );
+			ip.getProcessor().setColorModel(LemmingUtils.Ice());
 			double max = ip.getStatistics().histMax;
 			ip.getProcessor().setMinAndMax(0, max);
 			ip.updateAndDraw();

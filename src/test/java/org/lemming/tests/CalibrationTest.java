@@ -13,9 +13,10 @@ class CalibrationTest {
 	private Calibrator calibrator;
 	
 	private CalibrationTest(){
-		final ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/set1.tif");
+	//final ImagePlus calibImage = new ImagePlus(System.getProperty("user.home")+"/ownCloud/set1.tif");
+		final ImagePlus calibImage = new ImagePlus("H:/Images/stack-beads-100nm-AS-Exp-100x100x10-as-stack.tif");
 		calibWindow = new StackWindow(calibImage);
-		calibImage.setRoi(19, 17, 25, 25);
+		calibImage.setRoi(13, 19, 24, 24);
 	}
 	
 	private void fitbeads() {
@@ -40,13 +41,13 @@ class CalibrationTest {
 	}
 
 	private void fitCurve() {
-		final int rangeMin = 100; //set
-		final int rangeMax = 1100; //set
+		final int rangeMin = 30; //set
+		final int rangeMax = 1500; //set
 		calibrator.fitBSplines(rangeMin, rangeMax);
 	}
 
 	private void saveCalibration() {
-		calibrator.saveCalib(System.getProperty("user.home")+"/ownCloud/set1-calt.csv");
+		calibrator.saveCalib("H:/Images/stack-beads-100nm-AS-Exp-cal.csv");
 		//calibrator.readCalib("/media/backup/ownCloud/set1-calb.csv");
 		//calibrator.getCalibration().closePlotWindows();
 	}

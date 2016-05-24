@@ -57,7 +57,7 @@ public class StoreLoader extends SingleRunModule {
 				sCurrentLine = br.readLine();
 				addMetadata(sCurrentLine);
 			}
-			StringTokenizer s = new StringTokenizer(sCurrentLine,String.valueOf(delimiter));
+			final StringTokenizer s = new StringTokenizer(sCurrentLine,String.valueOf(delimiter));
 			while(s.hasMoreTokens())
 				header.add(s.nextToken().trim());
 			nameArray  = header.toArray(new String[]{});	
@@ -70,8 +70,8 @@ public class StoreLoader extends SingleRunModule {
 	@Override
 	public Element processData(Element data) { // data not used here
 
-		String[] s = sCurrentLine.split(delimiter);
-		Map<String,Number> row = new HashMap<>(s.length);
+		final String[] s = sCurrentLine.split(delimiter);
+		final Map<String,Number> row = new HashMap<>(s.length);
 		
 		for (int i = 0; i < s.length; i++){
 			String c = s[i].trim();
@@ -81,7 +81,7 @@ public class StoreLoader extends SingleRunModule {
 				row.put(nameArray[i], Integer.parseInt(c));
 		}
 							
-		ElementMap me = new ElementMap(row);
+		final ElementMap me = new ElementMap(row);
 		
 		try {
 			sCurrentLine = br.readLine();
@@ -96,8 +96,8 @@ public class StoreLoader extends SingleRunModule {
 	}
 	
 	private void addMetadata(String hashedline) {
-		String line = hashedline.substring(1);
-		String[] parsed = line.split("=");
+		final String line = hashedline.substring(1);
+		final String[] parsed = line.split("=");
 		if (parsed.length == 2)
 			metaData.put(parsed[0].trim(), parsed[1].trim());
 	}

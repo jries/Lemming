@@ -25,8 +25,6 @@ public class HistogramRenderer extends Renderer {
 	private final double xmin;
 	private final double ymin;
 	private volatile RandomAccess<FloatType> values; // volatile keyword keeps the array on the heap available
-	private final double xmax;
-	private final double ymax;
 	private final double zmin;
 	private final double zmax;
 	
@@ -42,9 +40,7 @@ public class HistogramRenderer extends Renderer {
 		super(xBins, yBins);
 		this.xmin = xmin;
 		this.ymin = ymin;
-		this.xmax = xmax;
-		this.ymax = ymax;
-    	this.zmin = zmin;
+		this.zmin = zmin;
     	this.zmax = zmax;
     	xwidth = (xmax - xmin) / xBins;
     	ywidth = (ymax - ymin) / yBins;
@@ -79,10 +75,10 @@ public class HistogramRenderer extends Renderer {
 			cancel();
 		final FloatType rz = new FloatType();
 		rz.setReal((z - zmin) / (zmax - zmin));
+		final long xindex = Math.round((x - xmin) / xwidth);
+		final long yindex = Math.round((y - ymin) / ywidth);
 		
-        if ( (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax)) {
-        	final long xindex = Math.round((x - xmin) / xwidth);
-			final long yindex = Math.round((y - ymin) / ywidth);
+        if ( (xindex>=0) && (yindex>=0) && (xindex < xBins) && (yindex < yBins)) {	
 			values.setPosition(new long[]{xindex, yindex});
 			values.get().add(rz);
         }   

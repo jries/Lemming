@@ -11,6 +11,8 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.lemming.math.Calibrator;
@@ -19,6 +21,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.gui.StackWindow;
+import ij.io.OpenDialog;
 import ij.plugin.FolderOpener;
 
 import javax.swing.SpinnerNumberModel;
@@ -29,6 +32,7 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
+import javax.swing.SwingConstants;
 
 /**
  * a dialog for calibration parameters for use in 3D astigmatism fitter
@@ -67,6 +71,7 @@ class CalibrationDialog extends JDialog {
 		btnFitBeads.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
+				fitbeads();
 				lblRange.setEnabled(true);
 				rangeSlider.setEnabled(true);
 				btnFitCurve.setEnabled(true);
@@ -88,7 +93,9 @@ class CalibrationDialog extends JDialog {
 		btnFitCurve = new JButton("Fit curve");
 		btnFitCurve.addActionListener(new ActionListener(){
 			@Override
-			public void actionPerformed(ActionEvent e){btnSaveCalibration.setEnabled(true);}});
+			public void actionPerformed(ActionEvent e){
+				fitCurve();
+				btnSaveCalibration.setEnabled(true);}});
 		btnFitCurve.setEnabled(false);
 		
 		btnSaveCalibration = new JButton("Save Calibration");
@@ -96,12 +103,17 @@ class CalibrationDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent e){saveCalibration();}});
 		btnSaveCalibration.setEnabled(false);
+		
+		JLabel lblMinrange = new JLabel(" ");
+		
+		JLabel lblMaxrange = new JLabel(" ");
+		lblMaxrange.setHorizontalAlignment(SwingConstants.TRAILING);
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(lblStepSize)
 							.addPreferredGap(ComponentPlacement.RELATED)
@@ -110,10 +122,17 @@ class CalibrationDialog extends JDialog {
 							.addComponent(btnFitBeads)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(lblRange))
-						.addComponent(btnFitCurve)
-						.addComponent(btnSaveCalibration)
-						.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, 255, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(23, Short.MAX_VALUE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(btnFitCurve)
+							.addGap(18)
+							.addComponent(btnSaveCalibration))
+						.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, 255, GroupLayout.PREFERRED_SIZE)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(lblMinrange)
+							.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(lblMaxrange)
+							.addGap(3)))
+					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -126,13 +145,24 @@ class CalibrationDialog extends JDialog {
 						.addComponent(btnFitBeads)
 						.addComponent(lblRange))
 					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblMinrange)
+						.addComponent(lblMaxrange))
+					.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(rangeSlider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(7)
-					.addComponent(btnFitCurve)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(btnSaveCalibration)
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnFitCurve)
+						.addComponent(btnSaveCalibration))
+					.addGap(34))
 		);
+		rangeSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				if(lblMinrange == null || lblMaxrange == null) return;
+				lblMinrange.setText(String.valueOf(rangeSlider.getValue()));
+				lblMaxrange.setText(String.valueOf(rangeSlider.getUpperValue()));
+			}
+		});
 		groupLayout.setAutoCreateGaps(true);
 		getContentPane().setLayout(groupLayout);
 		pack();
@@ -140,17 +170,10 @@ class CalibrationDialog extends JDialog {
 	}
 
 	private void importImages() {
-		JFileChooser fc = new JFileChooser(System.getProperty("user.home"));
-		fc.setLocation(getLocation());
-    	fc.setDialogTitle("Import Calibration Images");
-    	fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-    	
-    	int returnVal = fc.showOpenDialog(this);
-    	 
-        if (returnVal != JFileChooser.APPROVE_OPTION)
-        	return;
-        
-        File file = fc.getSelectedFile();
+		final OpenDialog od = new OpenDialog("Import Calibration Images");
+		if(od.getFileName()==null) return;
+       
+		final File file = new File(od.getDirectory()+od.getFileName());
         
         ImagePlus calibImage = new ImagePlus();
 		if (file.isDirectory()){
@@ -222,5 +245,4 @@ class CalibrationDialog extends JDialog {
     	calibrator.closePlotWindows();
     	setVisible(false);
 	}
-		
 }

@@ -33,6 +33,8 @@ class BSplines {
 	private double[] zgrid;
 	private final JFrame plotWindow;
 	private double[] bestE;
+	private double[] Wx;
+	private double[] Wy;
 	private static final int numKnots = 21;
 	
 	BSplines(){
@@ -45,6 +47,8 @@ class BSplines {
 
 	void init(double[] z, double[] Wx, double[] Wy, double e[]) {
 		zgrid=z;
+		this.Wx = Wx;							// width in x of the PSF
+		this.Wy = Wy;							// width in y of the PSF
 		final SplineInterpolator interpolator = new SplineInterpolator();
 		double[] kz = new double[numKnots];
 		double[] kwx = new double[numKnots];
@@ -113,7 +117,20 @@ class BSplines {
 		
 	}
 	
+	private static double[] valuesWith(double z[], PolynomialSplineFunction function) {
+		double[] values = new double[z.length];
+		for (int i = 0; i < z.length; ++i) 
+			values[i] = function.value(z[i]);
+		return values;
+	}
+	
 	///////////////////////////////////////// Plot
+	public void plotPoints(double[] z, double[] Wx, double[] Wy, String title){
+		if(Wx.length > 0 && Wy.length>0){
+			createXYDots(createDataSet(z, Wx, "Wx"), createDataSet(z, Wy, "Wy"),"Z (nm)", "Width", title);
+		}
+	}	
+	
 	public void plot(double[] W, String title){
 		if(W.length > 0){
 			PolynomialFunction function = new PolynomialFunction(bestE);
@@ -124,6 +141,15 @@ class BSplines {
 			createXYDotsAndLines(createDataSet(zgrid, W, "calculated"), createDataSet(zgrid, curveE, "fitted"),"Z (nm)", "e", title);
 		}
 	}	
+	
+	public void plotWxWyFitCurves(){
+		double[] curveWx = valuesWith(zgrid,fwx); 
+		double[] curveWy = valuesWith(zgrid,fwy);
+		if(Wx.length > 0 && Wy.length>0){
+			createXYDotsAndLines(createDataSet(zgrid, Wx, "Width in X", Wy, "Width in Y"),
+				createDataSet(zgrid, curveWx, "Fitted width in X", curveWy, "Fitted width in Y"), "Z (nm)", "Width", "Width of Elliptical Gaussian");
+		}
+	}
 
 	private static XYDataset createDataSet(double[] X, double[] Y1, String nameY1){
 	    XYSeriesCollection dataset = new XYSeriesCollection();
@@ -139,6 +165,25 @@ class BSplines {
 	    return dataset;
 	}
 	
+	private static XYDataset createDataSet(double[] X, double[] Y1, String nameY1, double[] Y2, String nameY2){
+	    XYSeriesCollection dataset = new XYSeriesCollection();
+	    XYSeries series1 = new XYSeries(nameY1);
+	    XYSeries series2 = new XYSeries(nameY2);
+
+	    if(X.length != Y1.length || X.length != Y2.length){
+	    	throw new IllegalArgumentException("createDataSet failed");
+	    }
+	    
+		for(int i=0;i<X.length;i++){
+			series1.add(X[i], Y1[i]);
+			series2.add(X[i], Y2[i]);
+		}
+	    dataset.addSeries(series1);
+	    dataset.addSeries(series2);
+	 
+	    return dataset;
+	}
+	
 	private void createXYDotsAndLines(XYDataset dataset1, XYDataset dataset2, String domainName, String rangeName,String plotTitle) {
 		// Create a single plot containing both the scatter and line
 		XYPlot plot = new XYPlot();
@@ -147,6 +192,45 @@ class BSplines {
 
 		// Create the scatter data, renderer, and axis
 		XYItemRenderer renderer1 = new XYLineAndShapeRenderer(true, false);   // Lines only
+		ValueAxis domain1 = new NumberAxis(domainName);
+		ValueAxis range1 = new NumberAxis(rangeName);
+
+		// Set the scatter data, renderer, and axis into plot
+		plot.setDataset(0, dataset2);
+		plot.setRenderer(0, renderer1);
+		plot.setDomainAxis(0, domain1);
+		plot.setRangeAxis(0, range1);
+
+		// Map the scatter to the first Domain and first Range
+		plot.mapDatasetToDomainAxis(0, 0);
+		plot.mapDatasetToRangeAxis(0, 0);
+
+		/* SETUP LINE */
+
+		// Create the line data, renderer, and axis
+		XYItemRenderer renderer2 = new XYLineAndShapeRenderer(false, true);   // Shapes only
+
+		// Set the line data, renderer, and axis into plot
+		plot.setDataset(1, dataset1);
+		plot.setRenderer(1, renderer2);
+		//plot.setDomainAxis(1, domain1);
+		//plot.setRangeAxis(1, range1);
+
+		// Map the line to the second Domain and second Range
+		plot.mapDatasetToDomainAxis(1, 0);
+		plot.mapDatasetToRangeAxis(1, 0);
+		
+		createPlot(plotTitle, plot);
+	}	
+	
+	private void createXYDots(XYDataset dataset1, XYDataset dataset2, String domainName, String rangeName,String plotTitle) {
+		// Create a single plot containing both the scatter and line
+		XYPlot plot = new XYPlot();
+
+		/* SETUP SCATTER */
+
+		// Create the scatter data, renderer, and axis
+		XYItemRenderer renderer1 = new XYLineAndShapeRenderer(false, true);   // Lines only
 		ValueAxis domain1 = new NumberAxis(domainName);
 		ValueAxis range1 = new NumberAxis(rangeName);
 

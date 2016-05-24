@@ -92,6 +92,7 @@ public class Calibrator {
 		fixCurve(Wx);
 		fixCurve(Wy);
 		fixCurve(E);
+		b.plotPoints(zgrid, Wx, Wy, "Width of Elliptical Gaussian");
 	}	
 	
 	private static void fixCurve(double[] d) {
@@ -119,8 +120,8 @@ public class Calibrator {
 	            b.init(rangedZ, rangedWx, rangedWy, rangedE);
 	
 	            // Display result
-	            //b.plotWxWyFitCurves();
-	            b.plot(rangedE, "ellipticity");
+	            b.plotWxWyFitCurves();
+	            //b.plot(rangedE, "ellipticity");
 			}
         });
 		t.start();

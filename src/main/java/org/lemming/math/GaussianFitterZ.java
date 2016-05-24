@@ -42,7 +42,6 @@ public class GaussianFitterZ<T extends RealType<T>> {
 	private final double pixelSize;
 	private final IntervalView<T> interval;
 	private final T bg;
-	private final T max;
 
 	public GaussianFitterZ(final IntervalView<T> interval_, int maxIter_, int maxEval_, double pixelSize_, Map<String, Object> params_) {
 		interval = interval_;
@@ -51,7 +50,6 @@ public class GaussianFitterZ<T extends RealType<T>> {
 		params = params_;
 		pixelSize = pixelSize_;
 		bg = LemmingUtils.computeMin(interval);
-		max = LemmingUtils.computeMax(interval);
 	}
 	
 	private void createGrids(){
@@ -149,10 +147,11 @@ public class GaussianFitterZ<T extends RealType<T>> {
 		error3d[0] = FastMath.sqrt(dx2);
 		error3d[1] = FastMath.sqrt(dy2);
 
-		final double[] knots = (double[]) params.get("knotsX");
+		final double[] knots = (double[]) params.get("zgrid");
 		for (r=0; r<knots.length;++r)
 			if(fittedEG[INDEX_Z0]>knots[r]) break;
-		if(r==0)r=1;
+		r = Math.max(1, r);
+		r = Math.min(r, knots.length-1);
 		final double hx = (knots[r]-knots[r-1])/24*sx;
 		final double hy = (knots[r]-knots[r-1])/24*sy;
 		error3d[2] = hx+hy;
@@ -178,8 +177,8 @@ public class GaussianFitterZ<T extends RealType<T>> {
 
 			if (FastMath.abs(p[INDEX_I0] - c[INDEX_I0]) < 0.1
 					&& FastMath.abs(p[INDEX_Bg] - c[INDEX_Bg]) < 0.01
-					&& FastMath.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.002
-					&& FastMath.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.002
+					&& FastMath.abs(p[INDEX_X0] - c[INDEX_X0]) < 0.001
+					&& FastMath.abs(p[INDEX_Y0] - c[INDEX_Y0]) < 0.001
 					&& FastMath.abs(p[INDEX_Z0] - c[INDEX_Z0]) < 0.01) {
 				lastResult_ = true;
 				return true;
@@ -194,8 +193,8 @@ public class GaussianFitterZ<T extends RealType<T>> {
 
 		@Override
 		public RealVector validate(RealVector arg) {
-			arg.setEntry(INDEX_I0, Math.max(1,Math.min(arg.getEntry(INDEX_I0), max.getRealDouble()*4)));
-			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/2));
+			arg.setEntry(INDEX_I0, Math.max(arg.getEntry(INDEX_I0), 1));
+			arg.setEntry(INDEX_Bg, Math.max(arg.getEntry(INDEX_Bg), bg.getRealDouble()/4));
 			arg.setEntry(INDEX_X0, Math.abs(arg.getEntry(INDEX_X0)));
 			arg.setEntry(INDEX_Y0, Math.abs(arg.getEntry(INDEX_Y0)));
 			if (arg.getEntry(INDEX_Z0) < 0) arg.setEntry(INDEX_Z0, 0);

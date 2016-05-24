@@ -678,7 +678,6 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 			final ImageStatistics stats = ImageStatistics.getStatistics(ip, ImageStatistics.MIN_MAX, null);
 			new ContrastEnhancer().stretchHistogram(ip, 0.3, stats);
 			lblFile.setText(loc_im.getTitle());
-			validate();
 		}
 	}
 
@@ -1118,6 +1117,7 @@ public class Controller<T extends NumericType<T> & NativeType<T> & RealType<T>> 
 			fitterNames.add(factory.getName());
 			infoTexts.add(factory.getInfoText());
 			final ConfigurationPanel panelDown = factory.getConfigurationPanel();
+			factory.setAndCheckSettings(panelDown.getSettings());
 			panelDown.addPropertyChangeListener(new PropertyChangeListener() {
 				@Override
 				public void propertyChange(PropertyChangeEvent evt) {
